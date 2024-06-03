@@ -1,0 +1,81 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+<form method="post">
+    <div class="container">
+        <div class="row">
+            <div class="col-3">
+                Edit record here:
+            </div>
+            <div class="col-4">
+                <textarea id="jobTitle"
+                          rows="20"
+                          cols="50"
+                          asp-for="JobTitle">
+            </textarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-3">
+                <input type="submit" />
+            </div>
+            <div class="col-4">
+                &nbsp;
+            </div>
+        </div>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>EmployeeId</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Date of Birth</th>
+            <th>Email</th>
+            <th>Phone Number</th>
+            <th>Hire Date</th>
+            <th>Job Title</th>
+            <th>Salary</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var emp in Model.employee)
+        {
+            <tr>
+                <td>@emp.EmployeeID</td>
+                <td>@emp.FirstName</td>
+                <td>@emp.LastName</td>
+                <td>@emp.DateOfBirth</td>
+                <td>@emp.Email</td>
+                <td>@emp.PhoneNumber</td>
+                <td>@emp.HireDate</td>
+                <td>@emp.JobTitle</td>
+                <td>@emp.Salary</td>
+                <td><button>Edit</button></td>
+                <td><button>Delete</button></td>
+            </tr>
+        }
+        <tr>
+            <td><input type="text" id="empid" name="empid"></td>
+            <td><input type="text" id="fname" name="fname"></td>
+            <td><input type="text" id="lname" name="lname"></td>
+            <td><input type="text" id="dob" name="dob"></td>
+            <td><input type="text" id="email" name="email"></td>
+            <td><input type="text" id="phone" name="phone"></td>
+            <td><input type="text" id="hiredate" name="hiredate"></td>
+            <td><input type="text" id="jobtitle" name="jobtitle"></td>
+            <td><input type="text" id="salary" name="salary"></td>
+            <td><button>Add +</button></td>
+        </tr>
+    </tbody>
+</table>
