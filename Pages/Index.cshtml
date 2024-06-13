@@ -4,36 +4,6 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
-
-<form method="post">
-    <div class="container">
-        <div class="row">
-            <div class="col-3">
-                Edit record here:
-            </div>
-            <div class="col-4">
-                <textarea id="jobTitle"
-                          rows="20"
-                          cols="50"
-                          asp-for="JobTitle">
-            </textarea>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-3">
-                <input type="submit" />
-            </div>
-            <div class="col-4">
-                &nbsp;
-            </div>
-        </div>
-    </div>
-</form>
-
 <table class="table">
     <thead>
         <tr>
@@ -62,10 +32,40 @@
                 <td>@emp.JobTitle</td>
                 <td>@emp.Salary</td>
                 <td><button>Edit</button></td>
-                <td><button>Delete</button></td>
+                <td>
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@emp.EmployeeID">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
             </tr>
         }
+
+
+        <!-- Form to Add a New Employee -->
+        <form method="post">
         <tr>
+            <td><input disabled="disabled" class="form-control" /></td>
+            <td><input asp-for="NewEmployee.FirstName" class="form-control" /></td>
+            <td><input asp-for="NewEmployee.LastName" class="form-control" /></td>
+            <td><input asp-for="NewEmployee.DateOfBirth" type="date" class="form-control" /></td>
+            <td><input asp-for="NewEmployee.Email" class="form-control" /></td>
+            <td><input asp-for="NewEmployee.PhoneNumber" class="form-control" /></td>
+            <td><input asp-for="NewEmployee.HireDate" type="date" class="form-control" /></td>
+            <td><input asp-for="NewEmployee.JobTitle" class="form-control" /></td>
+            <td><input asp-for="NewEmployee.Salary" class="form-control" /></td>
+            <td colspan="2">
+                <button type="submit" class="btn btn-primary">Add +</button>
+            </td>
+        </tr>
+        </form>
+    </tbody>
+</table>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+ @*        <tr>
             <td><input type="text" id="empid" name="empid"></td>
             <td><input type="text" id="fname" name="fname"></td>
             <td><input type="text" id="lname" name="lname"></td>
@@ -78,4 +78,4 @@
             <td><button>Add +</button></td>
         </tr>
     </tbody>
-</table>
+</table> *@
