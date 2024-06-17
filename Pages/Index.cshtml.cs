@@ -1,5 +1,6 @@
 using budget_management_system_aspdotnetcore.Entities;
 using budget_management_system_aspdotnetcore.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
         }*/
 
+    [Authorize]
     public class IndexModel : PageModel
     {
         private readonly CasdbtestContext _context;
