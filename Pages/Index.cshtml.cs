@@ -47,7 +47,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
         }*/
 
-    [Authorize]
+    /*[Authorize]*/
     public class IndexModel : PageModel
     {
         private readonly CasdbtestContext _context;
@@ -73,6 +73,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!ModelState.IsValid)
             {
                 employee = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
+                // To-do: Update the page reload function
                 return Page();
             }
 

@@ -15,6 +15,8 @@ namespace budget_management_system_aspdotnetcore
 
             builder.Services.AddTransient<IDatabaseService, DatabaseService>();
 
+            builder.Services.AddScoped<IUserService, UserService>();
+
             // Add services to the container.
             builder.Services.AddRazorPages();
 
