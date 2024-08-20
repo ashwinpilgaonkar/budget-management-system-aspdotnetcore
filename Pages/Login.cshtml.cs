@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace budget_management_system_aspdotnetcore.Pages
@@ -24,14 +25,17 @@ namespace budget_management_system_aspdotnetcore.Pages
             _userService = userService;
         }
 
+        [BindProperty]
         [Required]
         [EmailAddress]
         public string Email { get; set; }
-
+         
+        [BindProperty]
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
+        [BindProperty]
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
 
@@ -42,12 +46,21 @@ namespace budget_management_system_aspdotnetcore.Pages
             // You can add your login logic here. 
             // Since this is a dummy page, we'll just redirect to Index.
 
+            Debug.WriteLine("====== POST ========");
+            Debug.WriteLine(Email);
+            Debug.WriteLine(Password);
+
             var user = _userService.ValidateUser(Email, Password);
             if (user != null)
             {
+
+                Debug.WriteLine("REDIRECTING TO INDEX");
+
                 // Successful login, redirect to Index
                 return RedirectToPage("/Index");
             }
+
+            Debug.WriteLine("INVALID");
 
             // Invalid login attempt
             ErrorMessage = "Invalid username or password.";
