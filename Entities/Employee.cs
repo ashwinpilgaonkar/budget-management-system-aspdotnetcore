@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace budget_management_system_aspdotnetcore.Entities
 {
     public partial class Employee
@@ -13,5 +14,11 @@ namespace budget_management_system_aspdotnetcore.Entities
         public DateTime HireDate { get; set; }
         public string JobTitle { get; set; }
         public decimal Salary { get; set; }
+
+        // Foreign Key reference to the Department
+        public int DepartmentID { get; set; }  // Foreign Key to Department table
+
+        [ForeignKey("DepartmentID")]
+        public virtual Department Department { get; set; }
     }
 }

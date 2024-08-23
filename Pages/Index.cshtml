@@ -4,6 +4,8 @@
     ViewData["Title"] = "Home page";
 }
 
+<!-- Employee Table -->
+<h3>Employee List</h3>
 <table class="table">
     <thead>
         <tr>
@@ -16,21 +18,23 @@
             <th>Hire Date</th>
             <th>Job Title</th>
             <th>Salary</th>
+            <th>Department</th> <!-- New column for Department -->
         </tr>
     </thead>
     <tbody>
-        @foreach (var emp in Model.employee)
+        @foreach (var emp in Model.employees)
         {
             <tr>
                 <td>@emp.EmployeeID</td>
                 <td>@emp.FirstName</td>
                 <td>@emp.LastName</td>
-                <td>@emp.DateOfBirth</td>
+                <td>@emp.DateOfBirth.ToShortDateString()</td>
                 <td>@emp.Email</td>
                 <td>@emp.PhoneNumber</td>
-                <td>@emp.HireDate</td>
+                <td>@emp.HireDate.ToShortDateString()</td>
                 <td>@emp.JobTitle</td>
                 <td>@emp.Salary</td>
+                <td>@emp.Department?.DepartmentName ?? "No Department"</td> <!-- Show Department Name -->
                 <td><button>Edit</button></td>
                 <td>
                     <form method="post" asp-page-handler="Delete" asp-route-id="@emp.EmployeeID">
@@ -39,7 +43,6 @@
                 </td>
             </tr>
         }
-
 
         <!-- Form to Add a New Employee -->
         <form method="post">
@@ -53,6 +56,16 @@
             <td><input asp-for="NewEmployee.HireDate" type="date" class="form-control" /></td>
             <td><input asp-for="NewEmployee.JobTitle" class="form-control" /></td>
             <td><input asp-for="NewEmployee.Salary" class="form-control" /></td>
+            <td>
+                <select asp-for="NewEmployee.DepartmentID" class="form-control">
+                    <!-- Department dropdown -->
+                    <option value="">Select Department</option>
+                        @foreach (var dept in Model.departments)
+                        {
+                        <option value="@dept.DepartmentID">@dept.DepartmentName</option>
+                        }
+                </select>
+            </td>
             <td colspan="2">
                 <button type="submit" class="btn btn-primary">Add +</button>
             </td>
@@ -61,21 +74,83 @@
     </tbody>
 </table>
 
+<!-- Department Table -->
+<h3>Department List</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>DepartmentId</th>
+            <th>Department Name</th>
+            <th>Speedtype</th>
+            <th>Budget</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var dept in Model.departments)
+        {
+            <tr>
+                <td>@dept.DepartmentID</td>
+                <td>@dept.DepartmentName</td>
+                <td>@dept.Speedtype</td>
+                <td>@dept.Budget</td>
+            </tr>
+        }
+
+        <!-- Form to Add a New Department -->
+        <form method="post">
+        <tr>
+            <td><input disabled="disabled" class="form-control" /></td>
+            <td><input asp-for="NewDepartment.DepartmentName" class="form-control" /></td>
+            <td><input asp-for="NewDepartment.Speedtype" class="form-control" /></td>
+            <td><input asp-for="NewDepartment.Budget" class="form-control" /></td>
+            <td colspan="2">
+                <button type="submit" class="btn btn-primary">Add Department +</button>
+            </td>
+        </tr>
+        </form>
+    </tbody>
+</table>
+
+<h3>Fund Transfer</h3>
+<form method="post" asp-page-handler="Transfer">
+    <div class="form-group">
+        <label for="sourceSpeedtype">Source Speedtype</label>
+        <select id="sourceSpeedtype" asp-for="SourceSpeedtype" class="form-control">
+            <option value="">Select Source Speedtype</option>
+            @foreach (var dept in Model.departments)
+            {
+                <option value="@dept.Speedtype">@dept.Speedtype - @dept.DepartmentName</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="destinationSpeedtype">Destination Speedtype</label>
+        <select id="destinationSpeedtype" asp-for="DestinationSpeedtype" class="form-control">
+            <option value="">Select Destination Speedtype</option>
+            @foreach (var dept in Model.departments)
+            {
+                <option value="@dept.Speedtype">@dept.Speedtype - @dept.DepartmentName</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="transferAmount">Transfer Amount</label>
+        <input asp-for="TransferAmount" type="number" step="0.01" class="form-control" id="transferAmount" placeholder="Enter amount to transfer" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Transfer</button>
+</form>
+
+<!-- Error and Success Messages -->
+@if (!string.IsNullOrEmpty(Model.TransferMessage))
+{
+    <div class="alert @Model.TransferMessageClass">
+        @Model.TransferMessage
+    </div>
+}
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-
- @*        <tr>
-            <td><input type="text" id="empid" name="empid"></td>
-            <td><input type="text" id="fname" name="fname"></td>
-            <td><input type="text" id="lname" name="lname"></td>
-            <td><input type="text" id="dob" name="dob"></td>
-            <td><input type="text" id="email" name="email"></td>
-            <td><input type="text" id="phone" name="phone"></td>
-            <td><input type="text" id="hiredate" name="hiredate"></td>
-            <td><input type="text" id="jobtitle" name="jobtitle"></td>
-            <td><input type="text" id="salary" name="salary"></td>
-            <td><button>Add +</button></td>
-        </tr>
-    </tbody>
-</table> *@
