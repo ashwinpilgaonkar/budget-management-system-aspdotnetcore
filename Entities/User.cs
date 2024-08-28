@@ -4,10 +4,9 @@ namespace budget_management_system_aspdotnetcore.Entities
 {
     public partial class User
     {
-        public int Id { get; set; }
+        public int UserId { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
+        public string Role { get; set; }
     }
 }
-
-

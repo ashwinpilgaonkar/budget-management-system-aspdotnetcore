@@ -1,6 +1,4 @@
 using budget_management_system_aspdotnetcore.Entities;
-using budget_management_system_aspdotnetcore.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -12,19 +10,24 @@ namespace budget_management_system_aspdotnetcore.Pages
     public class IndexModel : PageModel
     {
         private readonly CasdbtestContext _context;
-        public List<Employee> employees { get; set; }
-        public List<Department> departments { get; set; }  // Add this line
 
         public IndexModel(CasdbtestContext context)
         {
             _context = context;
         }
 
-        public IList<Employee> Employees { get; set; }
-        public IList<Department> Departments { get; set; }  // Add this line
+        public List<Employee> Employees { get; set; }
+
+        [BindProperty]
+        public int? EditingEmployeeID { get; set; }
 
         [BindProperty]
         public Employee NewEmployee { get; set; }
+
+        public List<Department> Departments { get; set; }
+
+        [BindProperty]
+        public int? EditingDepartmentID { get; set; }
 
         [BindProperty]
         public Department NewDepartment { get; set; }
@@ -46,17 +49,18 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task OnGetAsync()
         {
-            employees = await _context.Employees.ToListAsync();
-            departments = await _context.Departments.ToListAsync();  // Fetch departments
+            Employees = await _context.Employees.ToListAsync();
+            Departments = await _context.Departments.ToListAsync();  // Fetch departments
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAddEmployeeAsync()
         {
             if (!ModelState.IsValid)
             {
-                employees = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
-                departments = await _context.Departments.ToListAsync();  // Re-fetch departments to display on the page
-                return Page();
+                Debug.WriteLine("======== INVALID MODEL =========");
+/*                Employees = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
+                Departments = await _context.Departments.ToListAsync();  // Re-fetch departments to display on the page
+                return Page();*/
             }
 
             _context.Employees.Add(NewEmployee);
@@ -65,7 +69,58 @@ namespace budget_management_system_aspdotnetcore.Pages
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostDeleteAsync(int id)
+        public async Task<IActionResult> OnPostEditEmployeeAsync(int id)
+        {
+            EditingEmployeeID = id;
+
+            Employees = await _context.Employees.ToListAsync();
+            Departments = await _context.Departments.ToListAsync();
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostCancelEditEmployeeAsync(int id)
+        {
+            EditingEmployeeID = 0;
+
+            Employees = await _context.Employees.ToListAsync();
+            Departments = await _context.Departments.ToListAsync();
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostSaveEmployeeAsync()
+        {
+
+            if (!ModelState.IsValid)
+            {
+/*                Employees = await _context.Employees.ToListAsync();
+                Departments = await _context.Departments.ToListAsync();
+                return Page();*/
+            }
+
+            var employee = await _context.Employees.FindAsync(NewEmployee.EmployeeID);
+
+
+            if (employee != null)
+            {
+                employee.FirstName = NewEmployee.FirstName;
+                employee.LastName = NewEmployee.LastName;
+                employee.DateOfBirth = NewEmployee.DateOfBirth;
+                employee.Email = NewEmployee.Email;
+                employee.PhoneNumber = NewEmployee.PhoneNumber;
+                employee.HireDate = NewEmployee.HireDate;
+                employee.JobTitle = NewEmployee.JobTitle;
+                employee.Salary = NewEmployee.Salary;
+                employee.DepartmentID = NewEmployee.DepartmentID;
+
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostDeleteEmployeeAsync(int id)
         {
             var employee = await _context.Employees.FindAsync(id);
 
@@ -80,30 +135,109 @@ namespace budget_management_system_aspdotnetcore.Pages
             return RedirectToPage();
         }
 
-        // Handling fund transfer
+        public async Task<IActionResult> OnPostAddDepartmentAsync()
+        {
+
+            Debug.WriteLine("======== ADD DEPT ===========");
+
+            if (!ModelState.IsValid)
+            {
+
+                Debug.WriteLine("======== INVALID ===========");
+
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Debug.WriteLine(error.ErrorMessage);
+                }
+
+
+                Debug.WriteLine("========  ===========");
+
+                Employees = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
+                Departments = await _context.Departments.ToListAsync();  // Re-fetch departments to display on the page
+                return Page();
+            }
+
+            _context.Departments.Add(NewDepartment);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage();
+        }
+
+
+
+
+        public async Task<IActionResult> OnPostEditDepartmentAsync(int id)
+        {
+            EditingDepartmentID = id;
+
+            Employees = await _context.Employees.ToListAsync();
+            Departments = await _context.Departments.ToListAsync();
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostCancelEditDepartmentAsync(int id)
+        {
+            EditingDepartmentID = 0;
+
+            Employees = await _context.Employees.ToListAsync();
+            Departments = await _context.Departments.ToListAsync();
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostSaveDepartmentAsync()
+        {
+
+            ModelState.Clear();
+            TryValidateModel(NewDepartment, "NewDepartment");
+
+            if (!ModelState.IsValid)
+            {
+                /*                Employees = await _context.Employees.ToListAsync();
+                                Departments = await _context.Departments.ToListAsync();
+                                return Page();*/
+            }
+
+            var department = await _context.Departments.FindAsync(NewDepartment.DepartmentID);
+
+
+            if (department != null)
+            {
+                department.DepartmentID = NewDepartment.DepartmentID;
+                department.DepartmentName = NewDepartment.DepartmentName;
+                department.Speedtype = NewDepartment.Speedtype;
+                department.Budget = NewDepartment.Budget;
+
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostDeleteDepartmentAsync(int id)
+        {
+            var department = await _context.Departments.FindAsync(id);
+
+            if (department == null)
+            {
+                return NotFound();
+            }
+
+            _context.Departments.Remove(department);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage();
+        }
+
         public async Task<IActionResult> OnPostTransferAsync()
         {
-            Debug.WriteLine("=======ON POST TRANSFER============");
-
-/*            if (!ModelState.IsValid)
-            {
-                Debug.WriteLine("=======MODEL INVALID============");
-
-                employees = await _context.Employees.ToListAsync();
-                departments = await _context.Departments.ToListAsync();
-                return Page();
-            }*/
-
-            // Fetch the source and destination departments
             var sourceDepartment = await _context.Departments.FirstOrDefaultAsync(d => d.Speedtype == SourceSpeedtype);
             var destinationDepartment = await _context.Departments.FirstOrDefaultAsync(d => d.Speedtype == DestinationSpeedtype);
 
-            // Validate source and destination
             if (sourceDepartment == null)
             {
-
-                Debug.WriteLine("=======SOURCE INVALID============");
-
                 TransferMessage = "Invalid source speedtype.";
                 TransferMessageClass = "alert-danger";
                 return Page();
@@ -111,19 +245,11 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             if (destinationDepartment == null)
             {
-
-                Debug.WriteLine("=======DESTINATION INVALID============");
-
                 TransferMessage = "Invalid destination speedtype.";
                 TransferMessageClass = "alert-danger";
                 return Page();
             }
 
-            Debug.WriteLine("========BUDGET========");
-            Debug.WriteLine(sourceDepartment.Budget);
-            Debug.WriteLine(TransferAmount);
-
-            // Check if source has sufficient funds
             if (sourceDepartment.Budget < TransferAmount)
             {
                 TransferMessage = "Insufficient funds in source department.";
@@ -131,20 +257,16 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return Page();
             }
 
-            // Perform the fund transfer
             sourceDepartment.Budget -= TransferAmount;
             destinationDepartment.Budget += TransferAmount;
 
-            // Save changes to the database
             await _context.SaveChangesAsync();
 
-            // Success message
             TransferMessage = "Funds transferred successfully!";
             TransferMessageClass = "alert-success";
 
-            // Re-fetch data for display
-            employees = await _context.Employees.ToListAsync();
-            departments = await _context.Departments.ToListAsync();
+            Employees = await _context.Employees.ToListAsync();
+            Departments = await _context.Departments.ToListAsync();
 
             return Page();
         }

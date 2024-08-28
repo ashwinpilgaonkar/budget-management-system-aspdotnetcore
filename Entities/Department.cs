@@ -2,9 +2,9 @@
 {
     public partial class Department
     {
-        public int DepartmentID { get; set; }          // Primary Key
-        public string DepartmentName { get; set; }     // Department Name
-        public string Speedtype { get; set; }          // Unique Speedtype for the department
-        public decimal Budget { get; set; }            // Department's budget
+        public int DepartmentID { get; set; } 
+        public string DepartmentName { get; set; }
+        public string Speedtype { get; set; }
+        public decimal Budget { get; set; }
     }
 }

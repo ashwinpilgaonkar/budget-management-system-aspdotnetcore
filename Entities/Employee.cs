@@ -15,8 +15,7 @@ namespace budget_management_system_aspdotnetcore.Entities
         public string JobTitle { get; set; }
         public decimal Salary { get; set; }
 
-        // Foreign Key reference to the Department
-        public int DepartmentID { get; set; }  // Foreign Key to Department table
+        public int DepartmentID { get; set; }
 
         [ForeignKey("DepartmentID")]
         public virtual Department Department { get; set; }

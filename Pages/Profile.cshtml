@@ -1,0 +1,87 @@
+﻿@page "/profile"
+@model ProfileModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="container">
+    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
+        <div class="card-body">
+            <h3 class="card-title">Users</h3>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>UserId</th>
+                            <th>Email</th>
+                            <th>Password</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Users)
+                        {
+                            if (Model.EditingUserId == user.UserId)
+                            {
+                                <tr>
+                                    <form method="post" asp-page-handler="SaveUser" asp-route-id="@user.UserId">
+                                    <td><input asp-for="NewUser.UserId" value="@user.UserId" class="form-control" disabled /></td>
+                                        <td><input asp-for="NewUser.Email" value="@user.Email" class="form-control" /></td>
+                                        <td><input asp-for="NewUser.Password" value="@user.Password" class="form-control" /></td>
+                                        <td><input asp-for="NewUser.Role" value="@user.Role" class="form-control" /></td>
+                                        <td>
+                                            <button type="submit" class="btn btn-success">Save</button>
+                                        </td>
+                                    </form>
+                                    <td>
+                                        <form method="post" asp-page-handler="CancelEditUser" asp-route-id="@user.UserId">
+                                            <button type="submit" class="btn btn-secondary">Cancel</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td>@user.UserId</td>
+                                    <td>@user.Email</td>
+                                    <td>@user.Password</td>
+                                    <th>@user.Role</th>
+                                    <td>
+                                        <form method="post" asp-page-handler="EditUser" asp-route-id="@user.UserId">
+                                            <button type="submit" class="btn btn-warning">Edit</button>
+                                        </form>
+                                    </td>
+                                    <td>
+                                                <form method="post" asp-page-handler="DeleteUser" asp-route-id="@user.UserId">
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+
+                        <!-- Form to Add a New User -->
+                        <form method="post" asp-page-handler="AddUser">
+                            <tr>
+                                <td><input disabled="disabled" class="form-control" /></td>
+                                <td><input asp-for="NewUser.Email" class="form-control" /></td>
+                                <td><input asp-for="NewUser.Password" class="form-control" /></td>
+                                <td>
+                                    <select asp-for="NewUser.Role" class="form-control">
+                                        <option value="user">user</option>
+                                        <option value="admin">admin</option>
+                                    </select>
+                                </td>
+                                <td colspan="2">
+                                    <button type="submit" class="btn btn-primary">Add +</button>
+                                </td>
+                            </tr>
+                        </form>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
