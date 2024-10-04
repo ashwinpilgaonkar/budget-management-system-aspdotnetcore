@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
-    public class ProfileModel : PageModel
+    public class AdminModel : PageModel
     {
         public List<User> Users { get; set; }
 
@@ -18,7 +18,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         private readonly CasdbtestContext _context;
 
-        public ProfileModel(CasdbtestContext context)
+        public AdminModel(CasdbtestContext context)
         {
             _context = context;
         }
@@ -35,9 +35,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                                 Departments = await _context.Departments.ToListAsync();  // Re-fetch departments to display on the page
                                 return Page();*/
             }
-
-            Debug.WriteLine("================");
-            Debug.WriteLine(NewUser.Email);
 
             _context.Users.Add(NewUser);
             await _context.SaveChangesAsync();

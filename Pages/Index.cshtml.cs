@@ -24,6 +24,13 @@ namespace budget_management_system_aspdotnetcore.Pages
         [BindProperty]
         public Employee NewEmployee { get; set; }
 
+        public int EmployeeCurrentPage { get; set; } = 1;
+        public int EmployeeResultsPerPage { get; set; } = 10;
+        public int EmployeeTotalPages { get; set; }
+        public List<int> PageSizes { get; set; } = new List<int> { 10, 20, 30 };
+
+        public int TotalEmployees { get; set; }
+        
         public List<Department> Departments { get; set; }
 
         [BindProperty]
@@ -31,6 +38,14 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         [BindProperty]
         public Department NewDepartment { get; set; }
+
+        public int DepartmentCurrentPage { get; set; } = 1;
+        public int DepartmentResultsPerPage { get; set; } = 10;
+        public int DepartmentTotalPages { get; set; }
+
+        public int DepartmentEmployees { get; set; }
+
+        public int TotalDepartments { get; set; }
 
         [BindProperty]
         [Required]
@@ -47,10 +62,33 @@ namespace budget_management_system_aspdotnetcore.Pages
         public string TransferMessage { get; set; }
         public string TransferMessageClass { get; set; }
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync(int pageNumber = 1, int resultsPerPage = 10, int departmentPageNumber = 1, int departmentResultsPerPage = 10)
         {
-            Employees = await _context.Employees.ToListAsync();
-            Departments = await _context.Departments.ToListAsync();  // Fetch departments
+            EmployeeCurrentPage = pageNumber;
+            EmployeeResultsPerPage = resultsPerPage;
+
+            // Fetch employees with pagination
+            var employeesQuery = _context.Employees.AsQueryable();
+            TotalEmployees = await employeesQuery.CountAsync();
+            EmployeeTotalPages = (int)Math.Ceiling(TotalEmployees / (double)EmployeeResultsPerPage);
+
+            Employees = await employeesQuery
+                .Skip((EmployeeCurrentPage - 1) * EmployeeResultsPerPage)
+                .Take(EmployeeResultsPerPage)
+                .ToListAsync();
+
+            DepartmentCurrentPage = departmentPageNumber;
+            DepartmentResultsPerPage = departmentResultsPerPage;
+
+            // Fetch departments with pagination
+            var departmentQuery = _context.Departments.AsQueryable();
+            TotalDepartments = await departmentQuery.CountAsync();
+            DepartmentTotalPages = (int)Math.Ceiling(TotalDepartments / (double)DepartmentResultsPerPage);
+
+            Departments = await departmentQuery
+                .Skip((DepartmentCurrentPage - 1) * DepartmentResultsPerPage)
+                .Take(DepartmentResultsPerPage)
+                .ToListAsync();
         }
 
         public async Task<IActionResult> OnPostAddEmployeeAsync()
