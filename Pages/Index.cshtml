@@ -225,13 +225,13 @@
                             {
                                 <tr>
                                     <form method="post" asp-page-handler="SaveDepartment" asp-route-id="@dept.DepartmentID">
-                                    <td><input asp-for="NewDepartment.DepartmentID" value="@dept.DepartmentID" class="form-control" /></td>
-                                    <td><input asp-for="NewDepartment.DepartmentName" value="@dept.DepartmentName" class="form-control" /></td>
-                                    <td><input asp-for="NewDepartment.Speedtype" value="@dept.Speedtype" class="form-control" /></td>
-                                    <td><input asp-for="NewDepartment.Budget" value="@dept.Budget" class="form-control" /></td>
-                                    <td>
-                                        <button type="submit" class="btn btn-warning">Save</button>
-                                    </td>
+                                        <td><input asp-for="NewDepartment.DepartmentID" value="@dept.DepartmentID" class="form-control" /></td>
+                                        <td><input asp-for="NewDepartment.DepartmentName" value="@dept.DepartmentName" class="form-control" /></td>
+                                        <td><input asp-for="NewDepartment.Speedtype" value="@dept.Speedtype" class="form-control" /></td>
+                                        <td><input asp-for="NewDepartment.Budget" value="@dept.Budget" class="form-control" /></td>
+                                        <td>
+                                        <button type="submit" class="btn btn-success">Save</button>
+                                        </td>
                                     </form>
                                     <td>
                                         <form method="post" asp-page-handler="CancelEditDepartment" asp-route-id="@dept.DepartmentID">
@@ -332,6 +332,226 @@
             </div>
         </div>
     </div>
+
+
+
+
+    <!-- Budget Amendment History Card -->
+    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
+                <h3 class="card-title">Budget Amendment History</h3>
+                <!-- Add New Amendment Button -->
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAmendmentModal">
+                    Add New +
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Ammendment ID</th>
+                            <th>Category Name</th>
+                            <th>Adjustment Detail</th>
+                            <th>SpeedType</th>
+                            <th>Fund Code</th>
+                            <th>Department ID</th>
+                            <th>Program Code</th>
+                            <th>Class Code</th>
+                            <th>Acct Description</th>
+                            <th>Budget Code</th>
+                            <th>Position Number</th>
+                            <th>Amount Increase</th>
+                            <th>Amount Decrease</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var amendment in Model.BudgetAmendments)
+                        {
+                            if (Model.EditingBudgetAmendmentID == amendment.BudgetAmendmentID)
+                            {
+                                <tr>
+                                    <form method="post" asp-page-handler="SaveBudgetAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                        <td><input asp-for="NewBudgetAmendment.BudgetAmendmentID" value="@amendment.BudgetAmendmentID" class="form-control" /></td>
+                                        <td><input asp-for="NewBudgetAmendment.CategoryName" value="@amendment.CategoryName" class="form-control" /></td>
+                                        <td><input asp-for="NewBudgetAmendment.AdjustmentDetail" value="@amendment.AdjustmentDetail" class="form-control" /></td>
+                                        <td><input asp-for="NewBudgetAmendment.SpeedType" value="@amendment.SpeedType" class="form-control" /></td>
+                                        <td><input asp-for="NewBudgetAmendment.FundCode" value="@amendment.FundCode" class="form-control" /></td>
+                                        <td><input asp-for="NewBudgetAmendment.DepartmentID" value="@amendment.DepartmentID" class="form-control" /></td>
+                                        <td><input asp-for="NewBudgetAmendment.ProgramCode" value="@amendment.ProgramCode" class="form-control" /></td>
+                                        <td><input asp-for="NewBudgetAmendment.ClassCode" value="@amendment.ClassCode" class="form-control" /></td>
+                                        <td><input asp-for="NewBudgetAmendment.AcctDescription" value="@amendment.AcctDescription" class="form-control" /></td>
+                                        <td><input asp-for="NewBudgetAmendment.BudgetCode" value="@amendment.BudgetCode" class="form-control" /></td>
+                                        <td><input asp-for="NewBudgetAmendment.PositionNumber" value="@amendment.PositionNumber" class="form-control" /></td>
+                                        <td><input asp-for="NewBudgetAmendment.AmountIncrease" value="@amendment.AmountIncrease" class="form-control" /></td>
+                                        <td><input asp-for="NewBudgetAmendment.AmountDecrease" value="@amendment.AmountDecrease" class="form-control" /></td>
+                                        <td>
+                                        <button type="submit" class="btn btn-success">Save</button>
+                                        </td>
+                                    </form>
+                                    <td>
+                                        <form method="post" asp-page-handler="CancelEditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                            <button type="submit" class="btn btn-secondary">Cancel</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td>@amendment.BudgetAmendmentID</td>
+                                    <td>@amendment.CategoryName</td>
+                                    <td>@amendment.AdjustmentDetail</td>
+                                    <td>@amendment.SpeedType</td>
+                                    <td>@amendment.FundCode</td>
+                                    <td>@amendment.DepartmentID</td>
+                                    <td>@amendment.ProgramCode</td>
+                                    <td>@amendment.ClassCode</td>
+                                    <td>@amendment.AcctDescription</td>
+                                    <td>@amendment.BudgetCode</td>
+                                    <td>@amendment.PositionNumber</td>
+                                    <td>@amendment.AmountIncrease</td>
+                                    <td>@amendment.AmountDecrease</td>
+                                    <td>
+                                        <form method="post" asp-page-handler="EditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                            <button type="submit" class="btn btn-warning">Edit</button>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <form method="post" asp-page-handler="DeleteAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <nav class="d-flex justify-content-between align-items-center my-3" aria-label="Budget Amendment Page navigation">
+                <!-- Results per page dropdown on the left -->
+                <div class="d-flex align-items-center">
+                    <label for="resultsPerPage" class="me-2">Results per page:</label>
+                    <select id="resultsPerPage" class="form-select me-3" style="width: auto;"
+                            onchange="window.location.href = '@Url.Page(null, new { amendmentPageNumber = 1, amendmentsPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
+                        @foreach (var size in Model.PageSizes)
+                        {
+                            <option value="@size" selected="@(Model.BudgetAmendmentResultsPerPage == size ? "selected" : null)">@size</option>
+                        }
+                    </select>
+                </div>
+                @{
+                    int amendmentRecordsShown = Math.Min(Model.BudgetAmendmentResultsPerPage, Model.TotalBudgetAmendments - ((Model.BudgetAmendmentCurrentPage - 1) * Model.BudgetAmendmentResultsPerPage));
+                }
+                <span>Records: @amendmentRecordsShown of @Model.TotalBudgetAmendments</span>
+                <ul class="pagination mb-0">
+                    <li class="page-item @(Model.BudgetAmendmentCurrentPage <= 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.BudgetAmendmentCurrentPage - 1, resultsPerPage = Model.BudgetAmendmentResultsPerPage })"
+                           aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item active">
+                        <span class="page-link">@Model.BudgetAmendmentCurrentPage</span>
+                    </li>
+                    <li class="page-item @(Model.BudgetAmendmentCurrentPage >= Model.BudgetAmendmentTotalPages ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.BudgetAmendmentCurrentPage + 1, resultsPerPage = Model.BudgetAmendmentResultsPerPage })"
+                           aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Add Budget Amendment Modal -->
+    <div class="modal fade" id="addAmendmentModal" tabindex="-1" aria-labelledby="addAmendmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addAmendmentModalLabel">Add New Budget Amendment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" asp-page-handler="AddAmendment">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NewBudgetAmendment.CategoryName" class="form-label">Category Name</label>
+                                <input asp-for="NewBudgetAmendment.CategoryName" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NewBudgetAmendment.AdjustmentDetail" class="form-label">Adjustment Detail</label>
+                                <input asp-for="NewBudgetAmendment.AdjustmentDetail" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NewBudgetAmendment.SpeedType" class="form-label">Speed Type</label>
+                                <input asp-for="NewBudgetAmendment.SpeedType" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NewBudgetAmendment.FundCode" class="form-label">Fund Code</label>
+                                <input asp-for="NewBudgetAmendment.FundCode" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NewBudgetAmendment.DepartmentID" class="form-label">Department ID</label>
+                                <input asp-for="NewBudgetAmendment.DepartmentID" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NewBudgetAmendment.ProgramCode" class="form-label">Program Code</label>
+                                <input asp-for="NewBudgetAmendment.ProgramCode" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NewBudgetAmendment.ClassCode" class="form-label">Class Code</label>
+                                <input asp-for="NewBudgetAmendment.ClassCode" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NewBudgetAmendment.AcctDescription" class="form-label">Account Description</label>
+                                <input asp-for="NewBudgetAmendment.AcctDescription" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NewBudgetAmendment.BudgetCode" class="form-label">Budget Code</label>
+                                <input asp-for="NewBudgetAmendment.BudgetCode" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NewBudgetAmendment.PositionNumber" class="form-label">Position Number</label>
+                                <input asp-for="NewBudgetAmendment.PositionNumber" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NewBudgetAmendment.AmountIncrease" class="form-label">Amount Increase</label>
+                                <input asp-for="NewBudgetAmendment.AmountIncrease" class="form-control" type="number" step="0.01" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="NewBudgetAmendment.AmountDecrease" class="form-label">Amount Decrease</label>
+                                <input asp-for="NewBudgetAmendment.AmountDecrease" class="form-control" type="number" step="0.01" />
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     <!-- Fund Transfer Card -->

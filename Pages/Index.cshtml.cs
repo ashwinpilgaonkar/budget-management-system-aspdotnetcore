@@ -30,6 +30,8 @@ namespace budget_management_system_aspdotnetcore.Pages
         public List<int> PageSizes { get; set; } = new List<int> { 10, 20, 30 };
 
         public int TotalEmployees { get; set; }
+
+
         
         public List<Department> Departments { get; set; }
 
@@ -47,6 +49,30 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public int TotalDepartments { get; set; }
 
+
+
+
+        public List<BudgetAmendment> BudgetAmendments { get; set; }
+
+        [BindProperty]
+        public int? EditingBudgetAmendmentID { get; set; }
+
+        [BindProperty]
+        public BudgetAmendment NewBudgetAmendment { get; set; }
+
+        public int BudgetAmendmentCurrentPage { get; set; } = 1;
+        public int BudgetAmendmentResultsPerPage { get; set; } = 10;
+        public int BudgetAmendmentTotalPages { get; set; }
+
+        public int TotalBudgetAmendments { get; set; }
+
+
+
+
+
+
+
+
         [BindProperty]
         [Required]
         public string SourceSpeedtype { get; set; }
@@ -62,7 +88,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         public string TransferMessage { get; set; }
         public string TransferMessageClass { get; set; }
 
-        public async Task OnGetAsync(int pageNumber = 1, int resultsPerPage = 10, int departmentPageNumber = 1, int departmentResultsPerPage = 10)
+        public async Task OnGetAsync(int pageNumber = 1, int resultsPerPage = 10, int departmentPageNumber = 1, int departmentResultsPerPage = 10, int amendmentPageNumber = 1, int amendmentResultsPerPage = 10)
         {
             EmployeeCurrentPage = pageNumber;
             EmployeeResultsPerPage = resultsPerPage;
@@ -89,6 +115,19 @@ namespace budget_management_system_aspdotnetcore.Pages
                 .Skip((DepartmentCurrentPage - 1) * DepartmentResultsPerPage)
                 .Take(DepartmentResultsPerPage)
                 .ToListAsync();
+
+            BudgetAmendmentCurrentPage = amendmentPageNumber;
+            BudgetAmendmentResultsPerPage = amendmentResultsPerPage;
+
+            // Fetch amendments with pagination
+            var amendmentQuery = _context.BudgetAmendments.AsQueryable();
+            TotalBudgetAmendments = await amendmentQuery.CountAsync();
+            BudgetAmendmentTotalPages = (int)Math.Ceiling(TotalBudgetAmendments / (double)BudgetAmendmentResultsPerPage);
+
+            BudgetAmendments = await amendmentQuery
+            .Skip((BudgetAmendmentCurrentPage - 1) * BudgetAmendmentResultsPerPage)
+            .Take(BudgetAmendmentResultsPerPage)
+            .ToListAsync();
         }
 
         public async Task<IActionResult> OnPostAddEmployeeAsync()
@@ -113,6 +152,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             Employees = await _context.Employees.ToListAsync();
             Departments = await _context.Departments.ToListAsync();
+            BudgetAmendments = await _context.BudgetAmendments.ToListAsync();
 
             return Page();
         }
@@ -123,6 +163,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             Employees = await _context.Employees.ToListAsync();
             Departments = await _context.Departments.ToListAsync();
+            BudgetAmendments = await _context.BudgetAmendments.ToListAsync();
 
             return Page();
         }
@@ -193,6 +234,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
                 Employees = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
                 Departments = await _context.Departments.ToListAsync();  // Re-fetch departments to display on the page
+                BudgetAmendments = await _context.BudgetAmendments.ToListAsync();
                 return Page();
             }
 
@@ -211,6 +253,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             Employees = await _context.Employees.ToListAsync();
             Departments = await _context.Departments.ToListAsync();
+            BudgetAmendments = await _context.BudgetAmendments.ToListAsync();
 
             return Page();
         }
@@ -221,6 +264,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             Employees = await _context.Employees.ToListAsync();
             Departments = await _context.Departments.ToListAsync();
+            BudgetAmendments = await _context.BudgetAmendments.ToListAsync();
 
             return Page();
         }
@@ -268,6 +312,111 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             return RedirectToPage();
         }
+
+        /*
+         * 
+         * Amendment
+         * 
+         * 
+         */
+
+        public async Task<IActionResult> OnPostAddAmendmentAsync()
+        {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            _context.BudgetAmendments.Add(NewBudgetAmendment);
+            await _context.SaveChangesAsync();
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostEditAmendmentAsync(int id)
+        {
+            EditingBudgetAmendmentID = id;
+
+            Employees = await _context.Employees.ToListAsync();
+            Departments = await _context.Departments.ToListAsync();
+            BudgetAmendments = await _context.BudgetAmendments.ToListAsync();
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostCancelEditAmendmentAsync(int id)
+        {
+            EditingBudgetAmendmentID = 0;
+
+            Employees = await _context.Employees.ToListAsync();
+            Departments = await _context.Departments.ToListAsync();
+            BudgetAmendments = await _context.BudgetAmendments.ToListAsync();
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostSaveAmendmentAsync()
+        {
+            if (!ModelState.IsValid)
+            {
+                // You could return the page with errors if the model is invalid.
+                // For now, we'll just return the page (this part is commented out in your original code).
+
+                BudgetAmendments = await _context.BudgetAmendments.ToListAsync();
+                return Page();
+
+            }
+
+            // Find the existing budget amendment by ID
+            var amendment = await _context.BudgetAmendments.FindAsync(NewBudgetAmendment.BudgetAmendmentID);
+
+            if (amendment != null)
+            {
+                // Update the existing amendment with the new values
+                amendment.BudgetAmendmentID = NewBudgetAmendment.BudgetAmendmentID;
+                amendment.CategoryName = NewBudgetAmendment.CategoryName;
+                amendment.AdjustmentDetail = NewBudgetAmendment.AdjustmentDetail;
+                amendment.SpeedType = NewBudgetAmendment.SpeedType;
+                amendment.FundCode = NewBudgetAmendment.FundCode;
+                amendment.DepartmentID = NewBudgetAmendment.DepartmentID;
+                amendment.ProgramCode = NewBudgetAmendment.ProgramCode;
+                amendment.ClassCode = NewBudgetAmendment.ClassCode;
+                amendment.AcctDescription = NewBudgetAmendment.AcctDescription;
+                amendment.BudgetCode = NewBudgetAmendment.BudgetCode;
+                amendment.PositionNumber = NewBudgetAmendment.PositionNumber;
+                amendment.AmountIncrease = NewBudgetAmendment.AmountIncrease;
+                amendment.AmountDecrease = NewBudgetAmendment.AmountDecrease;
+
+                // Save the changes
+                await _context.SaveChangesAsync();
+            }
+
+            // Redirect back to the page after saving or updating
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostDeleteAmendmentAsync(int id)
+        {
+            var amendment = await _context.BudgetAmendments.FindAsync(id);
+
+            if (amendment == null)
+            {
+                return NotFound();
+            }
+
+            _context.BudgetAmendments.Remove(amendment);
+            await _context.SaveChangesAsync();
+            return RedirectToPage();
+        }
+
+
+
+
+
+
+
+
+
+
 
         public async Task<IActionResult> OnPostTransferAsync()
         {

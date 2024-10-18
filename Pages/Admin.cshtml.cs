@@ -8,6 +8,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 {
     public class AdminModel : PageModel
     {
+        private readonly CasdbtestContext _context;
         public List<User> Users { get; set; }
 
         [BindProperty]
@@ -16,7 +17,12 @@ namespace budget_management_system_aspdotnetcore.Pages
         [BindProperty]
         public int? EditingUserId { get; set; }
 
-        private readonly CasdbtestContext _context;
+        [BindProperty]
+        public BudgetAmendmentSetting BudgetAmendmentSetting { get; set; }
+
+        public DateTime BudgetAmendmentStartDate { get; set; }
+
+        public DateTime BudgetAmendmentEndDate { get; set; }
 
         public AdminModel(CasdbtestContext context)
         {
@@ -25,6 +31,18 @@ namespace budget_management_system_aspdotnetcore.Pages
         public async Task OnGetAsync()
         {
             Users = await _context.Users.ToListAsync();
+
+            var amendmentSettings = await _context.BudgetAmendmentSettings.FirstOrDefaultAsync();
+            if (amendmentSettings != null)
+            {
+                BudgetAmendmentStartDate = amendmentSettings.StartDate;
+                BudgetAmendmentEndDate = amendmentSettings.EndDate;
+            } else
+            {
+                // Set the financial year start and end (update as needed)
+                BudgetAmendmentStartDate = new DateTime(DateTime.Now.Year, 4, 1); // Example: April 1st as start
+                BudgetAmendmentEndDate = BudgetAmendmentStartDate.AddYears(1).AddDays(-1); // March 31st as end
+            }
         }
 
         public async Task<IActionResult> OnPostAddUserAsync()
@@ -94,6 +112,35 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
 
             _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostSaveBudgetAmendmentDatesAsync()
+        {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            var existingSetting = await _context.BudgetAmendmentSettings.FirstOrDefaultAsync();
+
+            if (existingSetting != null)
+            {
+                // Update existing budget amendment setting
+                existingSetting.StartDate = BudgetAmendmentSetting.StartDate;
+                existingSetting.EndDate = BudgetAmendmentSetting.EndDate;
+                existingSetting.UpdatedAt = DateTime.Now; // Update timestamp
+            }
+            else
+            {
+                // Create new budget amendment setting
+                BudgetAmendmentSetting.CreatedAt = DateTime.Now; // Set creation timestamp
+                BudgetAmendmentSetting.UpdatedAt = DateTime.Now; // Set update timestamp
+                _context.BudgetAmendmentSettings.Add(BudgetAmendmentSetting);
+            }
+
             await _context.SaveChangesAsync();
 
             return RedirectToPage();

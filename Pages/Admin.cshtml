@@ -84,4 +84,26 @@
             </div>
         </div>
     </div>
+
+    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
+        <div class="card-body">
+            <h3 class="card-title">Budget Amendment Dates</h3>
+            <p>Select dates in the current financial year when budget amendments are allowed.</p>
+            <form method="post" asp-page-handler="SaveBudgetAmendmentDates" class="d-flex align-items-end">
+                <div class="form-group me-3">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" asp-for="BudgetAmendmentSetting.StartDate" class="form-control"
+                           min="@Model.BudgetAmendmentStartDate.ToString("yyyy-MM-dd")"
+                           max="@Model.BudgetAmendmentEndDate.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="form-group me-3">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" asp-for="BudgetAmendmentSetting.EndDate" class="form-control"
+                           min="@Model.BudgetAmendmentStartDate.ToString("yyyy-MM-dd")"
+                           max="@Model.BudgetAmendmentEndDate.ToString("yyyy-MM-dd")" />
+                </div>
+                <button type="submit" class="btn btn-primary">Update</button>
+            </form>
+        </div>
+    </div>
 </div>
