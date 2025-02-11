@@ -38,6 +38,7 @@ namespace budget_management_system_aspdotnetcore
             app.UseAuthorization();
 
             app.MapRazorPages();
+            app.MapFallbackToPage("/Login");
 
             app.Run();
         }

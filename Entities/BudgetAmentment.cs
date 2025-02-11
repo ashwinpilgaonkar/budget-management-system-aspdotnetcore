@@ -5,17 +5,47 @@ namespace budget_management_system_aspdotnetcore.Entities
     public partial class BudgetAmendment
     {
         public int BudgetAmendmentID { get; set; }
-        public string CategoryName { get; set; }
-        public string AdjustmentDetail { get; set; }
-        public string SpeedType { get; set; }
-        public string FundCode { get; set; }
-        public string DepartmentID { get; set; }
-        public string ProgramCode { get; set; }
-        public string ClassCode { get; set; }
-        public string AcctDescription { get; set; }
-        public string BudgetCode { get; set; }
-        public string PositionNumber { get; set; }
+        public required string CategoryName { get; set; }
+        public required string AdjustmentDetail { get; set; }
+        public int SpeedTypeId { get; set; }
+        public required string FundCode { get; set; }
+        public required string DepartmentID { get; set; }
+        public required string ProgramCode { get; set; }
+        public required string ClassCode { get; set; }
+        public required string AcctDescription { get; set; }
+        public required string BudgetCode { get; set; }
+        public required string PositionNumber { get; set; }
         public double AmountIncrease { get; set; }
         public double AmountDecrease { get; set; }
+
+        public SpeedType SpeedType { get; set; }
+        public Guid TransactionId { get; set; }
+        public AmendmentStatus Status { get; set; } = AmendmentStatus.Pending;
+
+        // New audit columns
+        public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? EditedAt { get; set; }
+
+        public int? CreatedBy { get; set; }
+        public int? EditedBy { get; set; }
+        public int? UpdatedBy { get; set; }
+
+        // Foreign key relationships
+        [ForeignKey("CreatedBy")]
+        public User? CreatedByUser { get; set; }
+
+        [ForeignKey("EditedBy")]
+        public User? EditedByUser { get; set; }
+
+        [ForeignKey("UpdatedBy")]
+        public User? UpdatedByUser { get; set; }
+    }
+
+    public enum AmendmentStatus
+    {
+        Pending,
+        Approved,
+        Rejected
     }
 }

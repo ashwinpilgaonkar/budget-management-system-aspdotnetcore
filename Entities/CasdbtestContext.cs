@@ -19,6 +19,10 @@ public partial class CasdbtestContext : DbContext
 
     public DbSet<Department> Departments { get; set; }
 
+    public DbSet<SpeedType> SpeedTypes { get; set; }
+
+    public DbSet<DepartmentSpeedType> DepartmentSpeedTypes { get; set; }
+
     public DbSet<User> Users { get; set; }
 
     public DbSet<BudgetAmendment> BudgetAmendments { get; set; }
@@ -39,6 +43,10 @@ public partial class CasdbtestContext : DbContext
             .ToTable("BudgetAmendmentSettings")
             .HasKey(b => b.Id);
 
+        modelBuilder.Entity<BudgetAmendment>()
+            .Property(b => b.Status)
+            .HasConversion<string>();
+
         OnModelCreatingPartial(modelBuilder);
 
         modelBuilder.Entity<Employee>(entity =>
@@ -53,6 +61,23 @@ public partial class CasdbtestContext : DbContext
             entity.Property(e => e.JobTitle).HasMaxLength(50);
             entity.Property(e => e.Salary).HasColumnType("decimal(18, 2)");
         });
+
+        modelBuilder.Entity<DepartmentSpeedType>()
+            .HasKey(ds => new { ds.DepartmentId, ds.SpeedTypeId }); // Composite Key
+
+        modelBuilder.Entity<DepartmentSpeedType>()
+            .HasOne(ds => ds.Department)
+            .WithMany(d => d.DepartmentSpeedTypes)
+            .HasForeignKey(ds => ds.DepartmentId);
+
+        modelBuilder.Entity<DepartmentSpeedType>()
+            .HasOne(ds => ds.SpeedType)
+            .WithMany(st => st.DepartmentSpeedTypes)
+            .HasForeignKey(ds => ds.SpeedTypeId);
+
+        modelBuilder.Entity<User>()
+    .Property(u => u.Status)
+    .HasConversion<string>(); // Store enum as string in the database
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

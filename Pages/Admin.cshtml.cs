@@ -1,4 +1,5 @@
 using budget_management_system_aspdotnetcore.Entities;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +29,8 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             _context = context;
         }
-        public async Task OnGetAsync()
+
+        public async Task LoadFormDataAsync()
         {
             Users = await _context.Users.ToListAsync();
 
@@ -37,12 +39,17 @@ namespace budget_management_system_aspdotnetcore.Pages
             {
                 BudgetAmendmentStartDate = amendmentSettings.StartDate;
                 BudgetAmendmentEndDate = amendmentSettings.EndDate;
-            } else
+            }
+            else
             {
-                // Set the financial year start and end (update as needed)
                 BudgetAmendmentStartDate = new DateTime(DateTime.Now.Year, 4, 1); // Example: April 1st as start
                 BudgetAmendmentEndDate = BudgetAmendmentStartDate.AddYears(1).AddDays(-1); // March 31st as end
             }
+        }
+
+        public async Task OnGetAsync()
+        {
+            await LoadFormDataAsync();
         }
 
         public async Task<IActionResult> OnPostAddUserAsync()
@@ -54,9 +61,28 @@ namespace budget_management_system_aspdotnetcore.Pages
                                 return Page();*/
             }
 
+            byte[] salt = new byte[16];
+            using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(salt);
+            }
+
+            // Hash the password using PBKDF2
+            string hashedPassword = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                password: NewUser.Password, // Plain-text password from form
+                salt: salt,
+                prf: KeyDerivationPrf.HMACSHA256,
+                iterationCount: 10000,
+                numBytesRequested: 32));
+
+            // Store the salt and hashed password in the database
+            NewUser.Password = hashedPassword; // Save hashed password
+            NewUser.Salt = Convert.ToBase64String(salt); // Store the salt
+
             _context.Users.Add(NewUser);
             await _context.SaveChangesAsync();
 
+            await LoadFormDataAsync();
             return RedirectToPage();
         }
 
@@ -64,7 +90,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             EditingUserId = id;
 
-            Users = await _context.Users.ToListAsync();
+            await LoadFormDataAsync();
 
             return Page();
         }
@@ -73,7 +99,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             EditingUserId = 0;
 
-            Users = await _context.Users.ToListAsync();
+            await LoadFormDataAsync();
 
             return Page();
         }
@@ -99,6 +125,8 @@ namespace budget_management_system_aspdotnetcore.Pages
                 await _context.SaveChangesAsync();
             }
 
+            await LoadFormDataAsync();
+
             return RedirectToPage();
         }
 
@@ -114,6 +142,8 @@ namespace budget_management_system_aspdotnetcore.Pages
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
+            await LoadFormDataAsync();
+
             return RedirectToPage();
         }
 
@@ -121,7 +151,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             if (!ModelState.IsValid)
             {
-                return Page();
+/*                return Page();*/
             }
 
             var existingSetting = await _context.BudgetAmendmentSettings.FirstOrDefaultAsync();
@@ -142,6 +172,8 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
 
             await _context.SaveChangesAsync();
+
+            await LoadFormDataAsync();
 
             return RedirectToPage();
         }

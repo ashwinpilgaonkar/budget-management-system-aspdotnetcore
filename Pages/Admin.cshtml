@@ -15,8 +15,9 @@
                             <th>UserId</th>
                             <th>Email</th>
                             <th>Password</th>
+                            <th>Status</th>
                             <th>Role</th>
-                            <th>Actions</th>
+                            <th colspan="2">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -29,7 +30,18 @@
                                     <td><input asp-for="NewUser.UserId" value="@user.UserId" class="form-control" disabled /></td>
                                         <td><input asp-for="NewUser.Email" value="@user.Email" class="form-control" /></td>
                                         <td><input asp-for="NewUser.Password" value="@user.Password" class="form-control" /></td>
-                                        <td><input asp-for="NewUser.Role" value="@user.Role" class="form-control" /></td>
+                                    <td>
+                                        <select asp-for="NewUser.Status" class="form-control">
+                                            <option value="active">active</option>
+                                            <option value="inactive">inactive</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select asp-for="NewUser.Role" class="form-control">
+                                            <option value="user">user</option>
+                                            <option value="admin">admin</option>
+                                        </select>
+                                    </td>
                                         <td>
                                             <button type="submit" class="btn btn-success">Save</button>
                                         </td>
@@ -47,6 +59,7 @@
                                     <td>@user.UserId</td>
                                     <td>@user.Email</td>
                                     <td>@user.Password</td>
+                                    <td>@user.Status</td>
                                     <th>@user.Role</th>
                                     <td>
                                         <form method="post" asp-page-handler="EditUser" asp-route-id="@user.UserId">
@@ -68,6 +81,12 @@
                                 <td><input disabled="disabled" class="form-control" /></td>
                                 <td><input asp-for="NewUser.Email" class="form-control" /></td>
                                 <td><input asp-for="NewUser.Password" class="form-control" /></td>
+                            <td>
+                                <select asp-for="NewUser.Status" class="form-control">
+                                    <option value="active">active</option>
+                                    <option value="inactive">inactive</option>
+                                </select>
+                            </td>
                                 <td>
                                     <select asp-for="NewUser.Role" class="form-control">
                                         <option value="user">user</option>
@@ -92,17 +111,15 @@
             <form method="post" asp-page-handler="SaveBudgetAmendmentDates" class="d-flex align-items-end">
                 <div class="form-group me-3">
                     <label for="startDate">Start Date:</label>
-                    <input type="date" asp-for="BudgetAmendmentSetting.StartDate" class="form-control"
-                           min="@Model.BudgetAmendmentStartDate.ToString("yyyy-MM-dd")"
-                           max="@Model.BudgetAmendmentEndDate.ToString("yyyy-MM-dd")" />
+                    <input type="date" asp-for="BudgetAmendmentSetting.StartDate" value="@Model.BudgetAmendmentStartDate.ToString("yyyy-MM-dd")" class="form-control"/>
                 </div>
                 <div class="form-group me-3">
                     <label for="endDate">End Date:</label>
-                    <input type="date" asp-for="BudgetAmendmentSetting.EndDate" class="form-control"
-                           min="@Model.BudgetAmendmentStartDate.ToString("yyyy-MM-dd")"
-                           max="@Model.BudgetAmendmentEndDate.ToString("yyyy-MM-dd")" />
+                    <input type="date" asp-for="BudgetAmendmentSetting.EndDate" value="@Model.BudgetAmendmentEndDate.ToString("yyyy-MM-dd")" class="form-control"/>
                 </div>
-                <button type="submit" class="btn btn-primary">Update</button>
+                <div class="form-group me-3">
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </div>
             </form>
         </div>
     </div>

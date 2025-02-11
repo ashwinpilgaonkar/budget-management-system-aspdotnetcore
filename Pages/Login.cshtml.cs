@@ -1,5 +1,8 @@
+using budget_management_system_aspdotnetcore.Entities;
 using budget_management_system_aspdotnetcore.Services;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -18,11 +21,17 @@ namespace budget_management_system_aspdotnetcore.Pages
                     _signInManager = signInManager;
                 }*/
 
-        private readonly IUserService _userService;
+        /*private readonly IUserService _userService;*/
+        private readonly CasdbtestContext _context;
 
-        public LoginModel(IUserService userService)
+/*        public LoginModel(IUserService userService)
         {
             _userService = userService;
+        }*/
+
+        public LoginModel(CasdbtestContext context)
+        {
+            _context = context;
         }
 
         [BindProperty]
@@ -41,39 +50,67 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public string ErrorMessage { get; set; }
 
+        /*        public IActionResult OnPost()
+                {
+
+                    var user = _userService.ValidateUser(Email, Password);
+                    if (user != null)
+                    {
+                        // Successful login, redirect to Index
+                        return RedirectToPage("/Index");
+                    }
+
+                    // Invalid login attempt
+                    ErrorMessage = "Invalid username or password.";
+                    return Page();
+                }*/
+
         public IActionResult OnPost()
         {
-            // You can add your login logic here. 
-            // Since this is a dummy page, we'll just redirect to Index.
+            // Retrieve the user by email
+            var user = _context.Users.SingleOrDefault(u => u.Email == Email);
 
-            Debug.WriteLine("====== POST ========");
-            Debug.WriteLine(Email);
-            Debug.WriteLine(Password);
-
-            var user = _userService.ValidateUser(Email, Password);
-            if (user != null)
+            if (user == null)
             {
+                // User not found
+                ErrorMessage = "Invalid username or password.";
+                Debug.WriteLine(ErrorMessage);
+                return Page();
+            }
 
-                Debug.WriteLine("REDIRECTING TO INDEX");
+            // Convert the stored salt back to a byte array
+            byte[] salt = Convert.FromBase64String(user.Salt);
 
+            // Hash the entered password with the stored salt
+            string hashedPassword = Convert.ToBase64String(
+                KeyDerivation.Pbkdf2(
+                    password: Password,
+                    salt: salt,
+                    prf: KeyDerivationPrf.HMACSHA256,
+                    iterationCount: 10000,
+                    numBytesRequested: 32));
+
+            // Compare the hashed password with the stored hashed password
+            if (hashedPassword == user.Password)
+            {
                 // Successful login, redirect to Index
                 return RedirectToPage("/Index");
             }
 
-            Debug.WriteLine("INVALID");
-
             // Invalid login attempt
-            ErrorMessage = "Invalid username or password.";
+            ErrorMessage = "Password does not match";
+            Debug.WriteLine(ErrorMessage);
             return Page();
         }
-/*
-        [BindProperty]
-        public InputModel Input { get; set; }
 
-        public class InputModel
-        {
+        /*
+                [BindProperty]
+                public InputModel Input { get; set; }
 
-        }*/
+                public class InputModel
+                {
+
+                }*/
 
         /*        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
                 {
