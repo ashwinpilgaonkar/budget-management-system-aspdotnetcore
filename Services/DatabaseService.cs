@@ -11,13 +11,13 @@ namespace budget_management_system_aspdotnetcore.Services
             _context = context;
         }
 
-        public List<Employee> GetEmployeeList()
+        public List<User> GetUserList()
         {
-            var dbResult = _context.Employees.ToList();
+            var dbResult = _context.Users.ToList();
 
             if(dbResult == null)
             {
-                return new List<Employee>();
+                return new List<User>();
             } else
             {
                 return dbResult;
@@ -29,25 +29,25 @@ namespace budget_management_system_aspdotnetcore.Services
 
             try
             {
-                var dbResult = _context.Employees.FirstOrDefault();
+                var dbResult = _context.Users.FirstOrDefault();
 
-                if (dbResult == null)
+/*                if (dbResult == null)
                 {
-                    await _context.Employees.AddAsync(new Employee()
+                    await _context.Users.AddAsync(new User()
                     {
                         FirstName = "John",
                         LastName = "Doe2",
-                        DateOfBirth = DateTime.Now,
                         Email = "john.doe@example.com",
                         PhoneNumber = "12334567890",
                         HireDate = DateTime.Now,
                         JobTitle = jobTitle,
-                        Salary = 50000
+                        Salary = 50000,
+                        Role = "admin"
                     });
                 } else
                 {
                     dbResult.JobTitle = jobTitle;
-                }
+                }*/
 
                 await _context.SaveChangesAsync();
             }

@@ -5,701 +5,6 @@
 }
 
 <div class="container">
-    <!-- Employee List Card -->
-    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
-                <h3 class="card-title">Employees</h3>
-                <!-- Button to trigger the modal -->
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
-                    Add New +
-                </button>
-            </div>
-            <!-- Search Bar -->
-            <form method="get">
-                <div class="input-group mb-3">
-                    <input type="text" name="EmployeeSearchTerm" class="form-control" placeholder="Search..." value="@Model.EmployeeSearchTerm" />
-                    <button type="submit" class="btn btn-outline-secondary">Search</button>
-                </div>
-            </form>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>
-                                Employee ID
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="Employee" />
-                                    <input type="hidden" name="column" value="EmployeeID" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("EmployeeID")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("EmployeeID")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                First Name
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="Employee" />
-                                    <input type="hidden" name="column" value="FirstName" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("FirstName")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("FirstName")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Last Name
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="Employee" />
-                                    <input type="hidden" name="column" value="LastName" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("LastName")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("LastName")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Date of Birth
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="Employee" />
-                                    <input type="hidden" name="column" value="DateOfBirth" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("DateOfBirth")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("DateOfBirth")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Email
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="Employee" />
-                                    <input type="hidden" name="column" value="Email" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Email")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("Email")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Phone Number
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="Employee" />
-                                    <input type="hidden" name="column" value="PhoneNumber" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("PhoneNumber")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("PhoneNumber")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Hire Date
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="Employee" />
-                                    <input type="hidden" name="column" value="HireDate" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("HireDate")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("HireDate")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Job Title
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="Employee" />
-                                    <input type="hidden" name="column" value="JobTitle" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("JobTitle")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("JobTitle")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Salary
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="Employee" />
-                                    <input type="hidden" name="column" value="Salary" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Salary")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("Salary")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Department
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="Employee" />
-                                    <input type="hidden" name="column" value="Department" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Department")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("Department")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th colspan="2">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var emp in Model.Employees)
-                        {
-                            if (Model.EditingEmployeeID == emp.EmployeeID)
-                            {
-                                <!-- Editing row (no modal) -->
-                                <tr>
-                                    <form method="post" asp-page-handler="SaveEmployee" asp-route-id="@emp.EmployeeID">
-                                    <td><input asp-for="NewEmployee.EmployeeID" value="@emp.EmployeeID" class="form-control" readonly /></td>
-                                    <td><input asp-for="NewEmployee.FirstName" value="@emp.FirstName" class="form-control" /></td>
-                                    <td><input asp-for="NewEmployee.LastName" value="@emp.LastName" class="form-control" /></td>
-                                    <td><input asp-for="NewEmployee.DateOfBirth" value="@emp.DateOfBirth.ToString("yyyy-MM-dd")" type="date" class="form-control" /></td>
-                                    <td><input asp-for="NewEmployee.Email" value="@emp.Email" class="form-control" /></td>
-                                    <td><input asp-for="NewEmployee.PhoneNumber" value="@emp.PhoneNumber" class="form-control" /></td>
-                                    <td><input asp-for="NewEmployee.HireDate" value="@emp.HireDate.ToString("yyyy-MM-dd")" type="date" class="form-control" /></td>
-                                    <td><input asp-for="NewEmployee.JobTitle" value="@emp.JobTitle" class="form-control" /></td>
-                                    <td><input asp-for="NewEmployee.Salary" value="@emp.Salary" type="number" step="0.01" class="form-control" /></td>
-                                    <td>
-                                        <select asp-for="NewEmployee.DepartmentID" class="form-control">
-                                                @foreach (var dept in Model.Departments)
-                                                {
-                                                <option value="@dept.DepartmentID">@dept.DepartmentName</option>
-                                                }
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <button type="submit" class="btn btn-success">Save</button>
-                                    </td>
-                                    </form>
-                                    <td>
-                                        <form method="post" asp-page-handler="CancelEditEmployee" asp-route-id="@emp.EmployeeID">
-                                            <button type="submit" class="btn btn-secondary">Cancel</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                            else
-                            {
-                                <!-- Display Mode -->
-                                <tr>
-                                    <td>@emp.EmployeeID</td>
-                                    <td>@emp.FirstName</td>
-                                    <td>@emp.LastName</td>
-                                    <td>@emp.DateOfBirth.ToShortDateString()</td>
-                                    <td>@emp.Email</td>
-                                    <td>@emp.PhoneNumber</td>
-                                    <td>@emp.HireDate.ToShortDateString()</td>
-                                    <td>@emp.JobTitle</td>
-                                    <td>@emp.Salary</td>
-                                    <td>@emp.Department?.DepartmentName</td>
-                                    <td>
-                                        <form method="post" asp-page-handler="EditEmployee" asp-route-id="@emp.EmployeeID">
-                                            <button type="submit" class="btn btn-warning">Edit</button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="DeleteEmployee" asp-route-id="@emp.EmployeeID">
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Employee Pagination Controls -->
-            <nav class="d-flex justify-content-between align-items-center my-3" aria-label="Page navigation">
-                <!-- Results per page dropdown on the left -->
-                <div class="d-flex align-items-center">
-                    <label for="resultsPerPage" class="me-2">Results per page:</label>
-                    <select id="resultsPerPage" class="form-select me-3" style="width: auto;" onchange="window.location.href = '@Url.Page(null, new { pageNumber = 1, resultsPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
-                        @foreach (var size in Model.PageSizes)
-                        {
-                            <option value="@size" selected="@(Model.EmployeeResultsPerPage == size ? "selected" : null)">@size</option>
-                        }
-                    </select>
-                </div>
-                @{
-                    int employeeRecordsShown = Math.Min(Model.EmployeeResultsPerPage, Model.TotalEmployees - ((Model.EmployeeCurrentPage - 1) * Model.EmployeeResultsPerPage));
-                }
-                <span>Records: @employeeRecordsShown of @Model.TotalEmployees</span>
-                <ul class="pagination mb-0">
-                    <li class="page-item @(Model.EmployeeCurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.EmployeeCurrentPage - 1, resultsPerPage = Model.EmployeeResultsPerPage })" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    <li class="page-item active">
-                        <span class="page-link">@Model.EmployeeCurrentPage</span>
-                    </li>
-                    <li class="page-item @(Model.EmployeeCurrentPage >= Model.EmployeeTotalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.EmployeeCurrentPage + 1, resultsPerPage = Model.EmployeeResultsPerPage })" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-            <form method="post" asp-page-handler="ExportToExcelEmployees">
-                <button type="submit" class="btn btn-success">
-                    Export to XLS
-                </button>
-            </form>
-        </div>
-    </div>
-
-
-    <!-- Add Employee Modal -->
-    <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addEmployeeModalLabel">Add New Employee</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form method="post" asp-page-handler="AddEmployee">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="NewEmployee.FirstName" class="form-label">First Name</label>
-                                <input asp-for="NewEmployee.FirstName" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="NewEmployee.LastName" class="form-label">Last Name</label>
-                                <input asp-for="NewEmployee.LastName" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="NewEmployee.DateOfBirth" class="form-label">Date of Birth</label>
-                                <input asp-for="NewEmployee.DateOfBirth" type="date" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="NewEmployee.Email" class="form-label">Email</label>
-                                <input asp-for="NewEmployee.Email" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="NewEmployee.PhoneNumber" class="form-label">Phone Number</label>
-                                <input asp-for="NewEmployee.PhoneNumber" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="NewEmployee.HireDate" class="form-label">Hire Date</label>
-                                <input asp-for="NewEmployee.HireDate" type="date" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="NewEmployee.JobTitle" class="form-label">Job Title</label>
-                                <input asp-for="NewEmployee.JobTitle" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="NewEmployee.Salary" class="form-label">Salary</label>
-                                <input asp-for="NewEmployee.Salary" type="number" step="0.01" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3 d-flex flex-column">
-                                <label asp-for="NewEmployee.DepartmentID" class="form-label">Department</label>
-                                <select asp-for="NewEmployee.DepartmentID" class="selectpicker w-100" data-live-search="true">
-                                    @foreach (var dept in Model.Departments)
-                                    {
-                                        <option value="@dept.DepartmentID" data-tokens="@dept.DepartmentName">@dept.DepartmentName</option>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Save</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Department List Card -->
-    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
-                <h3 class="card-title">Departments</h3>
-                <!-- Add New Department Button -->
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDepartmentModal">
-                    Add New +
-                </button>
-            </div>
-            <!-- Search Bar -->
-            <form method="get">
-                <div class="input-group mb-3">
-                    <input type="text" name="DepartmentSearchTerm" class="form-control" placeholder="Search..." value="@Model.DepartmentSearchTerm" />
-                    <button type="submit" class="btn btn-outline-secondary">Search</button>
-                </div>
-            </form>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>
-                                Department ID
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="Department" />
-                                    <input type="hidden" name="column" value="DepartmentID" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("DepartmentID")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("DepartmentID")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Department Name
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="Department" />
-                                    <input type="hidden" name="column" value="DepartmentName" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("DepartmentName")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("DepartmentName")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>SpeedType</th>
-                            <th>Budget</th>
-                            <th colspan="2">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var dept in Model.Departments)
-                        {
-                            if (Model.EditingDepartmentID == dept.DepartmentID)
-                            {
-                                <tr>
-                                    <form method="post" asp-page-handler="SaveDepartment" asp-route-id="@dept.DepartmentID">
-                                        <td><input asp-for="NewDepartment.DepartmentID" value="@dept.DepartmentID" class="form-control" readonly/></td>
-                                        <td><input asp-for="NewDepartment.DepartmentName" value="@dept.DepartmentName" class="form-control" /></td>
-@*                                         <td>
-                                            <select asp-for="SelectedSpeedTypeIds" name="SelectedSpeedTypeIds" class="selectpicker w-100" multiple data-live-search="true">
-                                                @foreach (var speedtype in Model.SpeedTypes)
-                                                {
-                                                    var isSelected = Model.SelectedSpeedTypeIds.Contains(speedtype.SpeedTypeId) ? "selected" : "";
-                                                    <option value="@speedtype.SpeedTypeId" isSelected data-tokens="@speedtype.Code">
-                                                            @speedtype.Code
-                                                    </option>
-                                                }
-                                            </select>
-                                        </td> *@
-                                        <td>
-                                            <select asp-for="SelectedSpeedTypeIds" class="form-control w-100" multiple data-live-search="true">
-                                                    @foreach (var speedtype in Model.SpeedTypes)
-                                                    {
-                                                        var isSelected = Model.SelectedSpeedTypeIds.Contains(speedtype.SpeedTypeId) ? "selected" : "";
-                                                        <option value="@speedtype.SpeedTypeId" isSelected data-tokens="@speedtype.Code">
-                                                            @speedtype.Code
-                                                        </option>
-                                                    }
-                                            </select>
-                                        </td>
-                                        <td>
-                                            @foreach (var deptSpeedType in dept.DepartmentSpeedTypes)
-                                            {
-                                                 <p>@deptSpeedType.SpeedType.Budget</p> 
-                                            }
-                                        </td>
-                                        <td>
-                                            <button type="submit" class="btn btn-success">Save</button>
-                                        </td>
-                                    </form>
-                                    <td>
-                                        <form method="post" asp-page-handler="CancelEditDepartment" asp-route-id="@dept.DepartmentID">
-                                            <button type="submit" class="btn btn-secondary">Cancel</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td>@dept.DepartmentID</td>
-                                    <td>@dept.DepartmentName</td>
-                                    <td>
-                                        @foreach (var deptSpeedType in dept.DepartmentSpeedTypes)
-                                        {
-                                            <p>@deptSpeedType.SpeedType.Code</p>
-                                        }
-                                    </td>
-                                    <td>
-                                        @foreach (var deptSpeedType in dept.DepartmentSpeedTypes)
-                                        {
-                                            <p>@deptSpeedType.SpeedType.Budget</p>
-                                        }
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="EditDepartment" asp-route-id="@dept.DepartmentID">
-                                            <button type="submit" class="btn btn-warning">Edit</button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="DeleteDepartment" asp-route-id="@dept.DepartmentID">
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-
-            <!-- Department Pagination Controls -->
-            <nav class="d-flex justify-content-between align-items-center my-3" aria-label="Department Page navigation">
-                <!-- Results per page dropdown on the left -->
-                <div class="d-flex align-items-center">
-                    <label for="resultsPerPage" class="me-2">Results per page:</label>
-                    <select id="resultsPerPage" class="form-select me-3" style="width: auto;" onchange="window.location.href = '@Url.Page(null, new { departmentPageNumber = 1, departmentsPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
-                        @foreach (var size in Model.PageSizes)
-                        {
-                            <option value="@size" selected="@(Model.DepartmentResultsPerPage == size ? "selected" : null)">@size</option>
-                        }
-                    </select>
-                </div>
-                @{
-                    int departmentRecordsShown = Math.Min(Model.DepartmentResultsPerPage, Model.TotalDepartments - ((Model.DepartmentCurrentPage - 1) * Model.DepartmentResultsPerPage));
-                }
-                <span>Records: @departmentRecordsShown of @Model.TotalDepartments</span>
-                <ul class="pagination mb-0">
-                    <li class="page-item @(Model.DepartmentCurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.DepartmentCurrentPage - 1, resultsPerPage = Model.DepartmentResultsPerPage })" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    <li class="page-item active">
-                        <span class="page-link">@Model.DepartmentCurrentPage</span>
-                    </li>
-                    <li class="page-item @(Model.DepartmentCurrentPage >= Model.DepartmentTotalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.DepartmentCurrentPage + 1, resultsPerPage = Model.DepartmentResultsPerPage })" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-            <form method="post" asp-page-handler="ExportToExcelDepartments">
-                <button type="submit" class="btn btn-success">
-                    Export to XLS
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Add Department Modal -->
-    <div class="modal fade" id="addDepartmentModal" tabindex="-1" aria-labelledby="addDepartmentModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addDepartmentModalLabel">Add New Department</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form method="post" asp-page-handler="AddDepartment">
-                        <div class="mb-3">
-                            <label asp-for="NewDepartment.DepartmentName" class="form-label">Department Name</label>
-                            <input asp-for="NewDepartment.DepartmentName" class="form-control" />
-                        </div>
-                        <div class="mb-3 d-flex flex-column">
-                            <label asp-for="SelectedSpeedTypeIds" class="form-label">SpeedTypes</label>
-                            <select asp-for="SelectedSpeedTypeIds" class="selectpicker w-100" multiple data-live-search="true">
-                                @foreach (var speedtype in Model.SpeedTypes)
-                                {
-                                    var isSelected = Model.SelectedSpeedTypeIds.Contains(speedtype.SpeedTypeId) ? "selected" : "";
-                                    <option value="@speedtype.SpeedTypeId" isSelected data-tokens="@speedtype.Code">
-                                        @speedtype.Code
-                                    </option>
-                                }
-                            </select>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Save</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SpeedType List Card -->
-    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
-                <h3 class="card-title">SpeedTypes</h3>
-                <!-- Add New SpeedType Button -->
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSpeedTypeModal">
-                    Add New +
-                </button>
-            </div>
-            <!-- Search Bar -->
-            <form method="get">
-                <div class="input-group mb-3">
-                    <input type="text" name="SpeedTypeSearchTerm" class="form-control" placeholder="Search..." value="@Model.SpeedTypeSearchTerm" />
-                    <button type="submit" class="btn btn-outline-secondary">Search</button>
-                </div>
-            </form>
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>
-                                SpeedType ID
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="SpeedType" />
-                                    <input type="hidden" name="column" value="SpeedTypeId" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("SpeedTypeId")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("SpeedTypeId")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Code
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="SpeedType" />
-                                    <input type="hidden" name="column" value="Code" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Code")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("Code")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Budget
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="SpeedType" />
-                                    <input type="hidden" name="column" value="Budget" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Budget")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("Budget")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th colspan="2">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var speedType in Model.SpeedTypes)
-                        {
-                            if (Model.EditingSpeedTypeID == speedType.SpeedTypeId)
-                            {
-                                <tr>
-                                    <form method="post" asp-page-handler="SaveSpeedType" asp-route-id="@speedType.SpeedTypeId">
-                                    <td><input asp-for="NewSpeedType.SpeedTypeId" value="@speedType.SpeedTypeId" class="form-control" readonly /></td>
-                                    <td><input asp-for="NewSpeedType.Code" value="@speedType.Code" class="form-control" /></td>
-                                    <td><input asp-for="NewSpeedType.Budget" value="@speedType.Budget" class="form-control" /></td>
-                                    <td>
-                                        <button type="submit" class="btn btn-success">Save</button>
-                                    </td>
-                                    </form>
-                                    <td>
-                                        <form method="post" asp-page-handler="CancelEditSpeedType" asp-route-id="@speedType.SpeedTypeId">
-                                            <button type="submit" class="btn btn-secondary">Cancel</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td>@speedType.SpeedTypeId</td>
-                                    <td>@speedType.Code</td>
-                                    <td>@speedType.Budget</td>
-                                    <td>
-                                        <form method="post" asp-page-handler="EditSpeedType" asp-route-id="@speedType.SpeedTypeId">
-                                            <button type="submit" class="btn btn-warning">Edit</button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="DeleteSpeedType" asp-route-id="@speedType.SpeedTypeId">
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination Controls -->
-            <nav class="d-flex justify-content-between align-items-center my-3" aria-label="SpeedType Page navigation">
-                <!-- Results per page dropdown on the left -->
-                <div class="d-flex align-items-center">
-                    <label for="resultsPerPage" class="me-2">Results per page:</label>
-                    <select id="resultsPerPage" class="form-select me-3" style="width: auto;" onchange="window.location.href = '@Url.Page(null, new { speedTypePageNumber = 1, speedTypesPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
-                        @foreach (var size in Model.PageSizes)
-                        {
-                            <option value="@size" selected="@(Model.SpeedTypeResultsPerPage == size ? "selected" : null)">@size</option>
-                        }
-                    </select>
-                </div>
-                @{
-                    int speedTypeRecordsShown = Math.Min(Model.SpeedTypeResultsPerPage, Model.TotalSpeedTypes - ((Model.SpeedTypeCurrentPage - 1) * Model.SpeedTypeResultsPerPage));
-                }
-                <span>Records: @speedTypeRecordsShown of @Model.TotalSpeedTypes</span>
-                <ul class="pagination mb-0">
-                    <li class="page-item @(Model.SpeedTypeCurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.SpeedTypeCurrentPage - 1, resultsPerPage = Model.SpeedTypeResultsPerPage })" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    <li class="page-item active">
-                        <span class="page-link">@Model.SpeedTypeCurrentPage</span>
-                    </li>
-                    <li class="page-item @(Model.SpeedTypeCurrentPage >= Model.SpeedTypeTotalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.SpeedTypeCurrentPage + 1, resultsPerPage = Model.SpeedTypeResultsPerPage })" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-            <form method="post" asp-page-handler="ExportToExcelSpeedTypes">
-                <button type="submit" class="btn btn-success">
-                    Export to XLS
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Add SpeedType Modal -->
-    <div class="modal fade" id="addSpeedTypeModal" tabindex="-1" aria-labelledby="addSpeedTypeModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addSpeedTypeModalLabel">Add New SpeedType</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form method="post" asp-page-handler="AddSpeedType">
-                        <div class="mb-3">
-                            <label asp-for="NewSpeedType.Code" class="form-label">SpeedType Code</label>
-                            <input asp-for="NewSpeedType.Code" class="form-control" />
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="NewSpeedType.Budget" class="form-label">Budget</label>
-                            <input asp-for="NewSpeedType.Budget" class="form-control" />
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Save</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Budget Amendment History Card -->
     <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
@@ -904,6 +209,18 @@
                                 </form>
                             </th>
                             <th>
+                                Updated By
+                                <form method="get" class="d-inline">
+                                    <input type="hidden" name="handler" value="SortColumn" />
+                                    <input type="hidden" name="table" value="AmendmentHistory" />
+                                    <input type="hidden" name="column" value="UpdatedBy" />
+                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("UpdatedBy")" />
+                                    <button type="submit" class="btn btn-link p-0">
+                                        <i class="fas @Model.GetSortIcon("UpdatedBy")"></i>
+                                    </button>
+                                </form>
+                            </th>
+                            <th>
                                 Status
                                 <form method="get" class="d-inline">
                                     <input type="hidden" name="handler" value="SortColumn" />
@@ -919,35 +236,36 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var amendment in Model.BudgetAmendments)
+                        @foreach (var categoryGroup in Model.BudgetAmendments.GroupBy(a => a.CategoryName))
                         {
-                            if (Model.EditingBudgetAmendmentID == amendment.BudgetAmendmentID)
+                            var totalIncrease = categoryGroup.Sum(a => a.AmountIncrease);
+                            var totalDecrease = categoryGroup.Sum(a => a.AmountDecrease);
+
+                            <tr class="table-primary">
+                                <td colspan="11"><strong>@categoryGroup.Key</strong></td>
+                                <td colspan="6">@(totalIncrease - totalDecrease)</td>
+                                <td>
+                                    <form method="post" asp-page-handler="ApproveCategory" asp-route-category="@categoryGroup.Key">
+                                        <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-success">Approve</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form method="post" asp-page-handler="RejectCategory" asp-route-category="@categoryGroup.Key">
+                                        <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-danger">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+
+                            @foreach (var amendment in categoryGroup)
                             {
-                                <tr>
-                                    <form method="post" asp-page-handler="SaveAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                if (Model.EditingBudgetAmendmentID == amendment.BudgetAmendmentID)
+                                {
+                                    <tr>
+                                        <form method="post" asp-page-handler="SaveAmendment" asp-route-id="@amendment.BudgetAmendmentID">
                                         <td><input asp-for="NewBudgetAmendment.BudgetAmendmentID" value="@amendment.BudgetAmendmentID" class="form-control" readonly /></td>
                                         <td><input asp-for="NewBudgetAmendment.CategoryName" value="@amendment.CategoryName" class="form-control" /></td>
                                         <td><input asp-for="NewBudgetAmendment.AdjustmentDetail" value="@amendment.AdjustmentDetail" class="form-control" /></td>
-                                        <td>
-                                        <label asp-for="SourceSpeedtype" class="form-label">Source: </label>
-                                            <select asp-for="SourceSpeedtype" class="w-100" data-live-search="true">
-                                                @foreach (var speedtype in Model.SpeedTypes)
-                                                {
-                                                    <option value="@speedtype.SpeedTypeId" data-tokens="@speedtype.Code">
-                                                        @speedtype.Code
-                                                    </option>
-                                                }
-                                            </select>
-                                        <label asp-for="DestinationSpeedtype" class="form-label">Destination: </label>
-                                            <select asp-for="DestinationSpeedtype" class="w-100" data-live-search="true">
-                                                @foreach (var speedtype in Model.SpeedTypes)
-                                                {
-                                                    <option value="@speedtype.SpeedTypeId" data-tokens="@speedtype.Code">
-                                                        @speedtype.Code
-                                                    </option>
-                                                }
-                                            </select>
-                                        </td>
+                                        <td>@amendment.SpeedType.Code</td>
                                         <td><input asp-for="NewBudgetAmendment.FundCode" value="@amendment.FundCode" class="form-control" /></td>
                                         <td><input asp-for="NewBudgetAmendment.DepartmentID" value="@amendment.DepartmentID" class="form-control" /></td>
                                         <td><input asp-for="NewBudgetAmendment.ProgramCode" value="@amendment.ProgramCode" class="form-control" /></td>
@@ -962,68 +280,48 @@
                                         <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                         <td>@amendment.Status</td>
                                         <td>
-                                        <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-success">Save</button>
+                                            <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-success">Save</button>
                                         </td>
-                                    </form>
-                                    <td>
-                                        <form method="post" asp-page-handler="CancelEditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
-                                            <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-secondary">Cancel</button>
                                         </form>
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="ApproveAmendment" asp-route-id="@amendment.BudgetAmendmentID">
-                                            <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-success">Approve</button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="RejectAmendment" asp-route-id="@amendment.BudgetAmendmentID">
-                                            <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-danger">Reject</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td>@amendment.BudgetAmendmentID</td>
-                                    <td>@amendment.CategoryName</td>
-                                    <td>@amendment.AdjustmentDetail</td>
-                                    <td>@amendment.SpeedType.Code</td>
-                                    <td>@amendment.FundCode</td>
-                                    <td>@amendment.DepartmentID</td>
-                                    <td>@amendment.ProgramCode</td>
-                                    <td>@amendment.ClassCode</td>
-                                    <td>@amendment.AcctDescription</td>
-                                    <td>@amendment.BudgetCode</td>
-                                    <td>@amendment.PositionNumber</td>
-                                    <td>@amendment.AmountIncrease</td>
-                                    <td>@amendment.AmountDecrease</td>
-                                    <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
-                                    <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
-                                    <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
-
-                                    <td>@amendment.Status</td>
-                                    <td>
-                                        <form method="post" asp-page-handler="ApproveAmendment" asp-route-id="@amendment.BudgetAmendmentID">
-                                            <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-success">Approve</button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="RejectAmendment" asp-route-id="@amendment.BudgetAmendmentID">
-                                            <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-danger">Reject</button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="EditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
-                                            <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-warning">Edit</button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="DeleteAmendment" asp-route-id="@amendment.BudgetAmendmentID">
-                                            <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-danger">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
+                                        <td>
+                                            <form method="post" asp-page-handler="CancelEditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                                <button type="submit" class="btn btn-secondary">Cancel</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td>@amendment.BudgetAmendmentID</td>
+                                        <td>@amendment.CategoryName</td>
+                                        <td>@amendment.AdjustmentDetail</td>
+                                        <td>@amendment.SpeedType.Code</td>
+                                        <td>@amendment.FundCode</td>
+                                        <td>@amendment.DepartmentID</td>
+                                        <td>@amendment.ProgramCode</td>
+                                        <td>@amendment.ClassCode</td>
+                                        <td>@amendment.AcctDescription</td>
+                                        <td>@amendment.BudgetCode</td>
+                                        <td>@amendment.PositionNumber</td>
+                                        <td>@amendment.AmountIncrease</td>
+                                        <td>@amendment.AmountDecrease</td>
+                                        <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                        <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                        <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                        <td>@amendment.Status</td>
+                                        <td>
+                                            <form method="post" asp-page-handler="EditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                                <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-warning">Edit</button>
+                                            </form>
+                                        </td>
+                                        <td>
+                                            <form method="post" asp-page-handler="DeleteAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                                <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-danger">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
                             }
                         }
                     </tbody>

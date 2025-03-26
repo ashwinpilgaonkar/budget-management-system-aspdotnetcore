@@ -15,8 +15,6 @@ public partial class CasdbtestContext : DbContext
     {
     }
 
-    public DbSet<Employee> Employees { get; set; }
-
     public DbSet<Department> Departments { get; set; }
 
     public DbSet<SpeedType> SpeedTypes { get; set; }
@@ -49,18 +47,25 @@ public partial class CasdbtestContext : DbContext
 
         OnModelCreatingPartial(modelBuilder);
 
-        modelBuilder.Entity<Employee>(entity =>
+        modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.EmployeeID);
+            entity.HasKey(e => e.UserId);
             entity.Property(e => e.FirstName).IsRequired().HasMaxLength(50);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(50);
-            entity.Property(e => e.DateOfBirth);
             entity.Property(e => e.Email).HasMaxLength(100).IsRequired();
             entity.Property(e => e.PhoneNumber).HasMaxLength(15);
             entity.Property(e => e.HireDate).IsRequired();
             entity.Property(e => e.JobTitle).HasMaxLength(50);
             entity.Property(e => e.Salary).HasColumnType("decimal(18, 2)");
         });
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.Status)
+            .HasConversion<string>(); // Store enum as string in the database
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.Role)
+            .HasConversion<string>(); // Store enum as string in the database
 
         modelBuilder.Entity<DepartmentSpeedType>()
             .HasKey(ds => new { ds.DepartmentId, ds.SpeedTypeId }); // Composite Key
@@ -74,10 +79,6 @@ public partial class CasdbtestContext : DbContext
             .HasOne(ds => ds.SpeedType)
             .WithMany(st => st.DepartmentSpeedTypes)
             .HasForeignKey(ds => ds.SpeedTypeId);
-
-        modelBuilder.Entity<User>()
-    .Property(u => u.Status)
-    .HasConversion<string>(); // Store enum as string in the database
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

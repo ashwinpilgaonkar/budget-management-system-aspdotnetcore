@@ -7,82 +7,31 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using ClosedXML.Excel;
 using Microsoft.Data.SqlClient;
+using budget_management_system_aspdotnetcore.Services;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly CasdbtestContext _context;
+        // ==============================================
+        // Instance Variables -- HELPER
+        // ==============================================
+        #region HELPER
+            private readonly CasdbtestContext _context;
+            private readonly SpeedTypeService _speedTypeService;
 
-        public IndexModel(CasdbtestContext context)
-        {
-            _context = context;
-        }
 
-        public List<Employee> Employees { get; set; }
+        #endregion
 
-        public string ActiveSortTable { get; set; } = "Employee";
 
-        public string SortColumn { get; set; } = "EmployeeID";
+        public string ActiveSortTable { get; set; } = "Department";
+
+        public string SortColumn { get; set; } = "DepartmentID";
         public string SortOrder { get; set; } = "asc";
 
-        [BindProperty]
-        public int? EditingEmployeeID { get; set; }
-
-        [BindProperty]
-        public Employee NewEmployee { get; set; }
-
-        public int EmployeeCurrentPage { get; set; } = 1;
-        public int EmployeeResultsPerPage { get; set; } = 10;
-        public int EmployeeTotalPages { get; set; }
         public List<int> PageSizes { get; set; } = new List<int> { 10, 20, 30 };
 
-        public int TotalEmployees { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public string EmployeeSearchTerm { get; set; }
-
-        public List<Department> Departments { get; set; }
-
-        [BindProperty]
-        public int? EditingDepartmentID { get; set; }
-
-        [BindProperty]
-        public Department NewDepartment { get; set; }
-
-        [BindProperty]
-        public List<int> SelectedSpeedTypeIds { get; set; } = new List<int>();
-
-        public int DepartmentCurrentPage { get; set; } = 1;
-        public int DepartmentResultsPerPage { get; set; } = 10;
-        public int DepartmentTotalPages { get; set; }
-
-        public int DepartmentEmployees { get; set; }
-
-        public int TotalDepartments { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public string DepartmentSearchTerm { get; set; }
-
         public IEnumerable<SpeedType> SpeedTypes { get; set; }
-
-        [BindProperty]
-        public int? EditingSpeedTypeID { get; set; }
-
-        [BindProperty]
-        public SpeedType NewSpeedType { get; set; }
-
-        public int SpeedTypeCurrentPage { get; set; } = 1;
-        public int SpeedTypeResultsPerPage { get; set; } = 10;
-        public int SpeedTypeTotalPages { get; set; }
-
-        public int SpeedTypeEmployees { get; set; }
-
-        public int TotalSpeedTypes { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public string SpeedTypeSearchTerm { get; set; }
-
 
         public List<BudgetAmendment> BudgetAmendments { get; set; }
 
@@ -101,6 +50,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         [BindProperty(SupportsGet = true)]
         public string BudgetAmendmentSearchTerm { get; set; }
 
+        [BindProperty]
+        [Required]
+        public double AmountTotal { get; set; }
 
         [BindProperty]
         [Required]
@@ -117,89 +69,15 @@ namespace budget_management_system_aspdotnetcore.Pages
         [Range(0.01, double.MaxValue, ErrorMessage = "Transfer amount must be greater than zero")]
         public double TransferAmount { get; set; }
 
+        public IndexModel(CasdbtestContext context, SpeedTypeService speedTypeService)
+        {
+            _context = context;
+            _speedTypeService = speedTypeService;
+        }
+
         public async Task LoadFormDataAsync()
         {
-            //Fetch Employee Data
-            var employeesQuery = _context.Employees.AsQueryable();
-
-            if (!string.IsNullOrEmpty(EmployeeSearchTerm))
-            {
-                employeesQuery = employeesQuery.Where(s => s.FirstName.Contains(EmployeeSearchTerm)
-                || s.LastName.ToString().Contains(EmployeeSearchTerm)
-                || s.DateOfBirth.ToString().Contains(EmployeeSearchTerm)
-                || s.Email.ToString().Contains(EmployeeSearchTerm)
-                || s.PhoneNumber.ToString().Contains(EmployeeSearchTerm)
-                || s.HireDate.ToString().Contains(EmployeeSearchTerm)
-                || s.JobTitle.ToString().Contains(EmployeeSearchTerm)
-                || s.Salary.ToString().Contains(EmployeeSearchTerm)
-                || s.Department.DepartmentName.ToString().Contains(EmployeeSearchTerm));
-            }
-
-            if (!string.IsNullOrEmpty(SortColumn) && ActiveSortTable == "Employee")
-            {
-                employeesQuery = SortOrder == "asc"
-                    ? employeesQuery.OrderBy(e => EF.Property<object>(e, SortColumn))
-                    : employeesQuery.OrderByDescending(e => EF.Property<object>(e, SortColumn));
-            }
-
-            TotalEmployees = await employeesQuery.CountAsync();
-            EmployeeTotalPages = (int)Math.Ceiling(TotalEmployees / (double)EmployeeResultsPerPage);
-
-            Employees = await employeesQuery
-                .Skip((EmployeeCurrentPage - 1) * EmployeeResultsPerPage)
-                .Take(EmployeeResultsPerPage)
-                .ToListAsync();
-
-            //Fetch Department Data
-            var departmentQuery = _context.Departments.AsQueryable();
-
-            if (!string.IsNullOrEmpty(DepartmentSearchTerm))
-            {
-                departmentQuery = departmentQuery.Where(s => s.DepartmentName.Contains(DepartmentSearchTerm)
-                    || s.DepartmentSpeedTypes.Any(ds => ds.SpeedType.Code.Contains(DepartmentSearchTerm)
-                        || ds.SpeedType.Budget.ToString().Contains(DepartmentSearchTerm)));
-            }
-
-            if (!string.IsNullOrEmpty(SortColumn) && ActiveSortTable == "Department")
-            {
-                departmentQuery = SortOrder == "asc"
-                    ? departmentQuery.OrderBy(e => EF.Property<object>(e, SortColumn))
-                    : departmentQuery.OrderByDescending(e => EF.Property<object>(e, SortColumn));
-            }
-
-            TotalDepartments = await departmentQuery.CountAsync();
-            DepartmentTotalPages = (int)Math.Ceiling(TotalDepartments / (double)DepartmentResultsPerPage);
-
-            Departments = await departmentQuery
-                .Include(d => d.DepartmentSpeedTypes)
-                .ThenInclude(ds => ds.SpeedType)
-                .Skip((DepartmentCurrentPage - 1) * DepartmentResultsPerPage)
-                .Take(DepartmentResultsPerPage)
-                .ToListAsync();
-
-            //Fetch SpeedType Data
-            var speedTypeQuery = _context.SpeedTypes.AsQueryable();
-
-            if (!string.IsNullOrEmpty(SpeedTypeSearchTerm))
-            {
-                speedTypeQuery = speedTypeQuery.Where(s => s.Code.Contains(SpeedTypeSearchTerm)
-                || s.Budget.ToString().Contains(SpeedTypeSearchTerm));
-            }
-
-            if (!string.IsNullOrEmpty(SortColumn) && ActiveSortTable == "SpeedType")
-            {
-                speedTypeQuery = SortOrder == "asc"
-                    ? speedTypeQuery.OrderBy(e => EF.Property<object>(e, SortColumn))
-                    : speedTypeQuery.OrderByDescending(e => EF.Property<object>(e, SortColumn));
-            }
-
-            TotalSpeedTypes = await speedTypeQuery.CountAsync();
-            SpeedTypeTotalPages = (int)Math.Ceiling(TotalSpeedTypes / (double)SpeedTypeResultsPerPage);
-
-            SpeedTypes = await speedTypeQuery
-                .Skip((SpeedTypeCurrentPage - 1) * SpeedTypeResultsPerPage)
-                .Take(SpeedTypeResultsPerPage)
-                .ToListAsync();
+            SpeedTypes = await _speedTypeService.GetSpeedTypesAsync();
 
             //Fetch BudgetAmendment Data
             var amendmentQuery = _context.BudgetAmendments.AsQueryable();
@@ -253,24 +131,8 @@ namespace budget_management_system_aspdotnetcore.Pages
         }
 
 
-        public async Task OnGetAsync(int pageNumber = 1, 
-            int resultsPerPage = 10, 
-            int departmentPageNumber = 1, 
-            int departmentResultsPerPage = 10, 
-            int amendmentPageNumber = 1, 
-            int amendmentResultsPerPage = 10,
-            int speedTypePageNumber = 1,
-            int speedTypeResultsPerPage = 10)
+        public async Task OnGetAsync(int amendmentPageNumber = 1, int amendmentResultsPerPage = 10)
         {
-            EmployeeCurrentPage = pageNumber;
-            EmployeeResultsPerPage = resultsPerPage;
-
-            DepartmentCurrentPage = departmentPageNumber;
-            DepartmentResultsPerPage = departmentResultsPerPage;
-
-            SpeedTypeCurrentPage = speedTypePageNumber;
-            SpeedTypeResultsPerPage = speedTypeResultsPerPage;
-
             BudgetAmendmentCurrentPage = amendmentPageNumber;
             BudgetAmendmentResultsPerPage = amendmentResultsPerPage;
 
@@ -298,433 +160,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return SortOrder == "asc" ? "fa-arrow-up" : "fa-arrow-down";
             }
             return "fa-sort";
-        }
-
-        public async Task<IActionResult> OnPostAddEmployeeAsync()
-        {
-            if (!ModelState.IsValid)
-            {
-                Debug.WriteLine("======== INVALID MODEL =========");
-/*                Employees = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
-                Departments = await _context.Departments.ToListAsync();  // Re-fetch departments to display on the page
-                return Page();*/
-            }
-
-            _context.Employees.Add(NewEmployee);
-            await _context.SaveChangesAsync();
-
-            await LoadFormDataAsync();
-
-            return RedirectToPage();
-        }
-
-        public async Task<IActionResult> OnPostEditEmployeeAsync(int id)
-        {
-            EditingEmployeeID = id;
-
-            await LoadFormDataAsync();
-
-            return Page();
-        }
-
-        public async Task<IActionResult> OnPostCancelEditEmployeeAsync(int id)
-        {
-            EditingEmployeeID = 0;
-
-            await LoadFormDataAsync();
-
-            return Page();
-        }
-
-        public async Task<IActionResult> OnPostSaveEmployeeAsync()
-        {
-
-            if (!ModelState.IsValid)
-            {
-/*                Employees = await _context.Employees.ToListAsync();
-                Departments = await _context.Departments.ToListAsync();
-                return Page();*/
-            }
-
-            var employee = await _context.Employees.FindAsync(NewEmployee.EmployeeID);
-
-
-            if (employee != null)
-            {
-                employee.FirstName = NewEmployee.FirstName;
-                employee.LastName = NewEmployee.LastName;
-                employee.DateOfBirth = NewEmployee.DateOfBirth;
-                employee.Email = NewEmployee.Email;
-                employee.PhoneNumber = NewEmployee.PhoneNumber;
-                employee.HireDate = NewEmployee.HireDate;
-                employee.JobTitle = NewEmployee.JobTitle;
-                employee.Salary = NewEmployee.Salary;
-                employee.DepartmentID = NewEmployee.DepartmentID;
-
-                await _context.SaveChangesAsync();
-            }
-
-            await LoadFormDataAsync();
-
-            return RedirectToPage();
-        }
-
-        public async Task<IActionResult> OnPostDeleteEmployeeAsync(int id)
-        {
-            var employee = await _context.Employees.FindAsync(id);
-
-            if (employee == null)
-            {
-                return NotFound();
-            }
-
-            _context.Employees.Remove(employee);
-            await _context.SaveChangesAsync();
-
-            await LoadFormDataAsync();
-
-            return RedirectToPage();
-        }
-
-        public async Task<IActionResult> OnPostExportToExcelEmployeesAsync()
-        {
-            var employees = await _context.Employees.Include(e => e.Department).ToListAsync();
-
-            using var workbook = new XLWorkbook();
-            var worksheet = workbook.Worksheets.Add("Employees");
-
-            // Define headers
-            worksheet.Cell(1, 1).Value = "Employee ID";
-            worksheet.Cell(1, 2).Value = "First Name";
-            worksheet.Cell(1, 3).Value = "Last Name";
-            worksheet.Cell(1, 4).Value = "Date of Birth";
-            worksheet.Cell(1, 5).Value = "Email";
-            worksheet.Cell(1, 6).Value = "Phone Number";
-            worksheet.Cell(1, 7).Value = "Hire Date";
-            worksheet.Cell(1, 8).Value = "Job Title";
-            worksheet.Cell(1, 9).Value = "Salary";
-            worksheet.Cell(1, 10).Value = "Department";
-
-            // Populate data
-            int row = 2;
-            foreach (var emp in employees)
-            {
-                worksheet.Cell(row, 1).Value = emp.EmployeeID;
-                worksheet.Cell(row, 2).Value = emp.FirstName;
-                worksheet.Cell(row, 3).Value = emp.LastName;
-                worksheet.Cell(row, 4).Value = emp.DateOfBirth.ToString("MM/dd/yyyy");
-                worksheet.Cell(row, 5).Value = emp.Email;
-                worksheet.Cell(row, 6).Value = emp.PhoneNumber;
-                worksheet.Cell(row, 7).Value = emp.HireDate.ToString("MM/dd/yyyy");
-                worksheet.Cell(row, 8).Value = emp.JobTitle;
-                worksheet.Cell(row, 9).Value = emp.Salary;
-                worksheet.Cell(row, 10).Value = emp.Department?.DepartmentName;
-                row++;
-            }
-
-            // Save the workbook to a memory stream
-            using var stream = new MemoryStream();
-            workbook.SaveAs(stream);
-            stream.Position = 0;
-
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Employees.xlsx");
-        }
-
-        public async Task<IActionResult> OnPostAddDepartmentAsync()
-        {
-            if (!ModelState.IsValid)
-            {
-
-                /*                Debug.WriteLine("======== INVALID ===========");
-
-                                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                                {
-                                    Debug.WriteLine(error.ErrorMessage);
-                                }
-
-
-                                Debug.WriteLine("========  ===========");
-
-                                Employees = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
-                                Departments = await _context.Departments.ToListAsync();  // Re-fetch departments to display on the page
-                                SpeedTypes = await _context.SpeedTypes.ToListAsync();
-                                BudgetAmendments = await _context.BudgetAmendments.ToListAsync();
-                                return Page();*/
-            }
-
-            // First, add the new Department to the database and save changes
-            _context.Departments.Add(NewDepartment);
-            await _context.SaveChangesAsync(); // This will generate the DepartmentID
-
-            // Now, use the generated DepartmentID for the DepartmentSpeedType entries
-            foreach (var speedTypeId in SelectedSpeedTypeIds)
-            {
-                var departmentSpeedType = new DepartmentSpeedType
-                {
-                    DepartmentId = NewDepartment.DepartmentID, // Now DepartmentID is available
-                    SpeedTypeId = speedTypeId
-                };
-
-                _context.DepartmentSpeedTypes.Add(departmentSpeedType);
-            }
-
-            await _context.SaveChangesAsync();
-
-            await LoadFormDataAsync();
-
-            return RedirectToPage();
-        }
-
-        public async Task<IActionResult> OnPostEditDepartmentAsync(int id)
-        {
-            EditingDepartmentID = id;
-
-            var department = await _context.Departments
-                .Include(d => d.DepartmentSpeedTypes)
-                .ThenInclude(ds => ds.SpeedType)
-                .FirstOrDefaultAsync(d => d.DepartmentID == id);
-
-            if (department == null)
-            {
-                return NotFound();
-            }
-
-            NewDepartment = department;
-
-            SelectedSpeedTypeIds = department.DepartmentSpeedTypes.Select(ds => ds.SpeedTypeId).ToList();
-
-            await LoadFormDataAsync();
-
-            return Page();
-        }
-
-        public async Task<IActionResult> OnPostCancelEditDepartmentAsync(int id)
-        {
-            EditingDepartmentID = 0;
-
-            await LoadFormDataAsync();
-
-            return Page();
-        }
-
-        public async Task<IActionResult> OnPostSaveDepartmentAsync()
-        {
-            if (!ModelState.IsValid)
-            {
-                /*                Employees = await _context.Employees.ToListAsync();
-                                Departments = await _context.Departments.ToListAsync();
-                                return Page();*/
-            }
-
-            var department = await _context.Departments
-                .Include(d => d.DepartmentSpeedTypes)
-                .FirstOrDefaultAsync(d => d.DepartmentID == NewDepartment.DepartmentID);
-
-            if (department != null)
-            {
-                department.DepartmentID = NewDepartment.DepartmentID;
-                department.DepartmentName = NewDepartment.DepartmentName;
-                department.DepartmentSpeedTypes.Clear();
-
-                foreach (var speedTypeId in SelectedSpeedTypeIds)
-                {
-                    // Check if the SpeedType already exists
-                    var existingSpeedType = department.DepartmentSpeedTypes
-                        .Any(dst => dst.SpeedTypeId == speedTypeId);
-
-                    if (!existingSpeedType)
-                    {
-                        // If it doesn't exist, add the new association
-                        department.DepartmentSpeedTypes.Add(new DepartmentSpeedType
-                        {
-                            DepartmentId = department.DepartmentID,
-                            SpeedTypeId = speedTypeId
-                        });
-                    }
-                    else
-                    {
-                        // Optionally log or handle the case where the SpeedType already exists
-                        // e.g., Debug.WriteLine($"SpeedTypeId {speedTypeId} already exists for department.");
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-            }
-
-            await LoadFormDataAsync();
-
-            return RedirectToPage();
-        }
-
-        public async Task<IActionResult> OnPostDeleteDepartmentAsync(int id)
-        {
-            var department = await _context.Departments.FindAsync(id);
-
-            if (department == null)
-            {
-                return NotFound();
-            }
-
-            _context.Departments.Remove(department);
-            await _context.SaveChangesAsync();
-
-            await LoadFormDataAsync();
-
-            return RedirectToPage();
-        }
-
-        public async Task<IActionResult> OnPostExportToExcelDepartmentsAsync()
-        {
-            var departments = await _context.Departments
-                .Include(d => d.DepartmentSpeedTypes)
-                .ThenInclude(dst => dst.SpeedType) // Assuming there's a navigation property to SpeedType
-                .ToListAsync();
-
-            using var workbook = new XLWorkbook();
-            var worksheet = workbook.Worksheets.Add("Departments");
-
-            // Define headers
-            worksheet.Cell(1, 1).Value = "Department ID";
-            worksheet.Cell(1, 2).Value = "Department Name";
-            worksheet.Cell(1, 3).Value = "SpeedType";
-            worksheet.Cell(1, 4).Value = "Budget";
-
-            // Populate data
-            int row = 2;
-            foreach (var dept in departments)
-            {
-                foreach (var departmentSpeedType in dept.DepartmentSpeedTypes)
-                {
-                    worksheet.Cell(row, 1).Value = dept.DepartmentID;
-                    worksheet.Cell(row, 2).Value = dept.DepartmentName;
-                    worksheet.Cell(row, 3).Value = departmentSpeedType.SpeedType?.Code; // Assuming SpeedType has Code
-                    worksheet.Cell(row, 4).Value = departmentSpeedType.SpeedType?.Budget; // Assuming SpeedType has Budget
-                    row++;
-                }
-            }
-
-            // Save the workbook to a memory stream
-            using var stream = new MemoryStream();
-            workbook.SaveAs(stream);
-            stream.Position = 0;
-
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Departments.xlsx");
-        }
-
-
-        public async Task<IActionResult> OnPostAddSpeedTypeAsync()
-        {
-            if (!ModelState.IsValid)
-            {
-/*                Employees = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
-                Departments = await _context.Departments.ToListAsync();
-                SpeedTypes = await _context.SpeedTypes.ToListAsync();  // Re-fetch speedtypes to display on the page
-                BudgetAmendments = await _context.BudgetAmendments.ToListAsync();
-                return Page();*/
-            }
-
-            _context.SpeedTypes.Add(NewSpeedType);
-            await _context.SaveChangesAsync();
-
-            await LoadFormDataAsync();
-
-            return RedirectToPage();
-        }
-
-        public async Task<IActionResult> OnPostEditSpeedTypeAsync(int id)
-        {
-            EditingSpeedTypeID = id;
-
-            await LoadFormDataAsync();
-
-            return Page();
-        }
-
-        public async Task<IActionResult> OnPostCancelEditSpeedTypeAsync(int id)
-        {
-            EditingSpeedTypeID = 0;
-
-            await LoadFormDataAsync();
-
-            return Page();
-        }
-
-        public async Task<IActionResult> OnPostSaveSpeedTypeAsync()
-        {
-            if (!ModelState.IsValid)
-            {
-                /* Employees = await _context.Employees.ToListAsync();
-                   SpeedTypes = await _context.SpeedTypes.ToListAsync();
-                   return Page(); */
-            }
-
-            var speedType = await _context.SpeedTypes.FindAsync(NewSpeedType.SpeedTypeId);
-
-            if (speedType != null)
-            {
-                speedType.SpeedTypeId = NewSpeedType.SpeedTypeId;
-                speedType.Code = NewSpeedType.Code;
-                speedType.Budget = NewSpeedType.Budget;
-
-                await _context.SaveChangesAsync();
-            }
-
-            await LoadFormDataAsync();
-
-            return RedirectToPage();
-        }
-
-        public async Task<IActionResult> OnPostDeleteSpeedTypeAsync(int id)
-        {
-            var speedType = await _context.SpeedTypes.FindAsync(id);
-
-            if (speedType == null)
-            {
-                return NotFound();
-            }
-
-            _context.SpeedTypes.Remove(speedType);
-            await _context.SaveChangesAsync();
-
-            await LoadFormDataAsync();
-
-            return RedirectToPage();
-        }
-
-        public async Task<IActionResult> OnPostExportToExcelSpeedTypesAsync()
-        {
-            var speedTypes = await _context.SpeedTypes
-                .Include(st => st.DepartmentSpeedTypes)
-                .ThenInclude(dst => dst.Department) // Include the Department information
-                .ToListAsync();
-
-            using var workbook = new XLWorkbook();
-            var worksheet = workbook.Worksheets.Add("SpeedTypes");
-
-            // Define headers
-            worksheet.Cell(1, 1).Value = "SpeedType ID";
-            worksheet.Cell(1, 2).Value = "Code";
-            worksheet.Cell(1, 3).Value = "Budget";
-
-            // Populate data
-            int row = 2;
-            foreach (var speedType in speedTypes)
-            {
-                foreach (var departmentSpeedType in speedType.DepartmentSpeedTypes)
-                {
-                    worksheet.Cell(row, 1).Value = speedType.SpeedTypeId;
-                    worksheet.Cell(row, 2).Value = speedType.Code;
-                    worksheet.Cell(row, 3).Value = speedType.Budget;
-                    row++;
-                }
-            }
-
-            // Save the workbook to a memory stream
-            using var stream = new MemoryStream();
-            workbook.SaveAs(stream);
-            stream.Position = 0;
-
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "SpeedTypes.xlsx");
         }
 
         public async Task<IActionResult> OnPostAddAmendmentAsync()
@@ -953,72 +388,108 @@ namespace budget_management_system_aspdotnetcore.Pages
                     return RedirectToPage();
                 }*/
 
-        public async Task<IActionResult> OnPostApproveAmendmentAsync(int id)
+        /*        public async Task<IActionResult> OnPostApproveAmendmentAsync(int id)
+                {
+                    // Retrieve the initial budget amendment
+                    var budgetAmendment = await _context.BudgetAmendments.FindAsync(id);
+
+                    if (budgetAmendment == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Retrieve all amendments with the same TransactionId (should return a pair)
+                    var amendmentPair = await _context.BudgetAmendments
+                        .Where(a => a.TransactionId == budgetAmendment.TransactionId)
+                        .Include(a => a.SpeedType) // Include SpeedType for accessing its Budget
+                        .ToListAsync();
+
+                    if (amendmentPair.Count != 2)
+                    {
+                        // Handle the case if there aren't exactly two amendments
+                        return BadRequest("Amendment pair not found.");
+                    }
+
+                    // Determine source and destination amendments
+                    var destinationAmendment = amendmentPair.FirstOrDefault(a => a.AmountIncrease != 0);
+                    var sourceAmendment = amendmentPair.FirstOrDefault(a => a.AmountDecrease != 0);
+
+                    if (destinationAmendment == null || sourceAmendment == null)
+                    {
+                        return BadRequest("Invalid amendment pair.");
+                    }
+
+                    // Update the Budget values
+                    destinationAmendment.SpeedType.Budget += (decimal)destinationAmendment.AmountIncrease;
+                    sourceAmendment.SpeedType.Budget -= (decimal)sourceAmendment.AmountDecrease;
+
+                    // Update status and metadata for both amendments
+                    foreach (var amendment in amendmentPair)
+                    {
+                        amendment.Status = AmendmentStatus.Approved;
+                        amendment.UpdatedBy = 1;  // Set to current user's ID once available
+                        amendment.UpdatedAt = DateTime.Now;
+                    }
+
+                    // Save all changes
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToPage();
+                }*/
+
+        public async Task<IActionResult> OnPostApproveCategory(string category)
         {
-            // Retrieve the initial budget amendment
-            var budgetAmendment = await _context.BudgetAmendments.FindAsync(id);
+            if (string.IsNullOrEmpty(category))
+                return BadRequest("Invalid category");
 
-            if (budgetAmendment == null)
-            {
-                return NotFound();
-            }
+            var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
 
-            // Retrieve all amendments with the same TransactionId (should return a pair)
-            var amendmentPair = await _context.BudgetAmendments
-                .Where(a => a.TransactionId == budgetAmendment.TransactionId)
-                .Include(a => a.SpeedType) // Include SpeedType for accessing its Budget
-                .ToListAsync();
-
-            if (amendmentPair.Count != 2)
-            {
-                // Handle the case if there aren't exactly two amendments
-                return BadRequest("Amendment pair not found.");
-            }
-
-            // Determine source and destination amendments
-            var destinationAmendment = amendmentPair.FirstOrDefault(a => a.AmountIncrease != 0);
-            var sourceAmendment = amendmentPair.FirstOrDefault(a => a.AmountDecrease != 0);
-
-            if (destinationAmendment == null || sourceAmendment == null)
-            {
-                return BadRequest("Invalid amendment pair.");
-            }
-
-            // Update the Budget values
-            destinationAmendment.SpeedType.Budget += (decimal)destinationAmendment.AmountIncrease;
-            sourceAmendment.SpeedType.Budget -= (decimal)sourceAmendment.AmountDecrease;
-
-            // Update status and metadata for both amendments
-            foreach (var amendment in amendmentPair)
+            foreach (var amendment in amendments)
             {
                 amendment.Status = AmendmentStatus.Approved;
-                amendment.UpdatedBy = 1;  // Set to current user's ID once available
+                amendment.UpdatedBy = 1; 
                 amendment.UpdatedAt = DateTime.Now;
             }
 
-            // Save all changes
             await _context.SaveChangesAsync();
-
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostRejectAmendmentAsync(int id)
+        public async Task<IActionResult> OnPostRejectCategory(string category)
         {
+            if (string.IsNullOrEmpty(category))
+                return BadRequest("Invalid category");
 
-            var budgetAmendment = await _context.BudgetAmendments.FindAsync(id);
+            var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
 
-            if (budgetAmendment == null)
+            foreach (var amendment in amendments)
             {
-                return NotFound();
+                amendment.Status = AmendmentStatus.Rejected;
+                amendment.UpdatedBy = 1;
+                amendment.UpdatedAt = DateTime.Now;
             }
 
-            budgetAmendment.UpdatedBy = 1;
-            budgetAmendment.UpdatedAt = DateTime.Now;
-
-            await OnPostUpdateAmendmentStatusAsync(budgetAmendment.TransactionId, AmendmentStatus.Rejected);
-
+            await _context.SaveChangesAsync();
             return RedirectToPage();
         }
+
+        /*        public async Task<IActionResult> OnPostRejectAmendmentAsync(int id)
+                {
+
+                    var budgetAmendment = await _context.BudgetAmendments.FindAsync(id);
+
+                    if (budgetAmendment == null)
+                    {
+                        return NotFound();
+                    }
+
+                    budgetAmendment.UpdatedBy = 1;
+                    budgetAmendment.UpdatedAt = DateTime.Now;
+
+                    await OnPostUpdateAmendmentStatusAsync(budgetAmendment.TransactionId, AmendmentStatus.Rejected);
+
+                    return RedirectToPage();
+                }*/
 
         public async Task<IActionResult> OnPostUpdateAmendmentStatusAsync(Guid transactionId, AmendmentStatus newStatus)
         {

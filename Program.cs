@@ -1,5 +1,6 @@
 using budget_management_system_aspdotnetcore.Entities;
 using budget_management_system_aspdotnetcore.Services;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.EntityFrameworkCore;
 
 namespace budget_management_system_aspdotnetcore
@@ -16,6 +17,8 @@ namespace budget_management_system_aspdotnetcore
             builder.Services.AddTransient<IDatabaseService, DatabaseService>();
 
             builder.Services.AddScoped<IUserService, UserService>();
+
+            builder.Services.AddScoped<SpeedTypeService>();
 
             // Add services to the container.
             builder.Services.AddRazorPages();
