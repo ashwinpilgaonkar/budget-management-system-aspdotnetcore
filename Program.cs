@@ -1,6 +1,6 @@
 using budget_management_system_aspdotnetcore.Entities;
 using budget_management_system_aspdotnetcore.Services;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 namespace budget_management_system_aspdotnetcore
@@ -23,6 +23,25 @@ namespace budget_management_system_aspdotnetcore
             // Add services to the container.
             builder.Services.AddRazorPages();
 
+            // Add authentication services
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/Login";  // Redirect to login if unauthorized
+                    options.AccessDeniedPath = "/AccessDenied";
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(60); // Set session timeout
+                });
+
+            builder.Services.AddAuthorization();
+
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<UserService>();
+
+            builder.Services.AddSession();
+
+            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -37,6 +56,11 @@ namespace budget_management_system_aspdotnetcore
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseSession();
+
+            // Enable authentication & authorization middleware
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

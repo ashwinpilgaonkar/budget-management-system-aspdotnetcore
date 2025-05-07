@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
     <html lang="en">
         <head>
             <meta charset="utf-8" />
@@ -22,17 +23,34 @@
                                     <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
                                 </li>
                                 <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Users">Users</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Departments">Departments</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Speedtypes">SpeedTypes</a>
+                                </li>
+                                <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-page="/Admin">Admin</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Login">Logout</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Logout">Logout</a>
                                 </li>
                             </ul>
+                            @if (HttpContextAccessor.HttpContext.Session.GetString("Email") != null)
+                            {
+                                <p>
+                                    Welcome @HttpContextAccessor.HttpContext.Session.GetString("FirstName")
+                                    @HttpContextAccessor.HttpContext.Session.GetString("LastName")
+                                    @(Model.isAdmin ? "(Admin)" : "")
+                                </p>
+                            }
                         </div>
                     </div>
                 </nav>
             </header>
-            <div class="container">
+            <div class="container-fluid">
                 <main role="main" class="pb-3">
                     @RenderBody()
                 </main>
@@ -40,7 +58,7 @@
 
             <footer class="border-top footer text-muted">
                 <div class="container">
-                    &copy; 2024 - CAS Budget Management
+                    &copy; 2025 - CAS Budget Management
                 </div>
             </footer>
 

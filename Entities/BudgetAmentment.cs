@@ -20,7 +20,7 @@ namespace budget_management_system_aspdotnetcore.Entities
 
         public SpeedType SpeedType { get; set; }
         public Guid TransactionId { get; set; }
-        public AmendmentStatus Status { get; set; } = AmendmentStatus.Pending;
+        public AmendmentStatus Status { get; set; } = AmendmentStatus.Draft;
 
         // New audit columns
         public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
@@ -46,6 +46,7 @@ namespace budget_management_system_aspdotnetcore.Entities
     {
         Pending,
         Approved,
-        Rejected
+        Rejected,
+        Draft
     }
 }

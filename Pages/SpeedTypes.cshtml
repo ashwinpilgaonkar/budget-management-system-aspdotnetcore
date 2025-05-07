@@ -1,0 +1,212 @@
+﻿@page "/speedtypes"
+@model SpeedTypesModel
+@{
+    ViewData["Title"] = "SpeedTypes";
+}
+
+<div class="container">
+    
+    <!-- SpeedType List Card -->
+    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
+                <h3 class="card-title">SpeedTypes</h3>
+                <!-- Add New SpeedType Button -->
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSpeedTypeModal">
+                    Add New +
+                </button>
+            </div>
+            <!-- Search Bar -->
+            <form method="get">
+                <div class="input-group mb-3">
+                    <input type="text" name="SpeedTypeSearchTerm" class="form-control" placeholder="Search..." value="@Model.SpeedTypeSearchTerm" />
+                    <button type="submit" class="btn btn-outline-secondary">Search</button>
+                </div>
+            </form>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover text-center">
+                    <thead>
+                        <tr>
+                            <th>
+                                SpeedType ID
+                                <form method="get" class="d-inline">
+                                    <input type="hidden" name="handler" value="SortColumn" />
+                                    <input type="hidden" name="table" value="SpeedType" />
+                                    <input type="hidden" name="column" value="SpeedTypeId" />
+                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("SpeedTypeId")" />
+                                    <button type="submit" class="btn btn-link p-0">
+                                        <i class="fas @Model.GetSortIcon("SpeedTypeId")"></i>
+                                    </button>
+                                </form>
+                            </th>
+                            <th>
+                                Code
+                                <form method="get" class="d-inline">
+                                    <input type="hidden" name="handler" value="SortColumn" />
+                                    <input type="hidden" name="table" value="SpeedType" />
+                                    <input type="hidden" name="column" value="Code" />
+                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Code")" />
+                                    <button type="submit" class="btn btn-link p-0">
+                                        <i class="fas @Model.GetSortIcon("Code")"></i>
+                                    </button>
+                                </form>
+                            </th>
+                            <th>
+                                Budget
+                                <form method="get" class="d-inline">
+                                    <input type="hidden" name="handler" value="SortColumn" />
+                                    <input type="hidden" name="table" value="SpeedType" />
+                                    <input type="hidden" name="column" value="Budget" />
+                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Budget")" />
+                                    <button type="submit" class="btn btn-link p-0">
+                                        <i class="fas @Model.GetSortIcon("Budget")"></i>
+                                    </button>
+                                </form>
+
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="speedTypeBudgetFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+
+                                    <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
+                                        <form method="get" id="speedTypeBudgetFilterForm">
+                                            <div class="mb-2">
+                                                <label class="form-label">Min Budget</label>
+                                                <input type="number" step="0.01" name="SpeedTypeMinBudget" id="speedTypeMinBudgetInput" class="form-control form-control-sm"
+                                                       value="@(Model.SpeedTypeMinBudget?.ToString("0.##") ?? "")" />
+                                            </div>
+
+                                            <div class="mb-2">
+                                                <label class="form-label">Max Budget</label>
+                                                <input type="number" step="0.01" name="SpeedTypeMaxBudget" id="speedTypeMaxBudgetInput" class="form-control form-control-sm"
+                                                       value="@(Model.SpeedTypeMaxBudget?.ToString("0.##") ?? "")" />
+                                            </div>
+
+                                            <div class="d-flex justify-content-start gap-2 mt-3">
+                                                <button type="submit" class="btn btn-sm btn-primary" id="speedTypeFilterApplyButton" disabled>Apply</button>
+                                                <button type="button" class="btn btn-sm btn-secondary" onclick="resetSpeedTypeBudgetFields()">Reset</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+
+                            </th>
+                            <th colspan="2">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var speedType in Model.SpeedTypes)
+                        {
+                            if (Model.EditingSpeedTypeID == speedType.SpeedTypeId)
+                            {
+                                <tr>
+                                    <td><input asp-for="NewSpeedType.SpeedTypeId" value="@speedType.SpeedTypeId" class="form-control" readonly /></td>
+                                    <td><input asp-for="NewSpeedType.Code" value="@speedType.Code" class="form-control" /></td>
+                                    <td><input asp-for="NewSpeedType.Budget" value="@speedType.Budget" class="form-control" /></td>
+
+                                    <td>
+                                        <div class="d-flex justify-content-evenly">
+                                            <form method="post" asp-page-handler="SaveSpeedType" asp-route-id="@speedType.SpeedTypeId">
+                                                <button type="submit" class="btn btn-success">Save</button>
+                                            </form>
+                                            <form method="post" asp-page-handler="CancelEditSpeedType" asp-route-id="@speedType.SpeedTypeId">
+                                                <button type="submit" class="btn btn-secondary">Cancel</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td>@speedType.SpeedTypeId</td>
+                                    <td>@speedType.Code</td>
+                                    <td>@speedType.Budget</td>
+                                    <td>
+                                        <div class="d-flex justify-content-evenly">
+                                            <form method="post" asp-page-handler="EditSpeedType" asp-route-id="@speedType.SpeedTypeId" class="me-2">
+                                                <button type="submit" class="btn btn-outline-secondary">Edit</button>
+                                            </form>
+                                            <form method="post" asp-page-handler="DeleteSpeedType" asp-route-id="@speedType.SpeedTypeId">
+                                                <button type="submit" class="btn btn-outline-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <nav class="d-flex justify-content-between align-items-center my-3" aria-label="SpeedType Page navigation">
+                <!-- Results per page dropdown on the left -->
+                <div class="d-flex align-items-center">
+                    <label for="resultsPerPage" class="me-2">Results per page:</label>
+                    <select id="resultsPerPage" class="form-select me-3" style="width: auto;" onchange="window.location.href = '@Url.Page(null, new { speedTypePageNumber = 1, speedTypesPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
+                        @foreach (var size in Model.PageSizes)
+                        {
+                            <option value="@size" selected="@(Model.SpeedTypeResultsPerPage == size ? "selected" : null)">@size</option>
+                        }
+                    </select>
+                </div>
+                @{
+                    int speedTypeRecordsShown = Math.Min(Model.SpeedTypeResultsPerPage, Model.TotalSpeedTypes - ((Model.SpeedTypeCurrentPage - 1) * Model.SpeedTypeResultsPerPage));
+                }
+                <span>Records: @speedTypeRecordsShown of @Model.TotalSpeedTypes</span>
+                <ul class="pagination mb-0">
+                    <li class="page-item @(Model.SpeedTypeCurrentPage <= 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.SpeedTypeCurrentPage - 1, resultsPerPage = Model.SpeedTypeResultsPerPage })" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item active">
+                        <span class="page-link">@Model.SpeedTypeCurrentPage</span>
+                    </li>
+                    <li class="page-item @(Model.SpeedTypeCurrentPage >= Model.SpeedTypeTotalPages ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.SpeedTypeCurrentPage + 1, resultsPerPage = Model.SpeedTypeResultsPerPage })" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <form method="post" asp-page-handler="ExportToExcelSpeedTypes">
+                <button type="submit" class="btn btn-success">
+                    Export to XLS
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add SpeedType Modal -->
+    <div class="modal fade" id="addSpeedTypeModal" tabindex="-1" aria-labelledby="addSpeedTypeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSpeedTypeModalLabel">Add New SpeedType</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" asp-page-handler="AddSpeedType">
+                        <div class="mb-3">
+                            <label asp-for="NewSpeedType.Code" class="form-label">SpeedType Code</label>
+                            <input asp-for="NewSpeedType.Code" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="NewSpeedType.Budget" class="form-label">Budget</label>
+                            <input asp-for="NewSpeedType.Budget" class="form-control" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Add</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

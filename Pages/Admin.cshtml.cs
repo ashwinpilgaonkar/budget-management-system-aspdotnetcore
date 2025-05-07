@@ -18,7 +18,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         // ==============================================
         #region HELPER
         private readonly CasdbtestContext _context;
+        private readonly IAuthenticationService _authService;
 
+            public bool isAdmin { get; set; } = false;
             public string ActiveSortTable { get; set; } = "Employee";
 
             public string SortColumn { get; set; } = "EmployeeID";
@@ -75,6 +77,12 @@ namespace budget_management_system_aspdotnetcore.Pages
             public int TotalDepartments { get; set; }
 
             public int DepartmentEmployees { get; set; }
+
+            [BindProperty(SupportsGet = true)]
+            public decimal? DepartmentMinBudget { get; set; }
+
+            [BindProperty(SupportsGet = true)]
+            public decimal? DepartmentMaxBudget { get; set; }
         #endregion
 
 
@@ -102,6 +110,13 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             public int SpeedTypeEmployees { get; set; }
             public List<int> SelectedSpeedTypeIds { get; set; } = new List<int>();
+
+            [BindProperty(SupportsGet = true)]
+            public decimal? SpeedTypeMinBudget { get; set; }
+
+            [BindProperty(SupportsGet = true)]
+            public decimal? SpeedTypeMaxBudget { get; set; }
+
         #endregion
 
 
@@ -122,13 +137,16 @@ namespace budget_management_system_aspdotnetcore.Pages
         //                 DATA LOADING
         // ==============================================
         #region DATA LOADING
-            public AdminModel(CasdbtestContext context)
+            public AdminModel(CasdbtestContext context, IAuthenticationService authService)
             {
                 _context = context;
+                _authService = authService;
             }
 
             public async Task LoadFormDataAsync()
             {
+                isAdmin = _authService.IsAdmin(HttpContext);
+
                 // ==============================================
                 //                  USER DATA
                 // ==============================================
@@ -190,7 +208,19 @@ namespace budget_management_system_aspdotnetcore.Pages
                         : departmentQuery.OrderByDescending(e => EF.Property<object>(e, SortColumn));
                 }
 
-                TotalDepartments = await departmentQuery.CountAsync();
+            if (DepartmentMinBudget.HasValue)
+            {
+                departmentQuery = departmentQuery
+                    .Where(d => d.DepartmentSpeedTypes.Sum(ds => ds.SpeedType.Budget) >= DepartmentMinBudget.Value);
+            }
+
+            if (DepartmentMaxBudget.HasValue)
+            {
+                departmentQuery = departmentQuery
+                    .Where(d => d.DepartmentSpeedTypes.Sum(ds => ds.SpeedType.Budget) <= DepartmentMaxBudget.Value);
+            }
+
+            TotalDepartments = await departmentQuery.CountAsync();
                 DepartmentTotalPages = (int)Math.Ceiling(TotalDepartments / (double)DepartmentResultsPerPage);
 
                 Departments = await departmentQuery
@@ -218,6 +248,17 @@ namespace budget_management_system_aspdotnetcore.Pages
                         : speedTypeQuery.OrderByDescending(e => EF.Property<object>(e, SortColumn));
                 }
 
+                if (SpeedTypeMinBudget.HasValue)
+                {
+                    speedTypeQuery = speedTypeQuery.Where(s => s.Budget >= SpeedTypeMinBudget.Value);
+                }
+
+                if (SpeedTypeMaxBudget.HasValue)
+                {
+                    speedTypeQuery = speedTypeQuery.Where(s => s.Budget <= SpeedTypeMaxBudget.Value);
+                }
+
+
                 TotalSpeedTypes = await speedTypeQuery.CountAsync();
                 SpeedTypeTotalPages = (int)Math.Ceiling(TotalSpeedTypes / (double)SpeedTypeResultsPerPage);
 
@@ -242,7 +283,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 }
             }
 
-            public async Task OnGetAsync(int pageNumber = 1,
+            public async Task<IActionResult> OnGetAsync(int pageNumber = 1,
                 int resultsPerPage = 10,
                 int departmentPageNumber = 1,
                 int departmentResultsPerPage = 10,
@@ -258,7 +299,18 @@ namespace budget_management_system_aspdotnetcore.Pages
                 SpeedTypeCurrentPage = speedTypePageNumber;
                 SpeedTypeResultsPerPage = speedTypeResultsPerPage;
 
+                if (!_authService.IsAuthenticated(HttpContext))
+                {
+                    return RedirectToPage("/Login");
+                }
+
+                if (!_authService.IsAdmin(HttpContext))
+                {
+                    return RedirectToPage("/Index");
+            }
+
                 await LoadFormDataAsync();
+                return Page();
             }
 
         public async Task OnGetSortColumn(string table, string column, string order)
@@ -290,21 +342,52 @@ namespace budget_management_system_aspdotnetcore.Pages
         //               USER METHODS
         // ==============================================
         #region USER METHODS
-        public async Task<IActionResult> OnPostAddUserAsync()
+
+            public async Task<IActionResult> OnPostAddUserAsync()
             {
+            /*                if (!ModelState.IsValid)
+                            {
+            *//*                                    Employees = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
+                                                Departments = await _context.Departments.ToListAsync();  // Re-fetch departments to display on the page
+                                                return Page();*//*
+                            }
+
+                            byte[] salt = new byte[16];
+                            using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
+                            {
+                                rng.GetBytes(salt);
+                            }
+
+                            string hashedPassword = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                                password: NewUser.Password,
+                                salt: salt,
+                                prf: KeyDerivationPrf.HMACSHA256,
+                                iterationCount: 10000,
+                                numBytesRequested: 32));
+
+                            NewUser.Password = hashedPassword;
+                            NewUser.Salt = Convert.ToBase64String(salt);
+
+                            _context.Users.Add(NewUser);
+                            await _context.SaveChangesAsync();
+
+                            await LoadFormDataAsync();
+                            return RedirectToPage();*/
+
                 if (!ModelState.IsValid)
                 {
-                    Debug.WriteLine("======== INVALID MODEL =========");
-                    /*                Employees = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
-                                    Departments = await _context.Departments.ToListAsync();  // Re-fetch departments to display on the page
-                                    return Page();*/
+/*                    return Page();*/
                 }
+
+                // Hash password using BCrypt
+                NewUser.Password = BCrypt.Net.BCrypt.HashPassword(NewUser.Password);
 
                 _context.Users.Add(NewUser);
                 await _context.SaveChangesAsync();
+
                 await LoadFormDataAsync();
                 return RedirectToPage();
-            }
+        }
 
             public async Task<IActionResult> OnPostEditUserAsync(int id)
             {
@@ -330,13 +413,15 @@ namespace budget_management_system_aspdotnetcore.Pages
                                     return Page();*/
                 }
 
-                var user = await _context.Users.FindAsync(NewUser);
+                var user = await _context.Users.FindAsync(NewUser.UserId);
 
                 if (user != null)
                 {
+                    user.Email = NewUser.Email;
                     user.FirstName = NewUser.FirstName;
                     user.LastName = NewUser.LastName;
-                    user.Email = NewUser.Email;
+                    user.Status = NewUser.Status;
+                    user.Role = NewUser.Role;
                     user.PhoneNumber = NewUser.PhoneNumber;
                     user.HireDate = NewUser.HireDate;
                     user.JobTitle = NewUser.JobTitle;
@@ -352,7 +437,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             public async Task<IActionResult> OnPostDeleteUserAsync(int id)
             {
-                var user = await _context.Users.FindAsync(NewUser);
+                var user = await _context.Users.FindAsync(NewUser.UserId);
 
                 if (user == null)
                 {
@@ -403,104 +488,6 @@ namespace budget_management_system_aspdotnetcore.Pages
 
                 return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Employees.xlsx");
             }
-        #endregion
-
-
-        // ==============================================
-        //                 USER METHODS
-        // ==============================================
-        #region USER METHODS
-/*            public async Task<IActionResult> OnPostAddUserAsync()
-            {
-                if (!ModelState.IsValid)
-                {
-                    *//*                Employees = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
-                                    Departments = await _context.Departments.ToListAsync();  // Re-fetch departments to display on the page
-                                    return Page();*//*
-                }
-
-                byte[] salt = new byte[16];
-                using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
-                {
-                    rng.GetBytes(salt);
-                }
-
-                string hashedPassword = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                    password: NewUser.Password,
-                    salt: salt,
-                    prf: KeyDerivationPrf.HMACSHA256,
-                    iterationCount: 10000,
-                    numBytesRequested: 32));
-
-                NewUser.Password = hashedPassword;
-                NewUser.Salt = Convert.ToBase64String(salt);
-
-                _context.Users.Add(NewUser);
-                await _context.SaveChangesAsync();
-
-                await LoadFormDataAsync();
-                return RedirectToPage();
-            }
-            public async Task<IActionResult> OnPostEditUserAsync(int id)
-            {
-                EditingUserID = id;
-
-                await LoadFormDataAsync();
-
-                return Page();
-            }
-
-            public async Task<IActionResult> OnPostCancelEditUserAsync(int id)
-            {
-                EditingUserID = 0;
-
-                await LoadFormDataAsync();
-
-                return Page();
-            }
-
-            public async Task<IActionResult> OnPostSaveUserAsync()
-            {
-
-                if (!ModelState.IsValid)
-                {
-                    *//*                Employees = await _context.Employees.ToListAsync();
-                                    Departments = await _context.Departments.ToListAsync();
-                                    return Page();*//*
-                }
-
-                var user = await _context.Users.FindAsync(NewUser.UserId);
-
-
-                if (user != null)
-                {
-                    user.Email = NewUser.Email;
-                    user.Password = NewUser.Password;
-
-                    await _context.SaveChangesAsync();
-                }
-
-                await LoadFormDataAsync();
-
-                return RedirectToPage();
-            }
-
-            public async Task<IActionResult> OnPostDeleteUserAsync(int id)
-            {
-                var user = await _context.Users.FindAsync(id);
-
-                if (user == null)
-                {
-                    return NotFound();
-                }
-
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
-
-                await LoadFormDataAsync();
-
-                return RedirectToPage();
-            }*/
         #endregion
 
 

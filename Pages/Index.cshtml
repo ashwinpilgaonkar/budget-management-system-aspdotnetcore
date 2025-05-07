@@ -3,18 +3,19 @@
 @{
     ViewData["Title"] = "Home page";
 }
+@using budget_management_system_aspdotnetcore.Entities
 
-<div class="container">
+<div class="container-fluid">
 
     <!-- Budget Amendment History Card -->
     <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
-                <h3 class="card-title">Budget Amendment History</h3>
+                <h3 class="card-title">Budget Amendments</h3>
                 <!-- Add New Amendment Button -->
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAmendmentModal"
                 @(DateTime.Now < Model.BudgetAmendmentStartDate || DateTime.Now > Model.BudgetAmendmentEndDate ? "disabled" : "")>
-                    Add New +
+                    Create New +
                 </button>
             </div>
             <!-- Search Bar -->
@@ -24,8 +25,98 @@
                     <button type="submit" class="btn btn-outline-secondary">Search</button>
                 </div>
             </form>
+
+            <div class="d-flex align-items-end justify-content-between flex-wrap gap-3 mb-4">
+                <!-- Financial Year Form -->
+                <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
+                    <div>
+                        <label for="financialYear" class="form-label mb-1">Financial year:</label>
+                        <select class="form-select form-select-sm" id="financialYear" name="SelectedFinancialYear" onchange="toggleDateRange(this.value)">
+                            @foreach (var fy in Model.FinancialYearOptions)
+                            {
+                                <option value="@fy" selected="@(fy == Model.SelectedFinancialYear ? "selected" : null)">@fy</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="d-none" id="customDateRange">
+                        <label class="form-label mb-1">From</label>
+                        <input type="date" name="CustomStartDate" class="form-control form-control-sm" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+
+                    <div class="d-none" id="customDateRangeTo">
+                        <label class="form-label mb-1">To</label>
+                        <input type="date" name="CustomEndDate" class="form-control form-control-sm" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+
+                    <div>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Apply</button>
+                    </div>
+                </form>
+
+                <!-- Submit Amendments Section -->
+                <div class="text-end">
+                    <label class="form-label d-block mb-1">Submit Drafts for Approval:</label>
+                    <div class="d-flex align-items-end gap-2 flex-wrap justify-content-end">
+                        <button type="button" class="btn btn-sm btn-outline-dark" onclick="selectAllCategoryCheckboxes()">Select All</button>
+                        <button type="button" class="btn btn-sm btn-outline-dark" onclick="deselectAllCategoryCheckboxes()">Deselect All</button>
+
+                        <form method="post" asp-page-handler="SubmitSelectedCategories" class="d-inline">
+                            <input type="hidden" name="SelectedCategoryList" id="selectedCategoryList" />
+                            <button type="submit" class="btn btn-sm btn-outline-primary" onclick="confirmAndSubmitCategories()" id="submitBtn" disabled>Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-header">Total Amendments</div>
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.OverviewTotalCount</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-header">Approved</div>
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.OverviewApprovedCount</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-header">Pending</div>
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.OverviewPendingCount</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger mb-3">
+                        <div class="card-header">Rejected</div>
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.OverviewRejectedCount</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info mb-3 shadow-sm" style="border-radius: 12px;">
+                        <div class="card-body">
+                            <h5 class="card-title">Activity Summary</h5>
+                            <p class="card-text mb-1"><strong>Total Actions:</strong> @Model.OverviewTotalActionsThisMonth</p>
+                            <p class="card-text mb-1"><strong>Top User:</strong> @Model.OverviewMostActiveUser</p>
+                            <p class="card-text"><strong>Last Action:</strong> @Model.OverviewLastActivityTime</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped table-hover text-center">
                     <thead>
                         <tr>
                             <th>
@@ -59,9 +150,6 @@
                                     <input type="hidden" name="table" value="AmendmentHistory" />
                                     <input type="hidden" name="column" value="AdjustmentDetail" />
                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("AdjustmentDetail")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("AdjustmentDetail")"></i>
-                                    </button>
                                 </form>
                             </th>
                             <th>
@@ -71,9 +159,6 @@
                                     <input type="hidden" name="table" value="AmendmentHistory" />
                                     <input type="hidden" name="column" value="SpeedType" />
                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("SpeedType")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("SpeedType")"></i>
-                                    </button>
                                 </form>
                             </th>
                             <th>
@@ -131,9 +216,6 @@
                                     <input type="hidden" name="table" value="AmendmentHistory" />
                                     <input type="hidden" name="column" value="AcctDescription" />
                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("AcctDescription")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("AcctDescription")"></i>
-                                    </button>
                                 </form>
                             </th>
                             <th>
@@ -195,7 +277,47 @@
                                         <i class="fas @Model.GetSortIcon("CreatedBy")"></i>
                                     </button>
                                 </form>
+
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="createdByFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+
+                                    <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
+                                        <form method="get">
+                                            <!-- Creator Dropdown -->
+                                            <div class="mb-2">
+                                                <label for="SelectedCreatedBy" class="form-label">Created By</label>
+                                                <select name="SelectedCreatedBy" class="form-select form-select-sm">
+                                                    <option value="">Any</option>
+                                                    @foreach (var user in Model.CreatedByUsers)
+                                                    {
+                                                        <option value="@user.Value" selected="@(Model.SelectedCreatedBy?.ToString() == user.Value)">
+                                                            @user.Text
+                                                        </option>
+                                                    }
+                                                </select>
+                                            </div>
+
+                                            <!-- Date Range -->
+                                            <div class="mb-2">
+                                                <label class="form-label">From</label>
+                                                <input type="date" name="CreatedFromDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" max="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">To</label>
+                                                <input type="date" name="CreatedToDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" max="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                            </div>
+
+                                            <!-- Apply Button -->
+                                            <div class="text-end mt-2">
+                                                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </th>
+
                             <th>
                                 Edited By
                                 <form method="get" class="d-inline">
@@ -207,7 +329,47 @@
                                         <i class="fas @Model.GetSortIcon("EditedBy")"></i>
                                     </button>
                                 </form>
+
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="editedByFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+
+                                    <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
+                                        <form method="get">
+                                            <!-- Editor Dropdown -->
+                                            <div class="mb-2">
+                                                <label for="SelectedEditedBy" class="form-label">Edited By</label>
+                                                <select name="SelectedEditedBy" class="form-select form-select-sm">
+                                                    <option value="">Any</option>
+                                                    @foreach (var user in Model.EditedByUsers)
+                                                    {
+                                                        <option value="@user.Value" selected="@(Model.SelectedEditedBy?.ToString() == user.Value)">
+                                                            @user.Text
+                                                        </option>
+                                                    }
+                                                </select>
+                                            </div>
+
+                                            <!-- Date Range -->
+                                            <div class="mb-2">
+                                                <label class="form-label">From</label>
+                                                <input type="date" name="EditedFromDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">To</label>
+                                                <input type="date" name="EditedToDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                            </div>
+
+                                            <!-- Apply Button -->
+                                            <div class="text-end mt-2">
+                                                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </th>
+
                             <th>
                                 Updated By
                                 <form method="get" class="d-inline">
@@ -219,6 +381,45 @@
                                         <i class="fas @Model.GetSortIcon("UpdatedBy")"></i>
                                     </button>
                                 </form>
+
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="updatedByFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+
+                                    <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
+                                        <form method="get">
+                                            <!-- Updater Dropdown -->
+                                            <div class="mb-2">
+                                                <label for="SelectedUpdatedBy" class="form-label">Updated By</label>
+                                                <select name="SelectedUpdatedBy" class="form-select form-select-sm">
+                                                    <option value="">Any</option>
+                                                    @foreach (var user in Model.UpdatedByUsers)
+                                                    {
+                                                        <option value="@user.Value" selected="@(Model.SelectedUpdatedBy?.ToString() == user.Value)">
+                                                            @user.Text
+                                                        </option>
+                                                    }
+                                                </select>
+                                            </div>
+
+                                            <!-- Date Range -->
+                                            <div class="mb-2">
+                                                <label class="form-label">From</label>
+                                                <input type="date" name="UpdatedFromDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">To</label>
+                                                <input type="date" name="UpdatedToDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
+                                            </div>
+
+                                            <!-- Apply Button -->
+                                            <div class="text-end mt-2">
+                                                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </th>
                             <th>
                                 Status
@@ -227,10 +428,29 @@
                                     <input type="hidden" name="table" value="AmendmentHistory" />
                                     <input type="hidden" name="column" value="Status" />
                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("Status")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("Status")"></i>
-                                    </button>
                                 </form>
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="statusFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+
+                                    <div class="dropdown-menu p-3 shadow-lg" style="min-width: 200px;">
+                                        <form method="get" id="statusFilterForm">
+                                            @foreach (var status in Enum.GetNames(typeof(budget_management_system_aspdotnetcore.Entities.AmendmentStatus)))
+                                            {
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="SelectedStatus" value="@status"
+                                                    id="@status" @(Model.SelectedStatus.Contains(status) ? "checked" : "") />
+                                                    <label class="form-check-label" for="@status">@status</label>
+                                                </div>
+                                            }
+
+                                            <div class="mt-2 text-end">
+                                                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </th>
                             <th colspan="4">Actions</th>
                         </tr>
@@ -241,19 +461,94 @@
                             var totalIncrease = categoryGroup.Sum(a => a.AmountIncrease);
                             var totalDecrease = categoryGroup.Sum(a => a.AmountDecrease);
 
-                            <tr class="table-primary">
-                                <td colspan="11"><strong>@categoryGroup.Key</strong></td>
-                                <td colspan="6">@(totalIncrease - totalDecrease)</td>
-                                <td>
-                                    <form method="post" asp-page-handler="ApproveCategory" asp-route-category="@categoryGroup.Key">
-                                        <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-success">Approve</button>
-                                    </form>
+                            <!-- Submit checkbox: enabled only if all amendments in this category are Drafts -->
+                            <tr class="table-primary align-middle">
+
+                                <td colspan="1">
+                                    @{
+                                        var allApproved = categoryGroup.All(a => a.Status.ToString().Equals("Draft"));
+                                        var checkboxId = $"submitCheckbox_{categoryGroup.Key.Replace(" ", "_")}";
+                                    }
+                                    <div class="form-check">
+                                        <input class="form-check-input category-submit-checkbox"
+                                        type="checkbox"
+                                        name="SelectedCategories"
+                                        value="@categoryGroup.Key"
+                                        id="@checkboxId"
+                                        @(allApproved ? "" : "disabled") />
+                                        <label class="form-check-label" for="@checkboxId">
+                                        </label>
+                                    </div>
                                 </td>
-                                <td>
-                                    <form method="post" asp-page-handler="RejectCategory" asp-route-category="@categoryGroup.Key">
-                                        <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-danger">Reject</button>
-                                    </form>
-                                </td>
+
+                                <td colspan="1"><strong>@categoryGroup.Key</strong></td>
+
+                                @{
+                                    var netChange = totalIncrease - totalDecrease;
+                                    var cellClass = netChange == 0 ? "text-success" : "text-danger";
+                                }
+                                <td colspan="9"></td>
+                                <td colspan="2" class="@cellClass">$@netChange</td>
+                                <td colspan="4"></td>
+
+                                @if (Model.isAdmin)
+                                {
+                                    if (categoryGroup.Any(a => a.Status.ToString().Equals("Approved")) || categoryGroup.Any(a => a.Status.ToString().Equals("Rejected")))
+                                    {
+                                        <td colspan="2">
+                                            <form method="post" asp-page-handler="RevertCategory" asp-route-category="@categoryGroup.Key">
+                                                <button type="submit" class="btn btn-warning text-nowrap">Revert Decision</button>
+                                            </form>
+                                        </td>
+                                    }
+                                    else if (categoryGroup.Any(a => a.Status.ToString().Equals("Draft")))
+                                    {
+                                        <td colspan="2">
+                                            <form method="post" asp-page-handler="SubmitCategory" asp-route-category="@categoryGroup.Key">
+                                                <button type="submit" class="btn btn-primary text-nowrap">Submit Draft</button>
+                                            </form>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td colspan="2">
+                                            <div class="d-flex justify-content-evenly gap-2">
+                                                <form method="post" asp-page-handler="ApproveCategory" asp-route-category="@categoryGroup.Key" onsubmit="return validateNetChange(this)">
+                                                    <input type="hidden" name="NetChange" value="@netChange" />
+                                                    <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-success">Approve</button>
+                                                </form>
+
+                                                <form method="post" asp-page-handler="RejectCategory" asp-route-category="@categoryGroup.Key">
+                                                    <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-danger">Reject</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    }
+                                }
+
+                                else
+                                {
+                                    if (categoryGroup.Any(a => a.Status.ToString().Equals("Pending")))
+                                    {
+                                        <td colspan="2">
+                                            <form method="post" asp-page-handler="WithdrawCategory" asp-route-category="@categoryGroup.Key">
+                                                <button type="submit" class="btn btn-warning text-nowrap">Withdraw</button>
+                                            </form>
+                                        </td>
+                                    }
+                                    else if (categoryGroup.Any(a => a.Status.ToString().Equals("Draft")))
+                                    {
+                                        <td colspan="2">
+                                            <form method="post" asp-page-handler="SubmitCategory" asp-route-category="@categoryGroup.Key">
+                                                <button type="submit" class="btn btn-primary text-nowrap">Submit Draft</button>
+                                            </form>
+                                        </td>
+                                    } else
+                                    {
+                                        <td colspan="2">
+                                        </td>
+                                    }
+                                }
                             </tr>
 
                             @foreach (var amendment in categoryGroup)
@@ -262,32 +557,55 @@
                                 {
                                     <tr>
                                         <form method="post" asp-page-handler="SaveAmendment" asp-route-id="@amendment.BudgetAmendmentID">
-                                        <td><input asp-for="NewBudgetAmendment.BudgetAmendmentID" value="@amendment.BudgetAmendmentID" class="form-control" readonly /></td>
-                                        <td><input asp-for="NewBudgetAmendment.CategoryName" value="@amendment.CategoryName" class="form-control" /></td>
-                                        <td><input asp-for="NewBudgetAmendment.AdjustmentDetail" value="@amendment.AdjustmentDetail" class="form-control" /></td>
-                                        <td>@amendment.SpeedType.Code</td>
-                                        <td><input asp-for="NewBudgetAmendment.FundCode" value="@amendment.FundCode" class="form-control" /></td>
-                                        <td><input asp-for="NewBudgetAmendment.DepartmentID" value="@amendment.DepartmentID" class="form-control" /></td>
-                                        <td><input asp-for="NewBudgetAmendment.ProgramCode" value="@amendment.ProgramCode" class="form-control" /></td>
-                                        <td><input asp-for="NewBudgetAmendment.ClassCode" value="@amendment.ClassCode" class="form-control" /></td>
-                                        <td><input asp-for="NewBudgetAmendment.AcctDescription" value="@amendment.AcctDescription" class="form-control" /></td>
-                                        <td><input asp-for="NewBudgetAmendment.BudgetCode" value="@amendment.BudgetCode" class="form-control" /></td>
-                                        <td><input asp-for="NewBudgetAmendment.PositionNumber" value="@amendment.PositionNumber" class="form-control" /></td>
-                                        <td><input asp-for="NewBudgetAmendment.AmountIncrease" value="@amendment.AmountIncrease" class="form-control" /></td>
-                                        <td><input asp-for="NewBudgetAmendment.AmountDecrease" value="@amendment.AmountDecrease" class="form-control" /></td>
-                                        <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
-                                        <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
-                                        <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
-                                        <td>@amendment.Status</td>
-                                        <td>
-                                            <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-success">Save</button>
-                                        </td>
+                                            <td><input asp-for="NewBudgetAmendment.BudgetAmendmentID" value="@amendment.BudgetAmendmentID" class="form-control" readonly /></td>
+                                            <td><input asp-for="NewBudgetAmendment.CategoryName" value="@amendment.CategoryName" class="form-control" /></td>
+                                            <td><input asp-for="NewBudgetAmendment.AdjustmentDetail" value="@amendment.AdjustmentDetail" class="form-control" /></td>
+                                            <td>@amendment.SpeedType.Code</td>
+                                            <input asp-for="@Model.SourceSpeedtype" type="hidden" value="@Model.SourceSpeedtype" />
+                                            <input asp-for="@Model.DestinationSpeedtype" type="hidden" value="@Model.DestinationSpeedtype" />
+                                            <td><input asp-for="NewBudgetAmendment.FundCode" value="@amendment.FundCode" class="form-control" /></td>
+                                            <td><input asp-for="NewBudgetAmendment.DepartmentID" value="@amendment.DepartmentID" class="form-control" /></td>
+                                            <td><input asp-for="NewBudgetAmendment.ProgramCode" value="@amendment.ProgramCode" class="form-control" /></td>
+                                            <td><input asp-for="NewBudgetAmendment.ClassCode" value="@amendment.ClassCode" class="form-control" /></td>
+                                            <td><input asp-for="NewBudgetAmendment.AcctDescription" value="@amendment.AcctDescription" class="form-control" /></td>
+                                            <td><input asp-for="NewBudgetAmendment.BudgetCode" value="@amendment.BudgetCode" class="form-control" /></td>
+                                            <td><input asp-for="NewBudgetAmendment.PositionNumber" value="@amendment.PositionNumber" class="form-control" /></td>
+                                            <td><input asp-for="NewBudgetAmendment.AmountIncrease" value="@amendment.AmountIncrease" class="form-control" /></td>
+                                            <td><input asp-for="NewBudgetAmendment.AmountDecrease" value="@amendment.AmountDecrease" class="form-control" /></td>
+                                            <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                            <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                            <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                            @{
+                                                var isApproved = amendment.Status == AmendmentStatus.Approved;
+                                                var statusClass = isApproved ? "text-primary" : "";
+
+                                                switch (amendment.Status)
+                                                {
+                                                    case AmendmentStatus.Approved:
+                                                        statusClass = "text-success";
+                                                        break;
+                                                    case AmendmentStatus.Rejected:
+                                                        statusClass = "text-danger";
+                                                        break;
+                                                    case AmendmentStatus.Draft:
+                                                        statusClass = "text-primary";
+                                                        break;
+                                                    default:
+                                                        statusClass = "";
+                                                        break;
+                                                }
+                                            }
+                                            <td class="@statusClass">@amendment.Status</td>
+                                            <td>
+                                                <div class="d-flex justify-content-evenly gap-2">
+                                                    <button type="submit" class="btn btn-success">Save</button>
+                                                    <form method="post" asp-page-handler="CancelEditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                                        <button type="submit" class="btn btn-secondary">Cancel</button>
+                                                    </form>
+
+                                                </div>
+                                            </td>
                                         </form>
-                                        <td>
-                                            <form method="post" asp-page-handler="CancelEditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
-                                                <button type="submit" class="btn btn-secondary">Cancel</button>
-                                            </form>
-                                        </td>
                                     </tr>
                                 }
                                 else
@@ -309,16 +627,49 @@
                                         <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                         <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                         <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
-                                        <td>@amendment.Status</td>
+                                        @{
+                                            var isApproved = amendment.Status == AmendmentStatus.Approved;
+                                            var statusClass = isApproved ? "text-primary" : "";
+
+                                            switch (amendment.Status)
+                                            {
+                                                case AmendmentStatus.Approved:
+                                                    statusClass = "text-success";
+                                                    break;
+                                                case AmendmentStatus.Rejected:
+                                                    statusClass = "text-danger";
+                                                    break;
+                                                case AmendmentStatus.Draft:
+                                                    statusClass = "text-primary";
+                                                    break;
+                                                default: statusClass = "";
+                                                    break;
+                                            }
+                                        }
+                                        <td class="@statusClass">@amendment.Status</td>
                                         <td>
-                                            <form method="post" asp-page-handler="EditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
-                                                <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-warning">Edit</button>
-                                            </form>
-                                        </td>
-                                        <td>
-                                            <form method="post" asp-page-handler="DeleteAmendment" asp-route-id="@amendment.BudgetAmendmentID">
-                                                <button type="submit" disabled=@(!amendment.Status.ToString().Equals("Pending")) class="btn btn-danger">Delete</button>
-                                            </form>
+                                            @{
+                                                var isEnabled = false;
+                                                if (Model.isAdmin && (amendment.Status.ToString().Equals("Draft") || amendment.Status.ToString().Equals("Pending")))
+                                                {
+                                                    isEnabled = true;
+                                                }
+                                                else if (!Model.isAdmin && (amendment.Status.ToString().Equals("Draft")))
+                                                {
+                                                    isEnabled = true;
+                                                } else
+                                                {
+                                                    isEnabled = false;
+                                                }
+                                            }
+                                            <div class="d-flex justify-content-evenly gap-2">
+                                                <form method="post" asp-page-handler="EditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                                    <button type="submit" disabled=@(!isEnabled) class="btn btn-outline-secondary">Edit</button>
+                                                </form>
+                                                <form method="post" asp-page-handler="DeleteAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                                    <button type="submit" disabled=@(!isEnabled) class="btn btn-outline-danger">Delete</button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 }
@@ -385,7 +736,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addAmendmentModalLabel">Add New Budget Amendment</h5>
+                    <h5 class="modal-title" id="addAmendmentModalLabel">Create New Budget Amendment</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -455,7 +806,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="submit" class="btn btn-primary">Create Draft</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </form>
@@ -464,6 +815,184 @@
         </div>
     </div>
 
+    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
+        <div class="card-body">
+            <h5 class="card-title mb-3">User Activity Log</h5>
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.UserActivityLogs != null && Model.UserActivityLogs.Any())
+                        {
+                            int index = 1;
+                            foreach (var log in Model.UserActivityLogs)
+                            {
+                                <tr>
+                                    <td>@index</td>
+                                    <td>@log.User.FirstName @log.User.LastName</td>
+                                    <td>@log.Category</td>
+                                    <td>@log.Description</td>
+                                    <td>@log.Timestamp.ToString("g")</td>
+                                </tr>
+                                index++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No activity found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
+    <script>
+        function selectAllCategoryCheckboxes() {
+            document.querySelectorAll('.category-submit-checkbox:not(:disabled)').forEach(cb => cb.checked = true);
+        }
+
+        function deselectAllCategoryCheckboxes() {
+            document.querySelectorAll('.category-submit-checkbox').forEach(cb => cb.checked = false);
+        }
+
+        function confirmAndSubmitCategories() {
+            const selected = Array.from(document.querySelectorAll(".category-submit-checkbox:checked"))
+                .filter(cb => !cb.disabled);
+
+            if (selected.length === 0) {
+                alert("Please select at least one category to submit.");
+                return;
+            }
+
+            const confirmSubmit = confirm(`Are you sure you want to submit ${selected.length} selected amendment${selected.length > 1 ? 's' : ''} for approval?`);
+
+            if (confirmSubmit) {
+                prepareSelectedCategories();
+
+                document.querySelector('form[method="post"][asp-page-handler="SubmitSelectedCategories"]').submit();
+            }
+        }
+
+        function prepareSelectedCategories() {
+            const selected = Array.from(document.querySelectorAll(".category-submit-checkbox:checked"))
+                .filter(cb => !cb.disabled)
+                .map(cb => cb.value);
+
+            document.getElementById("selectedCategoryList").value = selected.join(",");
+        }
+
+        function toggleDateRange(selectedValue) {
+            const isCustom = selectedValue === "Custom";
+            document.getElementById("customDateRange").classList.toggle("d-none", !isCustom);
+            document.getElementById("customDateRangeTo").classList.toggle("d-none", !isCustom);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            toggleDateRange(document.getElementById("financialYear").value);
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const submitBtn = document.getElementById("submitBtn");
+            const checkboxes = document.querySelectorAll(".category-submit-checkbox");
+
+            function updateSubmitButtonState() {
+                const anyChecked = Array.from(checkboxes)
+                    .some(cb => !cb.disabled && cb.checked);
+
+                submitBtn.disabled = !anyChecked;
+            }
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener("change", updateSubmitButtonState);
+            });
+
+            window.selectAllCategoryCheckboxes = function () {
+                checkboxes.forEach(cb => {
+                    if (!cb.disabled) cb.checked = true;
+                });
+                updateSubmitButtonState();
+            };
+
+            window.deselectAllCategoryCheckboxes = function () {
+                checkboxes.forEach(cb => {
+                    if (!cb.disabled) cb.checked = false;
+                });
+                updateSubmitButtonState();
+            };
+
+            updateSubmitButtonState();
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const checkboxes = document.querySelectorAll("#statusFilterForm input[type='checkbox']");
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener("change", function () {
+                    const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+
+                    if (checkedBoxes.length === 0) {
+                        this.checked = true;
+                    }
+                });
+            });
+
+            statusDropdownMenu = document.querySelector('#statusFilterDropdown + .dropdown-menu');
+
+            if (statusDropdownMenu) {
+                statusDropdownMenu.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                    });
+            }
+
+            createdByDropdownMenu = document.querySelector('#createdByFilterDropdown + .dropdown-menu');
+
+            if (createdByDropdownMenu) {
+                createdByDropdownMenu.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                    });
+            }
+
+            editedByDropdownMenu = document.querySelector('#editedByFilterDropdown + .dropdown-menu');
+
+            if (editedByDropdownMenu) {
+                editedByDropdownMenu.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                    });
+            }
+
+            updatedByDropdownMenu = document.querySelector('#updatedByFilterDropdown + .dropdown-menu');
+
+            if (updatedByDropdownMenu) {
+                updatedByDropdownMenu.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                    });
+            }
+
+        });
+
+        function validateNetChange(form) {
+
+            const netChangeValue = parseFloat(form.querySelector('input[name="NetChange"]').value);
+            if (netChangeValue !== 0) {
+                window.alert("Cannot approve category: Balance is not zero.");
+                return false;
+            }
+            return true;
+        }
+    </script>

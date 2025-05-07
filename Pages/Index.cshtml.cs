@@ -8,6 +8,10 @@ using System.Diagnostics;
 using ClosedXML.Excel;
 using Microsoft.Data.SqlClient;
 using budget_management_system_aspdotnetcore.Services;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Vml;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
@@ -19,10 +23,10 @@ namespace budget_management_system_aspdotnetcore.Pages
         #region HELPER
             private readonly CasdbtestContext _context;
             private readonly SpeedTypeService _speedTypeService;
-
-
+            private readonly IAuthenticationService _authService;
         #endregion
 
+        public bool isAdmin { get; set; } = false;
 
         public string ActiveSortTable { get; set; } = "Department";
 
@@ -69,14 +73,169 @@ namespace budget_management_system_aspdotnetcore.Pages
         [Range(0.01, double.MaxValue, ErrorMessage = "Transfer amount must be greater than zero")]
         public double TransferAmount { get; set; }
 
-        public IndexModel(CasdbtestContext context, SpeedTypeService speedTypeService)
+        [BindProperty(SupportsGet = true)]
+        public List<string> SelectedStatus { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int? SelectedCreatedBy { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public DateTime? CreatedFromDate { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public DateTime? CreatedToDate { get; set; }
+
+        public List<SelectListItem> CreatedByUsers { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int? SelectedEditedBy { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public DateTime? EditedFromDate { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public DateTime? EditedToDate { get; set; }
+
+        public List<SelectListItem> EditedByUsers { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int? SelectedUpdatedBy { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public DateTime? UpdatedFromDate { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public DateTime? UpdatedToDate { get; set; }
+
+        public List<SelectListItem> UpdatedByUsers { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public string SelectedFinancialYear { get; set; } = "";
+
+        [BindProperty(SupportsGet = true)]
+        [DataType(DataType.Date)]
+        public DateTime? CustomStartDate { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        [DataType(DataType.Date)]
+        public DateTime? CustomEndDate { get; set; }
+
+        public int OverviewTotalCount { get; set; }
+        public int OverviewApprovedCount { get; set; }
+        public int OverviewPendingCount { get; set; }
+        public int OverviewRejectedCount { get; set; }
+
+        public int OverviewTotalActionsThisMonth { get; set; }
+
+        public string OverviewMostActiveUser { get; set; }
+
+        public DateTime OverviewLastActivityTime { get; set; }
+
+        public List<UserActivityLog> UserActivityLogs { get; set; }
+
+        public List<string> FinancialYearOptions
+        {
+            get
+            {
+                var now = DateTime.Now;
+                int currentFYStartYear = now.Month >= 10 ? now.Year : now.Year - 1;
+
+                string currentFY = $"FY {currentFYStartYear}-{currentFYStartYear + 1}";
+                string previousFY = $"FY {currentFYStartYear - 1}-{currentFYStartYear}";
+
+                return new List<string> { currentFY, previousFY, "Custom" };
+            }
+        }
+        public void SetDefaultFinancialYearRange()
+        {
+            var today = DateTime.Today;
+            int startYear = today.Month >= 10 ? today.Year : today.Year - 1;
+
+            if(!CustomStartDate.HasValue)
+                CustomStartDate = new DateTime(startYear, 10, 1);
+
+            if(!CustomEndDate.HasValue)
+                CustomEndDate = new DateTime(startYear + 1, 9, 30);
+        }
+
+        public void SetOverviewCardData()
+        {
+            DateTime startDate, endDate;
+
+            if (string.IsNullOrEmpty(SelectedFinancialYear) && FinancialYearOptions.Any())
+            {
+                SelectedFinancialYear = FinancialYearOptions.First();
+            }
+
+            if (SelectedFinancialYear == "Custom" && CustomStartDate.HasValue && CustomEndDate.HasValue)
+            {
+                startDate = CustomStartDate.Value;
+                endDate = CustomEndDate.Value;
+            }
+            else if (SelectedFinancialYear?.StartsWith("FY") == true)
+            {
+                var parts = SelectedFinancialYear.Substring(3).Split('-');
+                startDate = new DateTime(int.Parse(parts[0]), 10, 1);
+                endDate = new DateTime(int.Parse(parts[1]), 9, 30);
+            }
+            else
+            {
+                // Default fallback
+                startDate = DateTime.MinValue;
+                endDate = DateTime.Today.AddDays(1).AddTicks(-1);
+            }
+
+            var amendmentOverviewQuery = _context.BudgetAmendments
+                .Where(a => a.CreatedAt >= startDate && a.CreatedAt <= endDate);
+
+            var amendmentList = amendmentOverviewQuery.ToList();
+
+            var startOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+            var recentLogs = _context.UserActivityLogs
+                .Include(log => log.User)
+                .Where(log => log.Timestamp >= startOfMonth)
+                .ToList();
+
+            var mostActiveUser = recentLogs
+                .GroupBy(log => log.User.Email)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault() ?? "N/A";
+
+            var lastActivityTime = recentLogs
+                .OrderByDescending(log => log.Timestamp)
+                .Select(log => log.Timestamp)
+                .FirstOrDefault();
+
+            OverviewTotalCount = amendmentList.Count;
+            OverviewApprovedCount = amendmentList.Count(a => a.Status == AmendmentStatus.Approved);
+            OverviewPendingCount = amendmentList.Count(a => a.Status == AmendmentStatus.Pending);
+            OverviewRejectedCount = amendmentList.Count(a => a.Status == AmendmentStatus.Rejected);
+
+            OverviewTotalActionsThisMonth = recentLogs.Count;
+            OverviewMostActiveUser = mostActiveUser;
+            OverviewLastActivityTime = lastActivityTime;
+        }
+
+        public IndexModel(CasdbtestContext context, SpeedTypeService speedTypeService, IAuthenticationService authService)
         {
             _context = context;
             _speedTypeService = speedTypeService;
+            _authService = authService;
         }
 
         public async Task LoadFormDataAsync()
         {
+            isAdmin = _authService.IsAdmin(HttpContext);
+            SetDefaultFinancialYearRange();
+            SetOverviewCardData();
+
+
+            if (SelectedStatus == null || !SelectedStatus.Any())
+            {
+                SelectedStatus = Enum.GetNames(typeof(AmendmentStatus)).ToList();
+            }
+
             SpeedTypes = await _speedTypeService.GetSpeedTypesAsync();
 
             //Fetch BudgetAmendment Data
@@ -98,6 +257,15 @@ namespace budget_management_system_aspdotnetcore.Pages
                 || s.AmountDecrease.ToString().Contains(BudgetAmendmentSearchTerm));
             }
 
+            if (SelectedStatus != null && SelectedStatus.Any())
+            {
+                var parsedStatuses = SelectedStatus
+                    .Where(s => Enum.TryParse<AmendmentStatus>(s, out _))
+                    .Select(s => (AmendmentStatus)Enum.Parse(typeof(AmendmentStatus), s));
+
+                amendmentQuery = amendmentQuery.Where(b => parsedStatuses.Contains(b.Status));
+            }
+
             if (!string.IsNullOrEmpty(SortColumn) && ActiveSortTable == "AmendmentHistory")
             {
                 amendmentQuery = SortOrder == "asc"
@@ -106,15 +274,107 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             }
 
-            TotalBudgetAmendments = await amendmentQuery.CountAsync();
-            BudgetAmendmentTotalPages = (int)Math.Ceiling(TotalBudgetAmendments / (double)BudgetAmendmentResultsPerPage);
+            CreatedByUsers = await amendmentQuery
+                .Where(b => b.CreatedBy != null)
+                .Select(b => new
+                {
+                    b.CreatedBy,
+                    b.CreatedByUser.Email
+                })
+                .Distinct()
+                .Select(u => new SelectListItem
+                {
+                    Value = u.CreatedBy.ToString(),
+                    Text = u.Email
+                })
+                .ToListAsync();
+
+            EditedByUsers = await _context.BudgetAmendments
+                .Where(b => b.EditedBy != null)
+                .Select(b => new { b.EditedBy, b.EditedByUser.Email })
+                .Distinct()
+                .Select(u => new SelectListItem
+                {
+                    Value = u.EditedBy.ToString(),
+                    Text = u.Email
+                }).ToListAsync();
+
+            UpdatedByUsers = await _context.BudgetAmendments
+                .Where(b => b.UpdatedBy != null)
+                .Select(b => new { b.UpdatedBy, b.UpdatedByUser.Email })
+                .Distinct()
+                .Select(u => new SelectListItem
+                {
+                    Value = u.UpdatedBy.ToString(),
+                    Text = u.Email
+                }).ToListAsync();
+
+            DateTime startDate, endDate;
+
+            if (string.IsNullOrEmpty(SelectedFinancialYear) && FinancialYearOptions.Any())
+            {
+                SelectedFinancialYear = FinancialYearOptions.First();
+            }
+
+            if (SelectedFinancialYear == "Custom" && CustomStartDate.HasValue && CustomEndDate.HasValue)
+            {
+                startDate = CustomStartDate.Value;
+                endDate = CustomEndDate.Value;
+            }
+            else if (SelectedFinancialYear?.StartsWith("FY") == true)
+            {
+                var parts = SelectedFinancialYear.Substring(3).Split('-');
+                startDate = new DateTime(int.Parse(parts[0]), 10, 1);
+                endDate = new DateTime(int.Parse(parts[1]), 9, 30);
+            }
+            else
+            {
+                // Default fallback
+                startDate = DateTime.MinValue;
+                endDate = DateTime.Today.AddDays(1).AddTicks(-1);
+            }
+
+            if (!CreatedFromDate.HasValue)
+                CreatedFromDate = startDate;
+
+            if (!CreatedToDate.HasValue)
+                CreatedToDate = endDate;
+
+            if (!EditedFromDate.HasValue)
+                EditedFromDate = CreatedFromDate;
+
+            if (!EditedToDate.HasValue)
+                EditedToDate = DateTime.Today.AddDays(1).AddTicks(-1);
+
+            if (!UpdatedFromDate.HasValue)
+                UpdatedFromDate = CreatedFromDate;
+
+            if (!UpdatedToDate.HasValue)
+                UpdatedToDate = DateTime.Today.AddDays(1).AddTicks(-1);
+
+            amendmentQuery = amendmentQuery.Where(a => a.CreatedAt >= CreatedFromDate && a.CreatedAt <= CreatedToDate);
+            amendmentQuery = amendmentQuery.Where(a => a.EditedAt >= EditedFromDate && a.EditedAt <= EditedToDate);
+            amendmentQuery = amendmentQuery.Where(a => a.UpdatedAt >= UpdatedFromDate && a.UpdatedAt <= UpdatedToDate);
+
+            if (SelectedCreatedBy.HasValue)
+                amendmentQuery = amendmentQuery.Where(b => b.CreatedBy == SelectedCreatedBy);
+
+            if (SelectedEditedBy.HasValue)
+                amendmentQuery = amendmentQuery.Where(b => b.EditedBy == SelectedEditedBy);
+
+            if (SelectedUpdatedBy.HasValue)
+                amendmentQuery = amendmentQuery.Where(b => b.UpdatedBy == SelectedUpdatedBy);
 
             BudgetAmendments = await amendmentQuery
-            .Include(b => b.CreatedByUser)
+            .Include(a => a.CreatedByUser)
+            .Include(a => a.EditedByUser)
+            .Include(a => a.UpdatedByUser)
             .Skip((BudgetAmendmentCurrentPage - 1) * BudgetAmendmentResultsPerPage)
             .Take(BudgetAmendmentResultsPerPage)
             .ToListAsync();
 
+            TotalBudgetAmendments = await amendmentQuery.CountAsync();
+            BudgetAmendmentTotalPages = (int)Math.Ceiling(TotalBudgetAmendments / (double)BudgetAmendmentResultsPerPage);
 
             //Fetch Budget Amendment Settings
             var amendmentSettings = await _context.BudgetAmendmentSettings.FirstOrDefaultAsync();
@@ -128,15 +388,26 @@ namespace budget_management_system_aspdotnetcore.Pages
                 BudgetAmendmentStartDate = new DateTime(DateTime.Now.Year, 4, 1); // Example: April 1st as start
                 BudgetAmendmentEndDate = BudgetAmendmentStartDate.AddYears(1).AddDays(-1); // March 31st as end
             }
+
+            UserActivityLogs = await _context.UserActivityLogs
+                .Include(log => log.User)
+                .OrderByDescending(log => log.Timestamp) // Optional: sort by newest
+                .ToListAsync();
         }
 
 
-        public async Task OnGetAsync(int amendmentPageNumber = 1, int amendmentResultsPerPage = 10)
+        public async Task<IActionResult> OnGetAsync(int amendmentPageNumber = 1, int amendmentResultsPerPage = 10)
         {
             BudgetAmendmentCurrentPage = amendmentPageNumber;
             BudgetAmendmentResultsPerPage = amendmentResultsPerPage;
 
+            if (!_authService.IsAuthenticated(HttpContext))
+            {
+                return RedirectToPage("/Login");
+            }
+
             await LoadFormDataAsync();
+            return Page();
         }
 
         public async Task OnGetSortColumn(string table, string column, string order)
@@ -188,9 +459,9 @@ namespace budget_management_system_aspdotnetcore.Pages
                 AmountIncrease = TransferAmount,
                 AmountDecrease = 0,
 
-                CreatedBy = 1,
-                UpdatedBy = 1,
-                EditedBy = 1,
+                CreatedBy = _authService.GetAuthenticatedUserID(HttpContext),
+                UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext),
+                EditedBy = _authService.GetAuthenticatedUserID(HttpContext),
                 EditedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
@@ -212,9 +483,9 @@ namespace budget_management_system_aspdotnetcore.Pages
                 AmountIncrease = 0,
                 AmountDecrease = TransferAmount,
 
-                CreatedBy = 1,
-                UpdatedBy = 1,
-                EditedBy = 1,
+                CreatedBy = _authService.GetAuthenticatedUserID(HttpContext),
+                UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext),
+                EditedBy = _authService.GetAuthenticatedUserID(HttpContext),
                 EditedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
@@ -323,14 +594,15 @@ namespace budget_management_system_aspdotnetcore.Pages
                         relatedAmendment.EditedBy = 1; // Set to current user's ID once available
                     }
 
-                    sourceAmendment.AmountIncrease = NewBudgetAmendment.AmountIncrease;
-                    sourceAmendment.AmountDecrease = NewBudgetAmendment.AmountDecrease;
+                    sourceAmendment.AmountIncrease = NewBudgetAmendment.AmountDecrease;
+                    sourceAmendment.AmountDecrease = NewBudgetAmendment.AmountIncrease;
 
                     destinationAmendment.AmountIncrease = NewBudgetAmendment.AmountIncrease;
                     destinationAmendment.AmountDecrease = NewBudgetAmendment.AmountDecrease;
 
                     await _context.SaveChangesAsync();
                 }
+                await UpdateUserActivityLogAsync(NewBudgetAmendment.CategoryName, ActivityType.Edited);
             }
 
             await LoadFormDataAsync();
@@ -349,6 +621,8 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return NotFound();
             }
 
+            var categoryName = amendment.CategoryName;
+
             var transactionId = amendment.TransactionId;
 
             var relatedAmendments = _context.BudgetAmendments
@@ -356,6 +630,8 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             _context.BudgetAmendments.RemoveRange(relatedAmendments);
             await _context.SaveChangesAsync();
+
+            await UpdateUserActivityLogAsync(categoryName, ActivityType.Edited);
 
             await LoadFormDataAsync();
 
@@ -437,39 +713,138 @@ namespace budget_management_system_aspdotnetcore.Pages
                     return RedirectToPage();
                 }*/
 
-        public async Task<IActionResult> OnPostApproveCategory(string category)
+        public async Task<IActionResult> OnPostApproveCategoryAsync(string category)
         {
             if (string.IsNullOrEmpty(category))
                 return BadRequest("Invalid category");
 
             var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
+            var categoryName = "";
 
             foreach (var amendment in amendments)
             {
                 amendment.Status = AmendmentStatus.Approved;
-                amendment.UpdatedBy = 1; 
+                amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext); 
                 amendment.UpdatedAt = DateTime.Now;
+                categoryName = amendment.CategoryName;
             }
 
             await _context.SaveChangesAsync();
+            await UpdateUserActivityLogAsync(categoryName, ActivityType.Approved);
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostRejectCategory(string category)
+        public async Task<IActionResult> OnPostRejectCategoryAsync(string category)
         {
             if (string.IsNullOrEmpty(category))
                 return BadRequest("Invalid category");
 
             var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
+            var categoryName = "";
 
             foreach (var amendment in amendments)
             {
                 amendment.Status = AmendmentStatus.Rejected;
-                amendment.UpdatedBy = 1;
+                amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
                 amendment.UpdatedAt = DateTime.Now;
+                categoryName = amendment.CategoryName;
             }
 
             await _context.SaveChangesAsync();
+            await UpdateUserActivityLogAsync(categoryName, ActivityType.Rejected);
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostRevertCategoryAsync(string category)
+        {
+            if (string.IsNullOrEmpty(category))
+                return BadRequest("Invalid category");
+
+            var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
+            var categoryName = "";
+
+            foreach (var amendment in amendments)
+            {
+                amendment.Status = AmendmentStatus.Pending;
+                amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
+                amendment.UpdatedAt = DateTime.Now;
+                categoryName = amendment.CategoryName;
+            }
+
+            await _context.SaveChangesAsync();
+            await UpdateUserActivityLogAsync(categoryName, ActivityType.Reverted);
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostWithdrawCategoryAsync(string category)
+        {
+            if (string.IsNullOrEmpty(category))
+                return BadRequest("Invalid category");
+
+            var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
+            var categoryName = "";
+
+            foreach (var amendment in amendments)
+            {
+                amendment.Status = AmendmentStatus.Draft;
+                amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
+                amendment.UpdatedAt = DateTime.Now;
+                categoryName = amendment.CategoryName;
+            }
+
+            await _context.SaveChangesAsync();
+            await UpdateUserActivityLogAsync(categoryName, ActivityType.Withdrawn);
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostSubmitCategoryAsync(string category)
+        {
+            if (string.IsNullOrEmpty(category))
+                return BadRequest("Invalid category");
+
+            var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
+            var categoryName = "";
+
+            foreach (var amendment in amendments)
+            {
+                amendment.Status = AmendmentStatus.Pending;
+                amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
+                amendment.UpdatedAt = DateTime.Now;
+                categoryName = amendment.CategoryName;
+            }
+
+            await _context.SaveChangesAsync();
+            await UpdateUserActivityLogAsync(categoryName, ActivityType.Submitted);
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostSubmitSelectedCategories(string SelectedCategoryList)
+        {
+            var selectedCategories = SelectedCategoryList?.Split(',') ?? Array.Empty<string>();
+
+            foreach (var category in selectedCategories)
+            {
+                var amendments = _context.BudgetAmendments
+                                         .Where(a => a.CategoryName == category)
+                                         .ToList();
+
+                // Check if any amendment is not a Draft
+                if (amendments.Any(a => a.Status != AmendmentStatus.Draft))
+                {
+                    TempData["Error"] = $"All amendments in category '{category}' must be Approved before submission.";
+                    return RedirectToPage();
+                }
+
+                // If all are Drafts, set them to Pending
+                foreach (var amendment in amendments)
+                {
+                    amendment.Status = AmendmentStatus.Pending;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Selected categories submitted successfully.";
             return RedirectToPage();
         }
 
@@ -510,7 +885,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 amendment.Status = newStatus;
 
                 amendment.UpdatedAt = DateTime.Now;
-                amendment.UpdatedBy = 1; // Set to current user's ID once available
+                amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
             }
 
             await _context.SaveChangesAsync();
@@ -592,6 +967,16 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "BudgetAmendments.xlsx");
         }
-
+        public async Task UpdateUserActivityLogAsync(string category, ActivityType action)
+        {
+            _context.UserActivityLogs.Add(new UserActivityLog
+            {
+                UserID = _authService.GetAuthenticatedUserID(HttpContext),
+                Category = category,
+                Description = action.ToString(),
+                Timestamp = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+        }
     }
 }

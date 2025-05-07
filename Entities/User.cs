@@ -20,7 +20,6 @@ namespace budget_management_system_aspdotnetcore.Entities
         public virtual required Department Department { get; set; }
 
         public required string Password { get; set; }
-        public required string Salt { get; set; }
         public UserRole Role { get; set; } = UserRole.admin;
         public UserStatus Status { get; set; } = UserStatus.active;
     }

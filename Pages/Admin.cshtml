@@ -24,7 +24,7 @@
                 </div>
             </form>
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped table-hover text-center">
                     <thead>
                         <tr>
                             <th>
@@ -171,7 +171,6 @@
                             {
                                 <!-- Editing row (no modal) -->
                                 <tr>
-                                    <form method="post" asp-page-handler="SaveUser" asp-route-id="@user.UserId">
                                     <td><input asp-for="NewUser.UserId" value="@user.UserId" class="form-control" readonly /></td>
                                     <td><input asp-for="NewUser.Email" value="@user.Email" class="form-control" /></td>
                                     <td><input asp-for="NewUser.FirstName" value="@user.FirstName" class="form-control" /></td>
@@ -195,13 +194,14 @@
                                         </select>
                                     </td>
                                     <td>
-                                        <button type="submit" class="btn btn-success">Save</button>
-                                    </td>
-                                    </form>
-                                    <td>
-                                        <form method="post" asp-page-handler="CancelEditUser" asp-route-id="@user.UserId">
-                                            <button type="submit" class="btn btn-secondary">Cancel</button>
-                                        </form>
+                                        <div class="d-flex justify-content-evenly">
+                                            <form method="post" asp-page-handler="SaveUser" asp-route-id="@user.UserId">
+                                                <button type="submit" class="btn btn-success">Save</button>
+                                            </form>
+                                            <form method="post" asp-page-handler="CancelEditUser" asp-route-id="@user.UserId">
+                                                <button type="submit" class="btn btn-secondary">Cancel</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             }
@@ -221,14 +221,14 @@
                                     <td>@user.Salary</td>
                                     <td>@user.Department?.DepartmentName</td>
                                     <td>
-                                        <form method="post" asp-page-handler="EditUser" asp-route-id="@user.UserId">
-                                            <button type="submit" class="btn btn-warning">Edit</button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="DeleteUser" asp-route-id="@user.UserId">
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>
+                                            <div class="d-flex justify-content-evenly gap-3">
+                                            <form method="post" asp-page-handler="EditUser" asp-route-id="@user.UserId">
+                                                    <button type="submit" class="btn btn-outline-secondary">Edit</button>
+                                            </form>
+                                            <form method="post" asp-page-handler="DeleteUser" asp-route-id="@user.UserId">
+                                                <button type="submit" class="btn btn-outline-danger">Delete</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             }
@@ -350,7 +350,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="submit" class="btn btn-primary">Add</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </form>
@@ -377,7 +377,7 @@
                 </div>
             </form>
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped table-hover text-center">
                     <thead>
                         <tr>
                             <th>
@@ -405,7 +405,35 @@
                                 </form>
                             </th>
                             <th>SpeedType</th>
-                            <th>Budget</th>
+                            <th>
+                                Budget
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="departmentBudgetFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+
+                                    <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
+                                        <form method="get" id="departmentBudgetFilterForm">
+                                            <div class="mb-2">
+                                                <label class="form-label">Min Budget (Total)</label>
+                                                <input type="number" step="0.01" name="DepartmentMinBudget" id="departmentMinBudgetInput" class="form-control form-control-sm"
+                                                       value="@(Model.DepartmentMinBudget?.ToString("0.##") ?? "")" />
+                                            </div>
+
+                                            <div class="mb-2">
+                                                <label class="form-label">Max Budget (Total)</label>
+                                                <input type="number" step="0.01" name="DepartmentMaxBudget" id="departmentMaxBudgetInput" class="form-control form-control-sm"
+                                                       value="@(Model.DepartmentMaxBudget?.ToString("0.##") ?? "")" />
+                                            </div>
+
+                                            <div class="d-flex justify-content-start gap-2 mt-3">
+                                                <button type="submit" class="btn btn-sm btn-primary" id="departmentFilterApplyButton" disabled>Apply</button>
+                                                <button type="button" class="btn btn-sm btn-secondary" onclick="resetDepartmentBudgetFields()">Reset</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </th>
                             <th colspan="2">Actions</th>
                         </tr>
                     </thead>
@@ -417,7 +445,6 @@
                             if (Model.EditingDepartmentID == dept.DepartmentID)
                             {
                                 <tr>
-                                    <form method="post" asp-page-handler="SaveDepartment" asp-route-id="@dept.DepartmentID">
                                     <td><input asp-for="NewDepartment.DepartmentID" value="@dept.DepartmentID" class="form-control" readonly /></td>
                                     <td><input asp-for="NewDepartment.DepartmentName" value="@dept.DepartmentName" class="form-control" /></td>
                                         @*                                         <td>
@@ -449,13 +476,14 @@
                                             }
                                     </td>
                                     <td>
-                                        <button type="submit" class="btn btn-success">Save</button>
-                                    </td>
-                                    </form>
-                                    <td>
-                                        <form method="post" asp-page-handler="CancelEditDepartment" asp-route-id="@dept.DepartmentID">
-                                            <button type="submit" class="btn btn-secondary">Cancel</button>
-                                        </form>
+                                        <div class="d-flex justify-content-evenly">
+                                            <form method="post" asp-page-handler="SaveDepartment" asp-route-id="@dept.DepartmentID">
+                                                <button type="submit" class="btn btn-success">Save</button>
+                                            </form>
+                                            <form method="post" asp-page-handler="CancelEditDepartment" asp-route-id="@dept.DepartmentID">
+                                                <button type="submit" class="btn btn-secondary">Cancel</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             }
@@ -477,14 +505,14 @@
                                         }
                                     </td>
                                     <td>
-                                        <form method="post" asp-page-handler="EditDepartment" asp-route-id="@dept.DepartmentID">
-                                            <button type="submit" class="btn btn-warning">Edit</button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="DeleteDepartment" asp-route-id="@dept.DepartmentID">
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>
+                                        <div class="d-flex justify-content-evenly">
+                                            <form method="post" asp-page-handler="EditDepartment" asp-route-id="@dept.DepartmentID">
+                                                    <button type="submit" class="btn btn-outline-secondary">Edit</button>
+                                            </form>
+                                            <form method="post" asp-page-handler="DeleteDepartment" asp-route-id="@dept.DepartmentID">
+                                                    <button type="submit" class="btn btn-outline-danger">Delete</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             }
@@ -562,7 +590,7 @@
                             </select>
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="submit" class="btn btn-primary">Add</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </form>
@@ -589,7 +617,7 @@
                 </div>
             </form>
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped table-hover text-center">
                     <thead>
                         <tr>
                             <th>
@@ -627,6 +655,35 @@
                                         <i class="fas @Model.GetSortIcon("Budget")"></i>
                                     </button>
                                 </form>
+
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="speedTypeBudgetFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+
+                                    <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
+                                        <form method="get" id="speedTypeBudgetFilterForm">
+                                            <div class="mb-2">
+                                                <label class="form-label">Min Budget</label>
+                                                <input type="number" step="0.01" name="SpeedTypeMinBudget" id="speedTypeMinBudgetInput" class="form-control form-control-sm"
+                                                       value="@(Model.SpeedTypeMinBudget?.ToString("0.##") ?? "")" />
+                                            </div>
+
+                                            <div class="mb-2">
+                                                <label class="form-label">Max Budget</label>
+                                                <input type="number" step="0.01" name="SpeedTypeMaxBudget" id="speedTypeMaxBudgetInput" class="form-control form-control-sm"
+                                                       value="@(Model.SpeedTypeMaxBudget?.ToString("0.##") ?? "")" />
+                                            </div>
+
+                                            <div class="d-flex justify-content-start gap-2 mt-3">
+                                                <button type="submit" class="btn btn-sm btn-primary" id="speedTypeFilterApplyButton" disabled>Apply</button>
+                                                <button type="button" class="btn btn-sm btn-secondary" onclick="resetSpeedTypeBudgetFields()">Reset</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+
                             </th>
                             <th colspan="2">Actions</th>
                         </tr>
@@ -637,20 +694,22 @@
                             if (Model.EditingSpeedTypeID == speedType.SpeedTypeId)
                             {
                                 <tr>
-                                    <form method="post" asp-page-handler="SaveSpeedType" asp-route-id="@speedType.SpeedTypeId">
                                     <td><input asp-for="NewSpeedType.SpeedTypeId" value="@speedType.SpeedTypeId" class="form-control" readonly /></td>
                                     <td><input asp-for="NewSpeedType.Code" value="@speedType.Code" class="form-control" /></td>
                                     <td><input asp-for="NewSpeedType.Budget" value="@speedType.Budget" class="form-control" /></td>
+
                                     <td>
-                                        <button type="submit" class="btn btn-success">Save</button>
-                                    </td>
-                                    </form>
-                                    <td>
-                                        <form method="post" asp-page-handler="CancelEditSpeedType" asp-route-id="@speedType.SpeedTypeId">
-                                            <button type="submit" class="btn btn-secondary">Cancel</button>
-                                        </form>
+                                        <div class="d-flex justify-content-evenly">
+                                            <form method="post" asp-page-handler="SaveSpeedType" asp-route-id="@speedType.SpeedTypeId">
+                                                <button type="submit" class="btn btn-success">Save</button>
+                                            </form>
+                                            <form method="post" asp-page-handler="CancelEditSpeedType" asp-route-id="@speedType.SpeedTypeId">
+                                                <button type="submit" class="btn btn-secondary">Cancel</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
+
                             }
                             else
                             {
@@ -659,14 +718,14 @@
                                     <td>@speedType.Code</td>
                                     <td>@speedType.Budget</td>
                                     <td>
-                                        <form method="post" asp-page-handler="EditSpeedType" asp-route-id="@speedType.SpeedTypeId">
-                                            <button type="submit" class="btn btn-warning">Edit</button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="DeleteSpeedType" asp-route-id="@speedType.SpeedTypeId">
-                                            <button type="submit" class="btn btn-danger">Delete</button>
-                                        </form>
+                                        <div class="d-flex justify-content-evenly">
+                                            <form method="post" asp-page-handler="EditSpeedType" asp-route-id="@speedType.SpeedTypeId" class="me-2">
+                                                <button type="submit" class="btn btn-outline-secondary">Edit</button>
+                                            </form>
+                                            <form method="post" asp-page-handler="DeleteSpeedType" asp-route-id="@speedType.SpeedTypeId">
+                                                <button type="submit" class="btn btn-outline-danger">Delete</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             }
@@ -734,7 +793,7 @@
                             <input asp-for="NewSpeedType.Budget" class="form-control" />
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="submit" class="btn btn-primary">Add</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </form>
@@ -757,9 +816,66 @@
                     <input type="date" asp-for="BudgetAmendmentSetting.EndDate" value="@Model.BudgetAmendmentEndDate.ToString("yyyy-MM-dd")" class="form-control"/>
                 </div>
                 <div class="form-group me-3">
-                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="submit" class="btn btn-outline-primary">Update</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+    <script>
+        const departmentMinInput = document.getElementById('departmentMinBudgetInput');
+        const departmentMaxInput = document.getElementById('departmentMaxBudgetInput');
+        const departmentApplyButton = document.getElementById('departmentFilterApplyButton');
+        const departmentForm = document.getElementById("departmentBudgetFilterForm");
+
+        const speedTypeMinInput = document.getElementById('speedTypeMinBudgetInput');
+        const speedTypeMaxInput = document.getElementById('speedTypeMaxBudgetInput');
+        const speedTypeApplyButton = document.getElementById('speedTypeFilterApplyButton');
+        const speedTypeForm = document.getElementById("speedTypeBudgetFilterForm");
+
+        function updateApplyButtonState() {
+            departmentApplyButton.disabled = !departmentMinInput.value && !departmentMaxInput.value;
+            speedTypeApplyButton.disabled = !speedTypeMinInput.value && !speedTypeMaxInput.value;
+        }
+
+        function resetDepartmentBudgetFields() {
+            departmentMinInput.value = '';
+            departmentMaxInput.value = '';
+            updateApplyButtonState();
+            departmentForm.submit();
+        }
+
+        function resetSpeedTypeBudgetFields() {
+            speedTypeMinInput.value = '';
+            speedTypeMaxInput.value = '';
+            updateApplyButtonState();
+            speedTypeForm.submit();
+        }
+
+        departmentMinInput.addEventListener('input', updateApplyButtonState);
+        departmentMaxInput.addEventListener('input', updateApplyButtonState);
+
+        speedTypeMinInput.addEventListener('input', updateApplyButtonState);
+        speedTypeMaxInput.addEventListener('input', updateApplyButtonState);
+
+        // Run on load
+        updateApplyButtonState();
+
+        document.addEventListener('DOMContentLoaded', function () {
+        const departmentDropdownMenu = document.querySelector('#departmentBudgetFilterDropdown + .dropdown-menu');
+        const speedTypeDropdownMenu = document.querySelector('#speedTypeBudgetFilterDropdown + .dropdown-menu');
+
+            if (departmentDropdownMenu) {
+                departmentDropdownMenu.addEventListener('click', function (e) {
+                        e.stopPropagation(); // Prevents the dropdown from closing on click inside
+                    });
+            }
+
+            if (speedTypeDropdownMenu) {
+                speedTypeDropdownMenu.addEventListener('click', function (e) {
+                        e.stopPropagation(); // Prevents the dropdown from closing on click inside
+                    });
+            }
+        });
+    </script>
