@@ -1,0 +1,312 @@
+﻿@page "/roles"
+@model RolesModel
+@{
+    ViewData["Title"] = "Roles";
+}
+
+<div class="container">
+    <!-- Roles List Card -->
+    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="card-title">Roles</h3>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRoleModal">
+                    Add New +
+                </button>
+            </div>
+
+            <!-- Search Bar -->
+            <form method="get">
+                <div class="input-group mb-3">
+                    <input type="text" name="RoleSearchTerm" class="form-control" placeholder="Search roles..." value="@Model.RoleSearchTerm" />
+                    <button type="submit" class="btn btn-outline-secondary">Search</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover text-center">
+                    <thead>
+                        <tr>
+                            <th>Role ID</th>
+                            <th>Role Name</th>
+                            <th colspan="2">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var role in Model.Roles)
+                        {
+                            if (Model.EditingRoleID == role.RoleID)
+                            {
+                                <tr>
+                                    <form method="post" asp-page-handler="SaveRole" asp-route-id="@role.RoleID">
+                                        <td><input asp-for="NewRole.RoleID" value="@role.RoleID" class="form-control" readonly /></td>
+                                        <td><input asp-for="NewRole.RoleName" value="@role.RoleName" class="form-control" /></td>
+                                        <td>
+                                            <div class="d-flex justify-content-evenly">
+                                                <button type="submit" class="btn btn-success">Save</button>
+                                                <form method="post" asp-page-handler="CancelEditRole" asp-route-id="@role.RoleID">
+                                                    <button type="submit" class="btn btn-secondary">Cancel</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </form>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td>@role.RoleID</td>
+                                    <td>@role.RoleName</td>
+                                    <td>
+                                        <div class="d-flex justify-content-evenly">
+                                            <form method="post" asp-page-handler="EditRole" asp-route-id="@role.RoleID">
+                                                <button type="submit" class="btn btn-outline-secondary">Edit</button>
+                                            </form>
+                                            <form method="post" asp-page-handler="DeleteRole" asp-route-id="@role.RoleID">
+                                                <button type="submit" class="btn btn-outline-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+
+
+
+
+
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <nav class="d-flex justify-content-between align-items-center my-3" aria-label="Role Page navigation">
+                <div>
+                    <label for="resultsPerPage" class="me-2">Results per page:</label>
+                    <select id="resultsPerPage" class="form-select d-inline w-auto" onchange="window.location.href='@Url.Page(null, new { rolePageNumber = 1, rolesPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
+                        @foreach (var size in Model.PageSizes)
+                        {
+                            <option value="@size" selected="@(Model.RoleResultsPerPage == size ? "selected" : null)">@size</option>
+                        }
+                    </select>
+                </div>
+                @{
+                    int rolesShownCount = Math.Min(Model.RoleResultsPerPage, Model.TotalRoles - ((Model.RoleCurrentPage - 1) * Model.RoleResultsPerPage));
+                }
+                <span>Records: @rolesShownCount of @Model.TotalRoles</span>
+                <ul class="pagination mb-0">
+                    <li class="page-item @(Model.RoleCurrentPage <= 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Page(null, new { rolePageNumber = Model.RoleCurrentPage - 1, rolesPerPage = Model.RoleResultsPerPage })">&laquo;</a>
+                    </li>
+                    <li class="page-item active">
+                        <span class="page-link">@Model.RoleCurrentPage</span>
+                    </li>
+                    <li class="page-item @(Model.RoleCurrentPage >= Model.RoleTotalPages ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Page(null, new { rolePageNumber = Model.RoleCurrentPage + 1, rolesPerPage = Model.RoleResultsPerPage })">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Export -->
+            <form method="post" asp-page-handler="ExportToExcelRoles">
+                <button type="submit" class="btn btn-success">Export to XLS</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Role Modal -->
+    <div class="modal fade" id="addRoleModal" tabindex="-1" aria-labelledby="addRoleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRoleModalLabel">Add New Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" asp-page-handler="AddRole">
+                        <div class="mb-3">
+                            <label asp-for="NewRole.RoleName" class="form-label">Role Name</label>
+                            <input asp-for="NewRole.RoleName" class="form-control" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Add Role</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+@*     <div class="flex flex-col md:flex-row gap-6 mt-6 p-4">
+        <!-- Roles List (Left Column) -->
+        <div class="w-full md:w-1/3 border rounded shadow-md p-4">
+            <h2 class="text-lg font-semibold mb-4">Roles</h2>
+            <ul class="space-y-2">
+                @foreach (var role in Model.Roles)
+                {
+                    <li>
+                        <button class="w-full text-left px-4 py-2 rounded hover:bg-gray-100 transition-colors border @((Model.SelectedRoleID == role.RoleID) ? "bg-blue-100 border-blue-400 font-semibold" : "border-gray-300")"
+                                onclick="selectRole(@role.RoleID)">
+                            @role.RoleName
+                        </button>
+                    </li>
+                }
+            </ul>
+        </div>
+
+        <!-- Permissions List (Right Column) -->
+        <div class="w-full md:w-2/3 border rounded shadow-md p-4">
+            <h2 class="text-lg font-semibold mb-4">Permissions</h2>
+
+            @if (Model.SelectedRoleID != null)
+            {
+                <form method="post" id="permissionForm">
+                    <input type="hidden" name="SelectedRoleID" value="@Model.SelectedRoleID" />
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        @foreach (var permission in Model.AllPermissions)
+                        {
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="SelectedPermissionIDs" value="@permission.PermissionID"
+                                @(Model.AssignedPermissionIDs.Contains(permission.PermissionID) ? "checked" : "") />
+                                <span>@permission.PermissionName</span>
+                            </label>
+                        }
+                    </div>
+
+                    <div class="mt-4 flex gap-4">
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                            Save Changes
+                        </button>
+                        <button type="button" class="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 transition" onclick="location.reload()">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <p class="text-gray-600 italic">Select a role to view and modify its permissions.</p>
+            }
+        </div>
+    </div> *@
+
+    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
+        <div class="card-body">
+            <div class="row">
+                <!-- Left: Roles List -->
+                <div class="col-md-4 border-end">
+                    <h5 class="mb-3">Roles</h5>
+                    <div class="list-group" id="roleList">
+                        @foreach (var role in Model.Roles)
+                        {
+                            <button type="button"
+                                    class="list-group-item list-group-item-action role-btn"
+                                    data-roleid="@role.RoleID">
+                                @role.RoleName
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <!-- Right: Permissions -->
+                <div class="col-md-8">
+                    <h5 class="mb-3">Permissions</h5>
+                    <form id="permissionsForm">
+                        <div class="row">
+                            @foreach (var permission in Model.AllPermissions)
+                            {
+                                <div class="col-sm-6 col-lg-4 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                                type="checkbox"
+                                                name="permissionIDs"
+                                                value="@permission.PermissionID"
+                                                id="perm_@permission.PermissionID" />
+                                        <label class="form-check-label" for="perm_@permission.PermissionID">
+                                            @permission.PermissionName
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <input type="hidden" id="selectedRoleID" name="selectedRoleID" />
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">Save Permissions</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        function selectRole(roleID) {
+            const url = new URL(window.location.href);
+            url.searchParams.set("roleID", roleID);
+            window.location.href = url.toString();
+        }
+
+        document.querySelectorAll('.role-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const roleID = this.getAttribute('data-roleID');
+                document.getElementById('selectedRoleID').value = roleID;
+
+                fetch(`/Roles?handler=PermissionsForRole&roleID=${roleID}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.querySelectorAll('input[name="permissionIDs"]').forEach(checkbox => {
+                            checkbox.checked = data.includes(parseInt(checkbox.value));
+                        });
+                    });
+            });
+        });
+
+        document.getElementById('permissionsForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const roleID = document.getElementById('selectedRoleID').value;
+            const checkedPermissions = Array.from(document.querySelectorAll('input[name="permissionIDs"]:checked')).map(cb => cb.value);
+
+            fetch('/Roles?handler=UpdatePermissions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({
+                    roleID: roleID,
+                    permissionIDs: checkedPermissions
+                })
+                  })  .then(response => {
+            console.log("Raw response:", response);
+            return response.text();
+        })
+        .then(text => {
+            console.log("Response body:", text);
+            const data = JSON.parse(text);
+            // proceed with using `data`
+        });
+        });
+
+                document.querySelectorAll(".role-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".role-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+            });
+        });
+    </script>
+}
+
+<style>
+    .role-btn.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+</style>

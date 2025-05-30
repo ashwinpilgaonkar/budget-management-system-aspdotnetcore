@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Vml;
+using Department = budget_management_system_aspdotnetcore.Entities.Department;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
@@ -26,6 +27,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             private readonly IAuthenticationService _authService;
         #endregion
 
+        private readonly UserService _userService;
         public bool isAdmin { get; set; } = false;
 
         public string ActiveSortTable { get; set; } = "Department";
@@ -72,6 +74,13 @@ namespace budget_management_system_aspdotnetcore.Pages
         [BindProperty]
         [Range(0.01, double.MaxValue, ErrorMessage = "Transfer amount must be greater than zero")]
         public double TransferAmount { get; set; }
+
+        public List<Department> DepartmentsUserIsResponsibleFor { get; set; }
+        [BindProperty(SupportsGet = true)]
+        public int SelectedDepartmentID { get; set; } = 0;
+
+        [BindProperty(SupportsGet = true)]
+        public string SelectedStatusTab { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public List<string> SelectedStatus { get; set; }
@@ -175,8 +184,8 @@ namespace budget_management_system_aspdotnetcore.Pages
             else if (SelectedFinancialYear?.StartsWith("FY") == true)
             {
                 var parts = SelectedFinancialYear.Substring(3).Split('-');
-                startDate = new DateTime(int.Parse(parts[0]), 10, 1);
-                endDate = new DateTime(int.Parse(parts[1]), 9, 30);
+                startDate = new DateTime(int.Parse(parts[0]), 7, 1);
+                endDate = new DateTime(int.Parse(parts[1]), 6, 30);
             }
             else
             {
@@ -217,10 +226,11 @@ namespace budget_management_system_aspdotnetcore.Pages
             OverviewLastActivityTime = lastActivityTime;
         }
 
-        public IndexModel(CasdbtestContext context, SpeedTypeService speedTypeService, IAuthenticationService authService)
+        public IndexModel(CasdbtestContext context, SpeedTypeService speedTypeService, UserService userService, IAuthenticationService authService)
         {
             _context = context;
             _speedTypeService = speedTypeService;
+            _userService = userService;
             _authService = authService;
         }
 
@@ -264,6 +274,16 @@ namespace budget_management_system_aspdotnetcore.Pages
                     .Select(s => (AmendmentStatus)Enum.Parse(typeof(AmendmentStatus), s));
 
                 amendmentQuery = amendmentQuery.Where(b => parsedStatuses.Contains(b.Status));
+            }
+
+            if (!string.IsNullOrEmpty(SelectedStatusTab) && Enum.TryParse<AmendmentStatus>(SelectedStatusTab, out var parsedStatus))
+            {
+                amendmentQuery = amendmentQuery.Where(b => b.Status == parsedStatus);
+            }
+
+            if (SelectedDepartmentID != 0)
+            {
+                amendmentQuery = amendmentQuery.Where(b => b.DepartmentID == SelectedDepartmentID);
             }
 
             if (!string.IsNullOrEmpty(SortColumn) && ActiveSortTable == "AmendmentHistory")
@@ -324,8 +344,8 @@ namespace budget_management_system_aspdotnetcore.Pages
             else if (SelectedFinancialYear?.StartsWith("FY") == true)
             {
                 var parts = SelectedFinancialYear.Substring(3).Split('-');
-                startDate = new DateTime(int.Parse(parts[0]), 10, 1);
-                endDate = new DateTime(int.Parse(parts[1]), 9, 30);
+                startDate = new DateTime(int.Parse(parts[0]), 7, 1);
+                endDate = new DateTime(int.Parse(parts[1]), 6, 30);
             }
             else
             {
@@ -393,6 +413,13 @@ namespace budget_management_system_aspdotnetcore.Pages
                 .Include(log => log.User)
                 .OrderByDescending(log => log.Timestamp) // Optional: sort by newest
                 .ToListAsync();
+
+            var userId = _authService.GetAuthenticatedUserID(HttpContext);
+            DepartmentsUserIsResponsibleFor = _userService.GetDepartmentsResponsibleForLoggedInUser(userId).ToList();
+
+            Debug.WriteLine("=======TEST======");
+            Debug.WriteLine(userId);
+            Debug.WriteLine(DepartmentsUserIsResponsibleFor);
         }
 
 

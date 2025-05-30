@@ -91,6 +91,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             UserTotalPages = (int)Math.Ceiling(TotalUsers / (double)UserResultsPerPage);
 
             Users = await usersQuery
+                .Include(u => u.DepartmentsResponsibleFor)
                 .Skip((UserCurrentPage - 1) * UserResultsPerPage)
                 .Take(UserResultsPerPage)
                 .ToListAsync();
@@ -105,7 +106,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                 .Select(u => new SelectListItem { Value = u.ToString(), Text = u.ToString() })
                 .ToList();
 
-
             // ==============================================
             //                DEPARTMENT DATA
             // ==============================================
@@ -113,15 +113,12 @@ namespace budget_management_system_aspdotnetcore.Pages
             Departments = await departmentQuery.ToListAsync();
         }
 
-        public async Task<IActionResult> OnGetAsync(int pageNumber = 1,
-            int resultsPerPage = 10,
-            int departmentPageNumber = 1,
-            int departmentResultsPerPage = 10,
-            int speedTypePageNumber = 1,
-            int speedTypeResultsPerPage = 10)
+        public async Task<IActionResult> OnGetAsync(
+            int userPageNumber = 1,
+            int userResultsPerPage = 10)
         {
-            UserCurrentPage = pageNumber;
-            UserResultsPerPage = resultsPerPage;
+            UserCurrentPage = userPageNumber;
+            UserResultsPerPage = userResultsPerPage;
 
             if (!_authService.IsAuthenticated(HttpContext))
             {

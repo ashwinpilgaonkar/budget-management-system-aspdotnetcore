@@ -9,7 +9,7 @@ namespace budget_management_system_aspdotnetcore.Entities
         public required string AdjustmentDetail { get; set; }
         public int SpeedTypeId { get; set; }
         public required string FundCode { get; set; }
-        public required string DepartmentID { get; set; }
+        public required int DepartmentID { get; set; }
         public required string ProgramCode { get; set; }
         public required string ClassCode { get; set; }
         public required string AcctDescription { get; set; }

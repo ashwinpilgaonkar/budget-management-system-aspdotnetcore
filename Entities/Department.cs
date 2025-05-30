@@ -12,5 +12,7 @@
 
         // Navigation property to the join table
         public ICollection<DepartmentSpeedType> DepartmentSpeedTypes { get; set; }
+
+        public virtual ICollection<User> AdminUsers { get; set; } = new List<User>();
     }
 }

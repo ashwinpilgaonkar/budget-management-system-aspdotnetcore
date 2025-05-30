@@ -57,8 +57,8 @@ namespace budget_management_system_aspdotnetcore.Pages
                 }
                 else
                 {
-                    BudgetAmendmentStartDate = new DateTime(DateTime.Now.Year, 4, 1); // Example: April 1st as start
-                    BudgetAmendmentEndDate = BudgetAmendmentStartDate.AddYears(1).AddDays(-1); // March 31st as end
+                    BudgetAmendmentStartDate = new DateTime(DateTime.Now.Year, 7, 1); // Example: July 1st as start
+                    BudgetAmendmentEndDate = BudgetAmendmentStartDate.AddYears(1).AddDays(-1); // June 30th as end
                 }
             }
 

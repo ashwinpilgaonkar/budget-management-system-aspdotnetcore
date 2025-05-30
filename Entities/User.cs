@@ -19,8 +19,17 @@ namespace budget_management_system_aspdotnetcore.Entities
         [ForeignKey("DepartmentID")]
         public virtual required Department Department { get; set; }
 
+        public virtual ICollection<Department> DepartmentsResponsibleFor { get; set; } = new List<Department>();
+
         public required string Password { get; set; }
         public UserRole Role { get; set; } = UserRole.admin;
+
+        // 🔁 Replace enum with Role entity
+        public int RoleID { get; set; }
+
+        [ForeignKey("RoleID")]
+/*        public virtual required Role Role { get; set; }*/
+
         public UserStatus Status { get; set; } = UserStatus.active;
     }
     public enum UserRole

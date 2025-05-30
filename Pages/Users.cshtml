@@ -1,10 +1,11 @@
 ﻿@page "/users"
+@using budget_management_system_aspdotnetcore.Entities
 @model UsersModel
 @{
     ViewData["Title"] = "Users";
 }
 
-<div class="container">
+<div class="container-fluid">
     <!-- User List Card -->
     <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
         <div class="card-body">
@@ -158,6 +159,20 @@
                                     </button>
                                 </form>
                             </th>
+
+                            <th>
+                                Department Responsible for
+                                <form method="get" class="d-inline">
+                                    <input type="hidden" name="handler" value="SortColumn" />
+                                    <input type="hidden" name="table" value="User" />
+                                    <input type="hidden" name="column" value="Department" />
+                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Department")" />
+                                    <button type="submit" class="btn btn-link p-0">
+                                        <i class="fas @Model.GetSortIcon("Department")"></i>
+                                    </button>
+                                </form>
+                            </th>
+
                             <th colspan="2">Actions</th>
                         </tr>
                     </thead>
@@ -193,6 +208,11 @@
                                             </select>
                                         </td>
                                         <td>
+                                            @{
+                                                @string.Join(", ", user.DepartmentsResponsibleFor.Select(d => d.DepartmentName))
+                                            }
+                                        </td>
+                                        <td>
                                             <div class="d-flex justify-content-evenly">
                                                 <form method="post" asp-page-handler="SaveUser" asp-route-id="@user.UserId">
                                                     <button type="submit" class="btn btn-success">Save</button>
@@ -219,6 +239,19 @@
                                         <td>@user.JobTitle</td>
                                         <td>@user.Salary</td>
                                         <td>@user.Department?.DepartmentName</td>
+@*                                         <td>
+                                            @if (user.Role == UserRole.admin && user.DepartmentsResponsibleFor != null && user.DepartmentsResponsibleFor.Any())
+                                            {
+                                                @string.Join(", ", user.DepartmentsResponsibleFor.Select(d => d.DepartmentName))
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">N/A</span>
+                                            }
+                                        </td> *@
+                                        <td>
+                                            @string.Join(", ", user.DepartmentsResponsibleFor.Select(d => d.DepartmentName))
+                                        </td>
                                         <td>
                                             <div class="d-flex justify-content-evenly gap-3">
                                                 <form method="post" asp-page-handler="EditUser" asp-route-id="@user.UserId">
@@ -242,7 +275,7 @@
                 <!-- Results per page dropdown on the left -->
                 <div class="d-flex align-items-center">
                     <label for="resultsPerPage" class="me-2">Results per page:</label>
-                    <select id="resultsPerPage" class="form-select me-3" style="width: auto;" onchange="window.location.href = '@Url.Page(null, new { pageNumber = 1, resultsPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
+                    <select id="resultsPerPage" class="form-select me-3" style="width: auto;" onchange="window.location.href = '@Url.Page(null, new { userPageNumber = 1, userResultsPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
                         @foreach (var size in Model.PageSizes)
                         {
                             <option value="@size" selected="@(Model.UserResultsPerPage == size ? "selected" : null)">@size</option>
@@ -255,7 +288,7 @@
                 <span>Records: @userRecordsShown of @Model.TotalUsers</span>
                 <ul class="pagination mb-0">
                     <li class="page-item @(Model.UserCurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.UserCurrentPage - 1, resultsPerPage = Model.UserResultsPerPage })" aria-label="Previous">
+                        <a class="page-link" href="@Url.Page(null, new { userPageNumber = Model.UserCurrentPage - 1, userResultsPerPage = Model.UserResultsPerPage })" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
@@ -263,7 +296,7 @@
                         <span class="page-link">@Model.UserCurrentPage</span>
                     </li>
                     <li class="page-item @(Model.UserCurrentPage >= Model.UserTotalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.UserCurrentPage + 1, resultsPerPage = Model.UserResultsPerPage })" aria-label="Next">
+                        <a class="page-link" href="@Url.Page(null, new { userPageNumber = Model.UserCurrentPage + 1, userResultsPerPage = Model.UserResultsPerPage })" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>

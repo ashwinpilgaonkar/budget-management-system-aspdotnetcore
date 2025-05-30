@@ -4,6 +4,7 @@ using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
@@ -110,21 +111,26 @@ namespace budget_management_system_aspdotnetcore.Pages
                 .Take(DepartmentResultsPerPage)
                 .ToListAsync();
 
+            Debug.WriteLine("=========HERE2===========");
+            Debug.WriteLine(DepartmentResultsPerPage);
+            Debug.WriteLine(DepartmentCurrentPage);
+
             var speedTypeQuery = _context.SpeedTypes.AsQueryable();
             SpeedTypes = await speedTypeQuery.ToListAsync();
 
         }
 
-        public async Task<IActionResult> OnGetAsync(int pageNumber = 1,
-            int resultsPerPage = 10,
+        public async Task<IActionResult> OnGetAsync(
             int departmentPageNumber = 1,
-            int departmentResultsPerPage = 10,
-            int speedTypePageNumber = 1,
-            int speedTypeResultsPerPage = 10)
+            int departmentResultsPerPage = 10)
         {
 
             DepartmentCurrentPage = departmentPageNumber;
             DepartmentResultsPerPage = departmentResultsPerPage;
+
+            Debug.WriteLine("=========HERE1===========");
+            Debug.WriteLine(DepartmentResultsPerPage);
+            Debug.WriteLine(DepartmentCurrentPage);
 
             if (!_authService.IsAuthenticated(HttpContext))
             {

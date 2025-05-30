@@ -90,46 +90,46 @@
                             if (Model.EditingDepartmentID == dept.DepartmentID)
                             {
                                 <tr>
-                                    <td><input asp-for="NewDepartment.DepartmentID" value="@dept.DepartmentID" class="form-control" readonly /></td>
-                                    <td><input asp-for="NewDepartment.DepartmentName" value="@dept.DepartmentName" class="form-control" /></td>
-                                    @*                                         <td>
-                                        <select asp-for="SelectedSpeedTypeIds" name="SelectedSpeedTypeIds" class="selectpicker w-100" multiple data-live-search="true">
-                                            @foreach (var speedtype in Model.SpeedTypes)
-                                            {
-                                                var isSelected = Model.SelectedSpeedTypeIds.Contains(speedtype.SpeedTypeId) ? "selected" : "";
-                                                <option value="@speedtype.SpeedTypeId" isSelected data-tokens="@speedtype.Code">
+                                    <form method="post" asp-page-handler="SaveDepartment" asp-route-id="@dept.DepartmentID">
+                                        <td><input asp-for="NewDepartment.DepartmentID" value="@dept.DepartmentID" class="form-control" readonly /></td>
+                                        <td><input asp-for="NewDepartment.DepartmentName" value="@dept.DepartmentName" class="form-control" /></td>
+                                        @*                                         <td>
+                                            <select asp-for="SelectedSpeedTypeIds" name="SelectedSpeedTypeIds" class="selectpicker w-100" multiple data-live-search="true">
+                                                @foreach (var speedtype in Model.SpeedTypes)
+                                                {
+                                                    var isSelected = Model.SelectedSpeedTypeIds.Contains(speedtype.SpeedTypeId) ? "selected" : "";
+                                                    <option value="@speedtype.SpeedTypeId" isSelected data-tokens="@speedtype.Code">
+                                                            @speedtype.Code
+                                                    </option>
+                                                }
+                                            </select>
+                                        </td> *@
+                                        <td>
+                                            <select asp-for="SelectedSpeedTypeIds" class="form-control w-100" multiple data-live-search="true">
+                                                @foreach (var speedtype in Model.SpeedTypes)
+                                                {
+                                                    var isSelected = Model.SelectedSpeedTypeIds.Contains(speedtype.SpeedTypeId) ? "selected" : "";
+                                                    <option value="@speedtype.SpeedTypeId" isSelected data-tokens="@speedtype.Code">
                                                         @speedtype.Code
-                                                </option>
-                                            }
-                                        </select>
-                                    </td> *@
-                                    <td>
-                                        <select asp-for="SelectedSpeedTypeIds" class="form-control w-100" multiple data-live-search="true">
-                                            @foreach (var speedtype in Model.SpeedTypes)
+                                                    </option>
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            @foreach (var deptSpeedType in dept.DepartmentSpeedTypes)
                                             {
-                                                var isSelected = Model.SelectedSpeedTypeIds.Contains(speedtype.SpeedTypeId) ? "selected" : "";
-                                                <option value="@speedtype.SpeedTypeId" isSelected data-tokens="@speedtype.Code">
-                                                    @speedtype.Code
-                                                </option>
+                                                <p>@deptSpeedType.SpeedType.Budget</p>
                                             }
-                                        </select>
-                                    </td>
-                                    <td>
-                                        @foreach (var deptSpeedType in dept.DepartmentSpeedTypes)
-                                        {
-                                            <p>@deptSpeedType.SpeedType.Budget</p>
-                                        }
-                                    </td>
-                                    <td>
-                                        <div class="d-flex justify-content-evenly">
-                                            <form method="post" asp-page-handler="SaveDepartment" asp-route-id="@dept.DepartmentID">
+                                        </td>
+                                        <td>
+                                            <div class="d-flex justify-content-evenly">
                                                 <button type="submit" class="btn btn-success">Save</button>
-                                            </form>
-                                            <form method="post" asp-page-handler="CancelEditDepartment" asp-route-id="@dept.DepartmentID">
-                                                <button type="submit" class="btn btn-secondary">Cancel</button>
-                                            </form>
-                                        </div>
-                                    </td>
+                                                <form method="post" asp-page-handler="CancelEditDepartment" asp-route-id="@dept.DepartmentID">
+                                                    <button type="submit" class="btn btn-secondary">Cancel</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </form>
                                 </tr>
                             }
                             else
@@ -172,7 +172,7 @@
                 <!-- Results per page dropdown on the left -->
                 <div class="d-flex align-items-center">
                     <label for="resultsPerPage" class="me-2">Results per page:</label>
-                    <select id="resultsPerPage" class="form-select me-3" style="width: auto;" onchange="window.location.href = '@Url.Page(null, new { departmentPageNumber = 1, departmentsPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
+                    <select id="resultsPerPage" class="form-select me-3" style="width: auto;" onchange="window.location.href = '@Url.Page(null, new { departmentPageNumber = 1, departmentResultsPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
                         @foreach (var size in Model.PageSizes)
                         {
                             <option value="@size" selected="@(Model.DepartmentResultsPerPage == size ? "selected" : null)">@size</option>
@@ -185,7 +185,7 @@
                 <span>Records: @departmentRecordsShown of @Model.TotalDepartments</span>
                 <ul class="pagination mb-0">
                     <li class="page-item @(Model.DepartmentCurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.DepartmentCurrentPage - 1, resultsPerPage = Model.DepartmentResultsPerPage })" aria-label="Previous">
+                        <a class="page-link" href="@Url.Page(null, new { departmentPageNumber = Model.DepartmentCurrentPage - 1, departmentResultsPerPage = Model.DepartmentResultsPerPage })" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
@@ -193,7 +193,7 @@
                         <span class="page-link">@Model.DepartmentCurrentPage</span>
                     </li>
                     <li class="page-item @(Model.DepartmentCurrentPage >= Model.DepartmentTotalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.DepartmentCurrentPage + 1, resultsPerPage = Model.DepartmentResultsPerPage })" aria-label="Next">
+                        <a class="page-link" href="@Url.Page(null, new { departmentPageNumber = Model.DepartmentCurrentPage + 1, departmentResultsPerPage = Model.DepartmentResultsPerPage })" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
@@ -244,3 +244,38 @@
     </div>
 
 </div>
+
+
+<script>
+    const departmentMinInput = document.getElementById('departmentMinBudgetInput');
+    const departmentMaxInput = document.getElementById('departmentMaxBudgetInput');
+    const departmentApplyButton = document.getElementById('departmentFilterApplyButton');
+    const departmentForm = document.getElementById("departmentBudgetFilterForm");
+
+    function updateApplyButtonState() {
+        departmentApplyButton.disabled = !departmentMinInput.value && !departmentMaxInput.value;
+    }
+
+    function resetDepartmentBudgetFields() {
+        departmentMinInput.value = '';
+        departmentMaxInput.value = '';
+        updateApplyButtonState();
+        departmentForm.submit();
+    }
+
+    departmentMinInput.addEventListener('input', updateApplyButtonState);
+    departmentMaxInput.addEventListener('input', updateApplyButtonState);
+
+    // Run on load
+    updateApplyButtonState();
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const departmentDropdownMenu = document.querySelector('#departmentBudgetFilterDropdown + .dropdown-menu');
+
+        if (departmentDropdownMenu) {
+            departmentDropdownMenu.addEventListener('click', function (e) {
+                    e.stopPropagation(); // Prevents the dropdown from closing on click inside
+                });
+        }
+    });
+</script>

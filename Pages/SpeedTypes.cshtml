@@ -101,20 +101,20 @@
                             if (Model.EditingSpeedTypeID == speedType.SpeedTypeId)
                             {
                                 <tr>
-                                    <td><input asp-for="NewSpeedType.SpeedTypeId" value="@speedType.SpeedTypeId" class="form-control" readonly /></td>
-                                    <td><input asp-for="NewSpeedType.Code" value="@speedType.Code" class="form-control" /></td>
-                                    <td><input asp-for="NewSpeedType.Budget" value="@speedType.Budget" class="form-control" /></td>
+                                    <form method="post" asp-page-handler="SaveSpeedType" asp-route-id="@speedType.SpeedTypeId">
+                                        <td><input asp-for="NewSpeedType.SpeedTypeId" value="@speedType.SpeedTypeId" class="form-control" readonly /></td>
+                                        <td><input asp-for="NewSpeedType.Code" value="@speedType.Code" class="form-control" /></td>
+                                        <td><input asp-for="NewSpeedType.Budget" value="@speedType.Budget" class="form-control" /></td>
 
-                                    <td>
-                                        <div class="d-flex justify-content-evenly">
-                                            <form method="post" asp-page-handler="SaveSpeedType" asp-route-id="@speedType.SpeedTypeId">
+                                        <td>
+                                            <div class="d-flex justify-content-evenly">
                                                 <button type="submit" class="btn btn-success">Save</button>
-                                            </form>
-                                            <form method="post" asp-page-handler="CancelEditSpeedType" asp-route-id="@speedType.SpeedTypeId">
-                                                <button type="submit" class="btn btn-secondary">Cancel</button>
-                                            </form>
-                                        </div>
-                                    </td>
+                                                <form method="post" asp-page-handler="CancelEditSpeedType" asp-route-id="@speedType.SpeedTypeId">
+                                                    <button type="submit" class="btn btn-secondary">Cancel</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </form>
                                 </tr>
 
                             }
@@ -159,7 +159,7 @@
                 <span>Records: @speedTypeRecordsShown of @Model.TotalSpeedTypes</span>
                 <ul class="pagination mb-0">
                     <li class="page-item @(Model.SpeedTypeCurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.SpeedTypeCurrentPage - 1, resultsPerPage = Model.SpeedTypeResultsPerPage })" aria-label="Previous">
+                        <a class="page-link" href="@Url.Page(null, new { speedTypePageNumber = Model.SpeedTypeCurrentPage - 1, speedTypesPerPage = Model.SpeedTypeResultsPerPage })" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
@@ -167,7 +167,7 @@
                         <span class="page-link">@Model.SpeedTypeCurrentPage</span>
                     </li>
                     <li class="page-item @(Model.SpeedTypeCurrentPage >= Model.SpeedTypeTotalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.SpeedTypeCurrentPage + 1, resultsPerPage = Model.SpeedTypeResultsPerPage })" aria-label="Next">
+                        <a class="page-link" href="@Url.Page(null, new { speedTypePageNumber = Model.SpeedTypeCurrentPage + 1, speedTypesPerPage = Model.SpeedTypeResultsPerPage })" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
@@ -210,3 +210,38 @@
     </div>
 
 </div>
+
+
+<script>
+    const speedTypeMinInput = document.getElementById('speedTypeMinBudgetInput');
+    const speedTypeMaxInput = document.getElementById('speedTypeMaxBudgetInput');
+    const speedTypeApplyButton = document.getElementById('speedTypeFilterApplyButton');
+    const speedTypeForm = document.getElementById("speedTypeBudgetFilterForm");
+
+    function updateApplyButtonState() {
+        speedTypeApplyButton.disabled = !speedTypeMinInput.value && !speedTypeMaxInput.value;
+    }
+
+    function resetSpeedTypeBudgetFields() {
+        speedTypeMinInput.value = '';
+        speedTypeMaxInput.value = '';
+        updateApplyButtonState();
+        speedTypeForm.submit();
+    }
+
+    speedTypeMinInput.addEventListener('input', updateApplyButtonState);
+    speedTypeMaxInput.addEventListener('input', updateApplyButtonState);
+
+    // Run on load
+    updateApplyButtonState();
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const speedTypeDropdownMenu = document.querySelector('#speedTypeBudgetFilterDropdown + .dropdown-menu');
+
+        if (speedTypeDropdownMenu) {
+            speedTypeDropdownMenu.addEventListener('click', function (e) {
+                    e.stopPropagation(); // Prevents the dropdown from closing on click inside
+                });
+        }
+    });
+</script>

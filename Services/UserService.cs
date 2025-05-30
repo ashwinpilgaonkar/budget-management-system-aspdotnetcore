@@ -66,5 +66,14 @@ namespace budget_management_system_aspdotnetcore.Services
 
             return _context.Users.FirstOrDefault(u => u.Email == email && u.Password == password);
         }
+
+        public ICollection<Department> GetDepartmentsResponsibleForLoggedInUser(int? userId)
+        {
+            var user = _context.Users
+                .Include(u => u.DepartmentsResponsibleFor)
+                .FirstOrDefault(u => u.UserId == userId);
+
+            return user?.DepartmentsResponsibleFor ?? new List<Department>();
+        }
     }
 }

@@ -103,10 +103,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 .ToListAsync();
         }
 
-        public async Task<IActionResult> OnGetAsync(int pageNumber = 1,
-            int resultsPerPage = 10,
-            int departmentPageNumber = 1,
-            int departmentResultsPerPage = 10,
+        public async Task<IActionResult> OnGetAsync(
             int speedTypePageNumber = 1,
             int speedTypeResultsPerPage = 10)
         {

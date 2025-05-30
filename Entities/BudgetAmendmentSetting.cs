@@ -1,6 +1,6 @@
 ﻿namespace budget_management_system_aspdotnetcore.Entities
 {
-    public class BudgetAmendmentSetting
+    public partial class BudgetAmendmentSetting
     {
         public int Id { get; set; }
         public DateTime StartDate { get; set; }

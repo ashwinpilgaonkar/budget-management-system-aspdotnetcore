@@ -7,7 +7,7 @@
 <div class="container">
     <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
         <div class="card-body">
-            <h3 class="card-title">Budget Amendment Dates</h3>
+            <h3 class="card-title">Assign Budget Amendment Dates</h3>
             <p>Select dates in the current financial year when budget amendments are allowed.</p>
             <form method="post" asp-page-handler="SaveBudgetAmendmentDates" class="d-flex align-items-end">
                 <div class="form-group me-3">
@@ -22,63 +22,19 @@
                     <button type="submit" class="btn btn-outline-primary">Update</button>
                 </div>
             </form>
+
+            <h3 class="card-title">Extend Budget Amendment Period</h3>
+            <p>Select period by which to extend the budget amendments window.</p>
+            <form method="post" asp-page-handler="ExtendBudgetAmendmentWindow" class="d-flex align-items-end mt-3">
+                <div class="form-group me-3">
+                    <label for="extensionDays">Number of Days to Extend (max 30):</label>
+                    <input type="number" name="extensionDays" id="extensionDays" class="form-control"
+                           min="1" max="30" required />
+                </div>
+                <div class="form-group me-3">
+                    <button type="submit" class="btn btn-outline-success">Extend</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
-    <script>
-        const departmentMinInput = document.getElementById('departmentMinBudgetInput');
-        const departmentMaxInput = document.getElementById('departmentMaxBudgetInput');
-        const departmentApplyButton = document.getElementById('departmentFilterApplyButton');
-        const departmentForm = document.getElementById("departmentBudgetFilterForm");
-
-        const speedTypeMinInput = document.getElementById('speedTypeMinBudgetInput');
-        const speedTypeMaxInput = document.getElementById('speedTypeMaxBudgetInput');
-        const speedTypeApplyButton = document.getElementById('speedTypeFilterApplyButton');
-        const speedTypeForm = document.getElementById("speedTypeBudgetFilterForm");
-
-        function updateApplyButtonState() {
-            departmentApplyButton.disabled = !departmentMinInput.value && !departmentMaxInput.value;
-            speedTypeApplyButton.disabled = !speedTypeMinInput.value && !speedTypeMaxInput.value;
-        }
-
-        function resetDepartmentBudgetFields() {
-            departmentMinInput.value = '';
-            departmentMaxInput.value = '';
-            updateApplyButtonState();
-            departmentForm.submit();
-        }
-
-        function resetSpeedTypeBudgetFields() {
-            speedTypeMinInput.value = '';
-            speedTypeMaxInput.value = '';
-            updateApplyButtonState();
-            speedTypeForm.submit();
-        }
-
-        departmentMinInput.addEventListener('input', updateApplyButtonState);
-        departmentMaxInput.addEventListener('input', updateApplyButtonState);
-
-        speedTypeMinInput.addEventListener('input', updateApplyButtonState);
-        speedTypeMaxInput.addEventListener('input', updateApplyButtonState);
-
-        // Run on load
-        updateApplyButtonState();
-
-        document.addEventListener('DOMContentLoaded', function () {
-        const departmentDropdownMenu = document.querySelector('#departmentBudgetFilterDropdown + .dropdown-menu');
-        const speedTypeDropdownMenu = document.querySelector('#speedTypeBudgetFilterDropdown + .dropdown-menu');
-
-            if (departmentDropdownMenu) {
-                departmentDropdownMenu.addEventListener('click', function (e) {
-                        e.stopPropagation(); // Prevents the dropdown from closing on click inside
-                    });
-            }
-
-            if (speedTypeDropdownMenu) {
-                speedTypeDropdownMenu.addEventListener('click', function (e) {
-                        e.stopPropagation(); // Prevents the dropdown from closing on click inside
-                    });
-            }
-        });
-    </script>
