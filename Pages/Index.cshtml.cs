@@ -140,8 +140,6 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public DateTime OverviewLastActivityTime { get; set; }
 
-        public List<UserActivityLog> UserActivityLogs { get; set; }
-
         public List<string> FinancialYearOptions
         {
             get
@@ -409,17 +407,8 @@ namespace budget_management_system_aspdotnetcore.Pages
                 BudgetAmendmentEndDate = BudgetAmendmentStartDate.AddYears(1).AddDays(-1); // March 31st as end
             }
 
-            UserActivityLogs = await _context.UserActivityLogs
-                .Include(log => log.User)
-                .OrderByDescending(log => log.Timestamp) // Optional: sort by newest
-                .ToListAsync();
-
             var userId = _authService.GetAuthenticatedUserID(HttpContext);
             DepartmentsUserIsResponsibleFor = _userService.GetDepartmentsResponsibleForLoggedInUser(userId).ToList();
-
-            Debug.WriteLine("=======TEST======");
-            Debug.WriteLine(userId);
-            Debug.WriteLine(DepartmentsUserIsResponsibleFor);
         }
 
 

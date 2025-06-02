@@ -1,0 +1,49 @@
+﻿@page "/activitylog"
+@model ActivityLogModel
+@{
+    ViewData["Title"] = "Activity Log";
+}
+
+<div class="container">
+    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
+        <div class="card-body">
+            <h5 class="card-title mb-3">User Activity Log</h5>
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.UserActivityLogs != null && Model.UserActivityLogs.Any())
+                        {
+                            int index = 1;
+                            foreach (var log in Model.UserActivityLogs)
+                            {
+                                <tr>
+                                    <td>@index</td>
+                                    <td>@log.User.FirstName @log.User.LastName</td>
+                                    <td>@log.Category</td>
+                                    <td>@log.Description</td>
+                                    <td>@log.Timestamp.ToString("g")</td>
+                                </tr>
+                                index++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No activity found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

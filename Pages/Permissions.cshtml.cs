@@ -53,6 +53,8 @@ namespace budget_management_system_aspdotnetcore.Pages
         #region DATA LOADING
         public async Task LoadFormDataAsync()
         {
+            isAdmin = _authService.IsAdmin(HttpContext);
+
             var permissionQuery = _context.Permissions.AsQueryable();
 
             if (!string.IsNullOrEmpty(PermissionSearchTerm))

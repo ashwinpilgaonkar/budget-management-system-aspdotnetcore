@@ -73,6 +73,8 @@ namespace budget_management_system_aspdotnetcore.Pages
         #region DATA LOADING
         public async Task LoadFormDataAsync()
         {
+            isAdmin = _authService.IsAdmin(HttpContext);
+
             var roleQuery = _context.Roles.AsQueryable();
 
             if (!string.IsNullOrEmpty(RoleSearchTerm))

@@ -69,6 +69,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task LoadFormDataAsync()
         {
+            isAdmin = _authService.IsAdmin(HttpContext);
 
             // ==============================================
             //                DEPARTMENT DATA

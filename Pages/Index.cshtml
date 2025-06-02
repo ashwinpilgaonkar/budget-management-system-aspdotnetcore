@@ -115,39 +115,29 @@
                 </div>
             </div>
 
-@*             <ul class="nav nav-pills nav-justified">
-                <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="#">All Departments</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">Computer Science</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">English</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Biology</a>
-                </li>
-            </ul> *@
-
             @{
                 var userDepartments = Model.DepartmentsUserIsResponsibleFor;
                 var selectedDepartmentID = Model.SelectedDepartmentID; // Optional: track active tab
             }
 
-            <ul class="nav nav-pills nav-justified">
-                <li class="nav-item">
-                    <a class="nav-link @(selectedDepartmentID==0 ? "active" : "")" href="?SelectedDepartmentID=0&SelectedStatusTab=@Model.SelectedStatusTab">All Departments</a>
-                </li>
-                @foreach (var dept in userDepartments)
-                {
-                    <li class="nav-item">
-                        <a class="nav-link @(selectedDepartmentID == dept.DepartmentID ? "active" : "")" href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=@Model.SelectedStatusTab">
-                            @dept.DepartmentName
-                        </a>
-                    </li>
-                }
-            </ul>
+            <div class="card mb-3">
+                <div class="card-body p-2">
+                    <ul class="nav nav-pills nav-justified">
+                        <li class="nav-item">
+                            <a class="nav-link @(selectedDepartmentID == 0 ? "active" : "")" href="?SelectedDepartmentID=0&SelectedStatusTab=@Model.SelectedStatusTab">All Departments</a>
+                        </li>
+                        @foreach (var dept in userDepartments)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(selectedDepartmentID == dept.DepartmentID ? "active" : "")" href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=@Model.SelectedStatusTab">
+                                    @dept.DepartmentName
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
 
 
             <ul class="nav nav-tabs justify-content-center">
@@ -865,49 +855,7 @@
             </div>
         </div>
     </div>
-
-    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
-        <div class="card-body">
-            <h5 class="card-title mb-3">User Activity Log</h5>
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">User</th>
-                            <th scope="col">Category</th>
-                            <th scope="col">Description</th>
-                            <th scope="col">Timestamp</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.UserActivityLogs != null && Model.UserActivityLogs.Any())
-                        {
-                            int index = 1;
-                            foreach (var log in Model.UserActivityLogs)
-                            {
-                                <tr>
-                                    <td>@index</td>
-                                    <td>@log.User.FirstName @log.User.LastName</td>
-                                    <td>@log.Category</td>
-                                    <td>@log.Description</td>
-                                    <td>@log.Timestamp.ToString("g")</td>
-                                </tr>
-                                index++;
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">No activity found.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        </div>
-    </div>
+</div>
 
 
 @section Scripts {
@@ -1048,3 +996,21 @@
             return true;
         }
     </script>
+
+<style>
+    .nav-pills .nav-link {
+        color: #495057;
+        background-color: #f8f9fa;
+        transition: background-color 0.3s ease;
+    }
+
+        .nav-pills .nav-link:hover {
+            background-color: #e2e6ea;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+</style>
