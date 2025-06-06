@@ -864,6 +864,37 @@ namespace budget_management_system_aspdotnetcore.Pages
             return RedirectToPage();
         }
 
+        public async Task<IActionResult> OnPostExtendDeadlineAsync(string category, int extensionDays)
+        {
+            if (string.IsNullOrWhiteSpace(category) || extensionDays <= 0)
+            {
+                TempData["Error"] = "Invalid category or extension days.";
+                return RedirectToPage(); // Stay on the same page
+            }
+
+            // Fetch matching amendments by category
+            var amendments = await _context.BudgetAmendments
+                .Where(a => a.CategoryName == category)
+                .ToListAsync();
+
+            if (amendments.Count == 0)
+            {
+                TempData["Error"] = "No amendments found for the selected category.";
+                return RedirectToPage();
+            }
+
+            // Extend deadlines
+            foreach (var amendment in amendments)
+            { 
+                amendment.ExtensionDays = extensionDays;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Deadline extended by {extensionDays} days for category '{category}'.";
+            return RedirectToPage();
+        }
+
         /*        public async Task<IActionResult> OnPostRejectAmendmentAsync(int id)
                 {
 

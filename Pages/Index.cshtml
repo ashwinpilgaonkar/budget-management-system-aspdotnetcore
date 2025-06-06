@@ -463,6 +463,48 @@
                                 </div>
                             </th>
                             <th>
+                                Start Date
+                                <form method="get" class="d-inline">
+                                    <input type="hidden" name="handler" value="SortColumn" />
+                                    <input type="hidden" name="table" value="AmendmentHistory" />
+                                    <input type="hidden" name="column" value="StartDate" />
+                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("StartDate")" />
+                                </form>
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="statusFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+                                </div>
+                            </th>
+                            <th>
+                                Deadline
+                                <form method="get" class="d-inline">
+                                    <input type="hidden" name="handler" value="SortColumn" />
+                                    <input type="hidden" name="table" value="AmendmentHistory" />
+                                    <input type="hidden" name="column" value="Deadline" />
+                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Deadline")" />
+                                </form>
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="statusFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+                                </div>
+                            </th>
+                            <th>
+                                Extension (Days)
+                                <form method="get" class="d-inline">
+                                    <input type="hidden" name="handler" value="SortColumn" />
+                                    <input type="hidden" name="table" value="AmendmentHistory" />
+                                    <input type="hidden" name="column" value="Extension" />
+                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Extension")" />
+                                </form>
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="statusFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+                                </div>
+                            </th>
+                            <th>
                                 Status
                                 <form method="get" class="d-inline">
                                     <input type="hidden" name="handler" value="SortColumn" />
@@ -530,7 +572,7 @@
                                 }
                                 <td colspan="9"></td>
                                 <td colspan="2" class="@cellClass">$@netChange</td>
-                                <td colspan="4"></td>
+                                <td colspan="7"></td>
 
                                 @if (Model.isAdmin)
                                 {
@@ -538,7 +580,7 @@
                                     {
                                         <td colspan="2">
                                             <form method="post" asp-page-handler="RevertCategory" asp-route-category="@categoryGroup.Key">
-                                                <button type="submit" class="btn btn-warning text-nowrap">Revert Decision</button>
+                                                <button type="submit" class="btn btn-link text-nowrap">Revert Decision ↩️</button>
                                             </form>
                                         </td>
                                     }
@@ -546,7 +588,7 @@
                                     {
                                         <td colspan="2">
                                             <form method="post" asp-page-handler="SubmitCategory" asp-route-category="@categoryGroup.Key">
-                                                <button type="submit" class="btn btn-primary text-nowrap">Submit Draft</button>
+                                                <button type="submit" class="btn btn-link text-nowrap">Submit Draft 🗒️</button>
                                             </form>
                                         </td>
                                     }
@@ -556,15 +598,44 @@
                                             <div class="d-flex justify-content-evenly gap-2">
                                                 <form method="post" asp-page-handler="ApproveCategory" asp-route-category="@categoryGroup.Key" onsubmit="return validateNetChange(this)">
                                                     <input type="hidden" name="NetChange" value="@netChange" />
-                                                    <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-success">Approve</button>
+                                                    <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-link">Approve ✔️</button>
                                                 </form>
 
                                                 <form method="post" asp-page-handler="RejectCategory" asp-route-category="@categoryGroup.Key">
-                                                    <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-danger">Reject</button>
+                                                    <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-link">Reject ❌</button>
                                                 </form>
                                             </div>
                                         </td>
                                     }
+
+                                    <td colspan="2">
+                                        <button type="button" class="btn btn-link text-nowrap" data-bs-toggle="modal" data-bs-target="#extendDeadlineModal" data-category="@categoryGroup.Key">
+                                            Extend deadline ⌛
+                                        </button>
+                                    </td>
+                                    <div class="modal fade" id="extendDeadlineModal" tabindex="-1" aria-labelledby="extendDeadlineModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form method="post" asp-page-handler="ExtendDeadline">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="extendDeadlineModalLabel">Extend Deadline</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <input type="hidden" name="category" id="modalCategory" />
+                                                        <div class="mb-3">
+                                                            <label for="extensionDays" class="form-label">Extension Days</label>
+                                                            <input type="number" class="form-control" id="extensionDays" name="extensionDays" min="1" required />
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 }
 
                                 else
@@ -573,7 +644,7 @@
                                     {
                                         <td colspan="2">
                                             <form method="post" asp-page-handler="WithdrawCategory" asp-route-category="@categoryGroup.Key">
-                                                <button type="submit" class="btn btn-warning text-nowrap">Withdraw</button>
+                                                <button type="submit" class="btn btn-link text-nowrap">Withdraw</button>
                                             </form>
                                         </td>
                                     }
@@ -581,7 +652,7 @@
                                     {
                                         <td colspan="2">
                                             <form method="post" asp-page-handler="SubmitCategory" asp-route-category="@categoryGroup.Key">
-                                                <button type="submit" class="btn btn-primary text-nowrap">Submit Draft</button>
+                                                <button type="submit" class="btn btn-link text-nowrap">Submit Draft</button>
                                             </form>
                                         </td>
                                     } else
@@ -616,6 +687,9 @@
                                             <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                             <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                             <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                            <td>@amendment.StartDate</td>
+                                            <td>@amendment.Deadline</td>
+                                            <td>@amendment.ExtensionDays</td>
                                             @{
                                                 var isApproved = amendment.Status == AmendmentStatus.Approved;
                                                 var statusClass = isApproved ? "text-primary" : "";
@@ -668,6 +742,9 @@
                                         <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                         <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                         <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                        <td>@amendment.StartDate</td>
+                                        <td>@amendment.Deadline</td>
+                                        <td>@amendment.ExtensionDays</td>
                                         @{
                                             var isApproved = amendment.Status == AmendmentStatus.Approved;
                                             var statusClass = isApproved ? "text-primary" : "";
@@ -688,7 +765,7 @@
                                             }
                                         }
                                         <td class="@statusClass">@amendment.Status</td>
-                                        <td>
+                                        <td colspan="4">
                                             @{
                                                 var isEnabled = false;
                                                 if (Model.isAdmin && (amendment.Status.ToString().Equals("Draft") || amendment.Status.ToString().Equals("Pending")))
@@ -995,6 +1072,14 @@
             }
             return true;
         }
+
+        const modal = document.getElementById('extendDeadlineModal');
+        modal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const category = button.getAttribute('data-category');
+        const categoryInput = modal.querySelector('#modalCategory');
+        categoryInput.value = category;
+    });
     </script>
 
 <style>
