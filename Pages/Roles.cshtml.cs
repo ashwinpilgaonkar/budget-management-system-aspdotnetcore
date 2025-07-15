@@ -8,12 +8,6 @@ using System.Diagnostics;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
-    public class PermissionUpdateModel
-    {
-        public int RoleID { get; set; }
-        public List<int> PermissionIDs { get; set; }
-    }
-
     public class RolesModel(CasdbtestContext context, IAuthenticationService authService) : PageModel
     {
         // ==============================================
@@ -53,17 +47,8 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public int TotalRoles { get; set; }
 
-        // TO DO -- Move this into a service
-        public List<Permission> AllPermissions { get; set; } = new();
-
         [BindProperty(SupportsGet = true)]
         public int? SelectedRoleID { get; set; }
-
-        // Permissions assigned to the selected role
-        [BindProperty]
-        public List<int> SelectedPermissionIDs { get; set; } = new();
-
-        public HashSet<int> AssignedPermissionIDs { get; set; } = new();
 
         #endregion
 
@@ -96,16 +81,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                 .Skip((RoleCurrentPage - 1) * RoleResultsPerPage)
                 .Take(RoleResultsPerPage)
                 .ToListAsync();
-
-            AllPermissions = await _context.Permissions.ToListAsync();
-
-            if (SelectedRoleID != null)
-            {
-                AssignedPermissionIDs = (await _context.RolePermissionMappings
-                    .Where(rp => rp.RoleID == SelectedRoleID)
-                    .Select(rp => rp.PermissionID)
-                    .ToListAsync()).ToHashSet();
-            }
         }
 
         public async Task<IActionResult> OnGetAsync(int rolePageNumber = 1, int roleResultsPerPage = 10)
@@ -245,46 +220,6 @@ namespace budget_management_system_aspdotnetcore.Pages
             stream.Position = 0;
 
             return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Roles.xlsx");
-        }
-
-        [IgnoreAntiforgeryToken]
-        public async Task<IActionResult> OnGetPermissionsForRoleAsync(int roleID)
-        {
-            try
-            {
-                var assignedPermissionIds = await _context.RolePermissionMappings
-                    .Where(rp => rp.RoleID == roleID)
-                    .Select(rp => rp.PermissionID)
-                    .ToListAsync();
-
-                return new JsonResult(assignedPermissionIds);
-            }
-            catch (Exception ex)
-            {
-                // Log the error to the console or a log file
-                Console.WriteLine("Error fetching permissions: " + ex.Message);
-                return StatusCode(500, "Server error: " + ex.Message);
-            }
-        }
-
-        public async Task<IActionResult> OnPostUpdatePermissionsAsync([FromBody] PermissionUpdateModel model)
-        {
-            Debug.WriteLine($"Updating permissions for RoleID: {model.RoleID}"); // or use ILogger
-
-            var existing = _context.RolePermissionMappings.Where(rp => rp.RoleID == model.RoleID);
-            _context.RolePermissionMappings.RemoveRange(existing);
-
-            foreach (var permId in model.PermissionIDs)
-            {
-                _context.RolePermissionMappings.Add(new RolePermissionMapping
-                {
-                    RoleID = model.RoleID,
-                    PermissionID = permId
-                });
-            }
-
-            await _context.SaveChangesAsync();
-            return new JsonResult(new { success = true });
         }
 
         #endregion
