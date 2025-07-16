@@ -28,7 +28,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         #endregion
 
         private readonly UserService _userService;
+
         public bool isAdmin { get; set; } = false;
+        public string userRole{ get; set; } = "";
 
         public string ActiveSortTable { get; set; } = "Department";
 
@@ -235,6 +237,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         public async Task LoadFormDataAsync()
         {
             isAdmin = _authService.IsAdmin(HttpContext);
+            userRole = _authService.GetUserRole(HttpContext);
             SetDefaultFinancialYearRange();
             SetOverviewCardData();
 

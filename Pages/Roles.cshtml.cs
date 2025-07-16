@@ -18,6 +18,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         private readonly IAuthenticationService _authService = authService;
 
         public bool isAdmin { get; set; } = false;
+        public string userRole { get; set; } = "";
         public string ActiveSortTable { get; set; } = "Role";
 
         public string SortColumn { get; set; } = "RoleID";
@@ -59,6 +60,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         public async Task LoadFormDataAsync()
         {
             isAdmin = _authService.IsAdmin(HttpContext);
+            userRole = _authService.GetUserRole(HttpContext);
 
             var roleQuery = _context.Roles.AsQueryable();
 
