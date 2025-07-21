@@ -61,7 +61,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 HttpContext.Session.SetString("Email", user.Email);
                 HttpContext.Session.SetString("FirstName", user.FirstName);
                 HttpContext.Session.SetString("LastName", user.LastName);
-                HttpContext.Session.SetString("Role", user.Role.ToString());
+                HttpContext.Session.SetString("RoleID", user.RoleID.ToString());
 
                 // Successful login, redirect to Index
                 return RedirectToPage("/Index");

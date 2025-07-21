@@ -47,7 +47,6 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task LoadFormDataAsync()
             {
-                isAdmin = _authService.IsAdmin(HttpContext);
                 userRole = _authService.GetUserRole(HttpContext);
 
             // ==============================================
@@ -72,11 +71,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                 {
                     return RedirectToPage("/Login");
                 }
-
-                if (!_authService.IsAdmin(HttpContext))
-                {
-                    return RedirectToPage("/Index");
-            }
 
                 await LoadFormDataAsync();
                 return Page();

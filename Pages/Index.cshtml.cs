@@ -236,7 +236,6 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task LoadFormDataAsync()
         {
-            isAdmin = _authService.IsAdmin(HttpContext);
             userRole = _authService.GetUserRole(HttpContext);
             SetDefaultFinancialYearRange();
             SetOverviewCardData();

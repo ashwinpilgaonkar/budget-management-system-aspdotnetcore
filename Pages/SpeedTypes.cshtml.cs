@@ -17,7 +17,6 @@ namespace budget_management_system_aspdotnetcore.Pages
         private readonly CasdbtestContext _context = context;
         private readonly IAuthenticationService _authService = authService;
 
-        public bool isAdmin { get; set; } = false;
         public string userRole { get; set; } = "";
         public string ActiveSortTable { get; set; } = "Employee";
 
@@ -66,7 +65,6 @@ namespace budget_management_system_aspdotnetcore.Pages
         #region DATA LOADING
         public async Task LoadFormDataAsync()
         {
-            isAdmin = _authService.IsAdmin(HttpContext);
             userRole = _authService.GetUserRole(HttpContext);
 
             // ==============================================
@@ -117,11 +115,6 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!_authService.IsAuthenticated(HttpContext))
             {
                 return RedirectToPage("/Login");
-            }
-
-            if (!_authService.IsAdmin(HttpContext))
-            {
-                return RedirectToPage("/Index");
             }
 
             await LoadFormDataAsync();

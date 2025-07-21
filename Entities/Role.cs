@@ -8,7 +8,7 @@ namespace budget_management_system_aspdotnetcore.Entities
 
         [Required]
         [MaxLength(100)]
-        public string RoleName { get; set; }
+        public string RoleName { get; set; } = string.Empty;
 
         public ICollection<User> Users { get; set; } = new List<User>();
     }

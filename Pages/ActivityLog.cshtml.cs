@@ -14,7 +14,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         private readonly CasdbtestContext _context;
         private readonly IAuthenticationService _authService;
 
-        public bool isAdmin { get; set; } = false;
+        public string userRole { get; set; } = "";
         public List<UserActivityLog> UserActivityLogs { get; set; }
 
         public ActivityLogModel(CasdbtestContext context, IAuthenticationService authService)
@@ -39,7 +39,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task LoadFormDataAsync()
         {
-            isAdmin = _authService.IsAdmin(HttpContext);
+            userRole = _authService.GetUserRole(HttpContext);
 
             UserActivityLogs = await _context.UserActivityLogs
                 .Include(log => log.User)

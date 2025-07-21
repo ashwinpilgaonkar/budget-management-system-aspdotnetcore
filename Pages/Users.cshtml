@@ -100,68 +100,7 @@
                                 </form>
                             </th>
                             <th>
-                                Phone Number
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="User" />
-                                    <input type="hidden" name="column" value="PhoneNumber" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("PhoneNumber")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("PhoneNumber")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Hire Date
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="User" />
-                                    <input type="hidden" name="column" value="HireDate" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("HireDate")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("HireDate")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Job Title
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="User" />
-                                    <input type="hidden" name="column" value="JobTitle" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("JobTitle")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("JobTitle")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Salary
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="User" />
-                                    <input type="hidden" name="column" value="Salary" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Salary")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("Salary")"></i>
-                                    </button>
-                                </form>
-                            </th>
-                            <th>
-                                Department
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="User" />
-                                    <input type="hidden" name="column" value="Department" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Department")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("Department")"></i>
-                                    </button>
-                                </form>
-                            </th>
-
-                            <th>
-                                Department Responsible for
+                                Departments Responsible for
                                 <form method="get" class="d-inline">
                                     <input type="hidden" name="handler" value="SortColumn" />
                                     <input type="hidden" name="table" value="User" />
@@ -193,19 +132,7 @@
                                             <select asp-for="NewUser.Status" class="form-control" asp-items="Model.UserStatusOptions"></select>
                                         </td>
                                         <td>
-                                            <select asp-for="NewUser.Role" class="form-control" asp-items="Model.UserRoleOptions"></select>
-                                        </td>
-                                        <td><input asp-for="NewUser.PhoneNumber" value="@user.PhoneNumber" class="form-control" /></td>
-                                        <td><input asp-for="NewUser.HireDate" value="@user.HireDate.ToString("yyyy-MM-dd")" type="date" class="form-control" /></td>
-                                        <td><input asp-for="NewUser.JobTitle" value="@user.JobTitle" class="form-control" /></td>
-                                        <td><input asp-for="NewUser.Salary" value="@user.Salary" type="number" step="0.01" class="form-control" /></td>
-                                        <td>
-                                            <select asp-for="NewUser.DepartmentID" class="form-control">
-                                                @foreach (var dept in Model.Departments)
-                                                {
-                                                    <option value="@dept.DepartmentID">@dept.DepartmentName</option>
-                                                }
-                                            </select>
+                                            <select asp-for="NewUser.RoleID" class="form-control" asp-items="Model.UserRoleOptions"></select>
                                         </td>
                                         <td>
                                             @{
@@ -233,12 +160,7 @@
                                         <td>@user.FirstName</td>
                                         <td>@user.LastName</td>
                                         <td>@user.Status</td>
-                                        <td>@user.Role</td>
-                                        <td>@user.PhoneNumber</td>
-                                        <td>@user.HireDate.ToShortDateString()</td>
-                                        <td>@user.JobTitle</td>
-                                        <td>@user.Salary</td>
-                                        <td>@user.Department?.DepartmentName</td>
+                                        <td>@user.Role.RoleName</td>
 @*                                         <td>
                                             @if (user.Role == UserRole.admin && user.DepartmentsResponsibleFor != null && user.DepartmentsResponsibleFor.Any())
                                             {
@@ -338,11 +260,10 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewUser.Role" class="form-label">Role</label>
-                                <select asp-for="NewUser.Role" class="form-control">
-                                    <option value="user">user</option>
-                                    <option value="admin">admin</option>
+                                <label asp-for="NewUser.RoleID" class="form-label">Role</label>
+                                <select asp-for="NewUser.RoleID" class="form-control" asp-items="Model.UserRoleOptions">
                                 </select>
+                                <span asp-validation-for="NewUser.RoleID" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewUser.FirstName" class="form-label">First Name</label>
@@ -351,34 +272,6 @@
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewUser.LastName" class="form-label">Last Name</label>
                                 <input asp-for="NewUser.LastName" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="NewUser.PhoneNumber" class="form-label">Phone Number</label>
-                                <input asp-for="NewUser.PhoneNumber" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="NewUser.HireDate" class="form-label">Hire Date</label>
-                                <input asp-for="NewUser.HireDate" type="date" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="NewUser.JobTitle" class="form-label">Job Title</label>
-                                <input asp-for="NewUser.JobTitle" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="NewUser.Salary" class="form-label">Salary</label>
-                                <input asp-for="NewUser.Salary" type="number" step="0.01" class="form-control" />
-                            </div>
-                            <div class="col-md-6 mb-3 d-flex flex-column">
-                                <label asp-for="NewUser.DepartmentID" class="form-label">Department</label>
-                                <select asp-for="NewUser.DepartmentID" class="selectpicker w-100" data-live-search="true">
-                                    @if (Model.Departments != null)
-                                    {
-                                        @foreach (var dept in Model.Departments)
-                                        {
-                                            <option value="@dept.DepartmentID" data-tokens="@dept.DepartmentName">@dept.DepartmentName</option>
-                                        }
-                                    }
-                                </select>
                             </div>
                         </div>
                         <div class="modal-footer">

@@ -12,22 +12,16 @@ namespace budget_management_system_aspdotnetcore.Services
             return isAuthenticated;
         }
 
-        public bool IsAdmin(HttpContext httpContext)
+        public string GetUserRole(HttpContext httpContext)
         {
-            string? roleString = httpContext.Session.GetString("Role");
+            string? roleString = httpContext.Session.GetString("RoleID");
 
             if (string.IsNullOrEmpty(roleString))
             {
                 throw new Exception("User is not authenticated or session has expired.");
             }
 
-            // Convert the string back to the enum safely
-            if (Enum.TryParse<UserRole>(roleString, out var role))
-            {
-                return role == UserRole.admin;
-            }
-
-            throw new Exception("Invalid user role stored in session.");
+            return roleString;
         }
 
 

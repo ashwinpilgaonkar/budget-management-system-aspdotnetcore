@@ -31,10 +31,13 @@ public partial class CasdbtestContext : DbContext
 
     public DbSet<Role> Roles { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-/*        #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.*/
-        => optionsBuilder.UseSqlServer("Server=172.25.17.38;Database=CASDBTEST;User Id=adm-db;Password=the2Db1737;TrustServerCertificate=True;");
+/*    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+*//*        #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.*//*
+        => optionsBuilder.UseSqlServer("Server=172.25.17.38;Database=CASDBTEST;User Id=adm-db;Password=the2Db1737;TrustServerCertificate=True;");*/
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        /*        #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.*/
+        => optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS01;Database=CASDBTEST;Trusted_Connection=True;TrustServerCertificate=True;");
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -56,25 +59,11 @@ public partial class CasdbtestContext : DbContext
             entity.Property(e => e.FirstName).IsRequired().HasMaxLength(50);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Email).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.PhoneNumber).HasMaxLength(15);
-            entity.Property(e => e.HireDate).IsRequired();
-            entity.Property(e => e.JobTitle).HasMaxLength(50);
-            entity.Property(e => e.Salary).HasColumnType("decimal(18, 2)");
         });
 
         modelBuilder.Entity<User>()
             .Property(u => u.Status)
             .HasConversion<string>(); // Store enum as string in the database
-
-        modelBuilder.Entity<User>()
-            .Property(u => u.Role)
-            .HasConversion<string>(); // Store enum as string in the database
-
-        modelBuilder.Entity<User>()
-            .HasOne(u => u.Department)
-            .WithMany() // or .WithMany(d => d.Users) if you have a reverse navigation
-            .HasForeignKey(u => u.DepartmentID)
-            .OnDelete(DeleteBehavior.Restrict); // or Cascade, as appropriate
 
         modelBuilder.Entity<User>()
             .HasMany(u => u.DepartmentsResponsibleFor)

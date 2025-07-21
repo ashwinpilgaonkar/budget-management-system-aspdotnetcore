@@ -62,7 +62,6 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task LoadFormDataAsync()
         {
-            isAdmin = _authService.IsAdmin(HttpContext);
             userRole = _authService.GetUserRole(HttpContext);
 
             // ==============================================
@@ -74,12 +73,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             {
                 usersQuery = usersQuery.Where(s => s.FirstName.Contains(UserSearchTerm)
                 || s.LastName.ToString().Contains(UserSearchTerm)
-                || s.Email.ToString().Contains(UserSearchTerm)
-                || s.PhoneNumber.ToString().Contains(UserSearchTerm)
-                || s.HireDate.ToString().Contains(UserSearchTerm)
-                || s.JobTitle.ToString().Contains(UserSearchTerm)
-                || s.Salary.ToString().Contains(UserSearchTerm)
-                || s.Department.DepartmentName.ToString().Contains(UserSearchTerm));
+                || s.Email.ToString().Contains(UserSearchTerm));
             }
 
             if (!string.IsNullOrEmpty(SortColumn) && ActiveSortTable == "User")
@@ -94,6 +88,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             Users = await usersQuery
                 .Include(u => u.DepartmentsResponsibleFor)
+                .Include(u => u.Role)
                 .Skip((UserCurrentPage - 1) * UserResultsPerPage)
                 .Take(UserResultsPerPage)
                 .ToListAsync();
@@ -103,10 +98,12 @@ namespace budget_management_system_aspdotnetcore.Pages
                 .Select(u => new SelectListItem { Value = u.ToString(), Text = u.ToString() })
                 .ToList();
 
-            UserRoleOptions = Enum.GetValues(typeof(UserRole))
-                .Cast<UserRole>()
-                .Select(u => new SelectListItem { Value = u.ToString(), Text = u.ToString() })
-                .ToList();
+            UserRoleOptions = await _context.Roles
+            .Select(r => new SelectListItem
+            {
+                Value = r.RoleID.ToString(),
+                Text = r.RoleName
+            }).ToListAsync();
 
             // ==============================================
             //                DEPARTMENT DATA
@@ -125,11 +122,6 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!_authService.IsAuthenticated(HttpContext))
             {
                 return RedirectToPage("/Login");
-            }
-
-            if (!_authService.IsAdmin(HttpContext))
-            {
-                return RedirectToPage("/Index");
             }
 
             await LoadFormDataAsync();
@@ -243,12 +235,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 user.FirstName = NewUser.FirstName;
                 user.LastName = NewUser.LastName;
                 user.Status = NewUser.Status;
-                user.Role = NewUser.Role;
-                user.PhoneNumber = NewUser.PhoneNumber;
-                user.HireDate = NewUser.HireDate;
-                user.JobTitle = NewUser.JobTitle;
-                user.Salary = NewUser.Salary;
-                user.DepartmentID = NewUser.DepartmentID;
+/*                user.Role = NewUser.Role;*/
 
                 await _context.SaveChangesAsync();
             }
@@ -274,7 +261,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostExportToExcelUsersAsync()
         {
-            var users = await _context.Users.Include(e => e.Department).ToListAsync();
+            var users = await _context.Users.ToListAsync();
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Users");
@@ -296,11 +283,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                 worksheet.Cell(row, 2).Value = user.FirstName;
                 worksheet.Cell(row, 3).Value = user.LastName;
                 worksheet.Cell(row, 5).Value = user.Email;
-                worksheet.Cell(row, 6).Value = user.PhoneNumber;
-                worksheet.Cell(row, 7).Value = user.HireDate.ToString("MM/dd/yyyy");
-                worksheet.Cell(row, 8).Value = user.JobTitle;
-                worksheet.Cell(row, 9).Value = user.Salary;
-                worksheet.Cell(row, 10).Value = user.Department?.DepartmentName;
                 row++;
             }
 
