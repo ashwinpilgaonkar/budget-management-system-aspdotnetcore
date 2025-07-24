@@ -4,8 +4,6 @@
     {
         bool IsAuthenticated(HttpContext httpContext);
 
-        bool IsAdmin(HttpContext httpContext);
-
         string GetUserRole(HttpContext httpContext);
 
         int GetAuthenticatedUserID(HttpContext httpContext);

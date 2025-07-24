@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
@@ -53,6 +55,11 @@ namespace budget_management_system_aspdotnetcore.Pages
         public List<SelectListItem>? UserStatusOptions { get; set; }
         public List<SelectListItem>? UserRoleOptions { get; set; }
 
+        [Required]
+        [BindProperty]
+        public List<int> SelectedDepartmentIds { get; set; } = new();
+        public List<SelectListItem> DepartmentOptions { get; set; } = new();
+
         #endregion
 
         // ==============================================
@@ -93,10 +100,18 @@ namespace budget_management_system_aspdotnetcore.Pages
                 .Take(UserResultsPerPage)
                 .ToListAsync();
 
+            Debug.WriteLine("=======GERE=====");
+            Debug.WriteLine(Users.Count);
+
             UserStatusOptions = Enum.GetValues(typeof(UserStatus))
                 .Cast<UserStatus>()
                 .Select(u => new SelectListItem { Value = u.ToString(), Text = u.ToString() })
                 .ToList();
+
+
+            // ==============================================
+            //                ROLE DATA
+            // ==============================================
 
             UserRoleOptions = await _context.Roles
             .Select(r => new SelectListItem
@@ -108,8 +123,14 @@ namespace budget_management_system_aspdotnetcore.Pages
             // ==============================================
             //                DEPARTMENT DATA
             // ==============================================
-            var departmentQuery = _context.Departments.AsQueryable();
-            Departments = await departmentQuery.ToListAsync();
+            DepartmentOptions = await _context.Departments
+                .OrderBy(d => d.DepartmentName)
+                .Select(d => new SelectListItem
+                {
+                    Value = d.DepartmentID.ToString(),
+                    Text = d.DepartmentName
+                })
+                .ToListAsync();
         }
 
         public async Task<IActionResult> OnGetAsync(
@@ -196,6 +217,10 @@ namespace budget_management_system_aspdotnetcore.Pages
             // Hash password using BCrypt
             NewUser.Password = BCrypt.Net.BCrypt.HashPassword(NewUser.Password);
 
+            NewUser.DepartmentsResponsibleFor = await _context.Departments
+                .Where(d => SelectedDepartmentIds.Contains(d.DepartmentID))
+                .ToListAsync();
+
             _context.Users.Add(NewUser);
             await _context.SaveChangesAsync();
 
@@ -246,14 +271,14 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostDeleteUserAsync(int id)
         {
-            var user = await _context.Users.FindAsync(NewUser.UserId);
+            var user = await _context.Users.FindAsync(id);
 
             if (user == null)
             {
                 return NotFound();
             }
 
-            _context.Users.Remove(NewUser);
+            _context.Users.Remove(user);
             await _context.SaveChangesAsync();
             await LoadFormDataAsync();
             return RedirectToPage();
@@ -267,22 +292,23 @@ namespace budget_management_system_aspdotnetcore.Pages
             var worksheet = workbook.Worksheets.Add("Users");
 
             worksheet.Cell(1, 1).Value = "User ID";
+            worksheet.Cell(1, 5).Value = "Email";
             worksheet.Cell(1, 2).Value = "First Name";
             worksheet.Cell(1, 3).Value = "Last Name";
-            worksheet.Cell(1, 5).Value = "Email";
-            worksheet.Cell(1, 6).Value = "Phone Number";
-            worksheet.Cell(1, 7).Value = "Hire Date";
-            worksheet.Cell(1, 8).Value = "Job Title";
-            worksheet.Cell(1, 9).Value = "Salary";
-            worksheet.Cell(1, 10).Value = "Department";
+            worksheet.Cell(1, 5).Value = "Status";
+            worksheet.Cell(1, 5).Value = "Role";
+            worksheet.Cell(1, 10).Value = "Departments Responsible for";
 
             int row = 2;
             foreach (var user in users)
             {
                 worksheet.Cell(row, 1).Value = user.UserId;
-                worksheet.Cell(row, 2).Value = user.FirstName;
-                worksheet.Cell(row, 3).Value = user.LastName;
-                worksheet.Cell(row, 5).Value = user.Email;
+                worksheet.Cell(row, 2).Value = user.Email;
+                worksheet.Cell(row, 3).Value = user.FirstName;
+                worksheet.Cell(row, 4).Value = user.LastName;
+                worksheet.Cell(row, 5).Value = user.Status.ToString();
+/*                worksheet.Cell(row, 6).Value = user.Role.RoleName;*/
+                worksheet.Cell(row, 7).Value = string.Join(", ", user.DepartmentsResponsibleFor.Select(d => d.DepartmentName));
                 row++;
             }
 

@@ -247,10 +247,12 @@
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewUser.Email" class="form-label">Email</label>
                                 <input asp-for="NewUser.Email" class="form-control" />
+                                <span asp-validation-for="NewUser.Email" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewUser.Password" class="form-label">Password</label>
                                 <input asp-for="NewUser.Password" class="form-control" />
+                                <span asp-validation-for="NewUser.Password" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewUser.Status" class="form-label">Status</label>
@@ -258,6 +260,7 @@
                                     <option value="active">active</option>
                                     <option value="inactive">inactive</option>
                                 </select>
+                                <span asp-validation-for="NewUser.Status" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewUser.RoleID" class="form-label">Role</label>
@@ -268,10 +271,30 @@
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewUser.FirstName" class="form-label">First Name</label>
                                 <input asp-for="NewUser.FirstName" class="form-control" />
+                                <span asp-validation-for="NewUser.FirstName" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewUser.LastName" class="form-label">Last Name</label>
                                 <input asp-for="NewUser.LastName" class="form-control" />
+                                <span asp-validation-for="NewUser.LastName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3" ">
+                                <label asp-for="SelectedDepartmentIds" class="form-label">Departments Responsible For</label>
+
+                                <select asp-for="SelectedDepartmentIds"
+                                        class="selectpicker w-100"
+                                        multiple
+                                        data-live-search="true"
+                                        title="Select departments">
+                                    @foreach (var department in Model.DepartmentOptions)
+                                    {
+                                        var isSelected = Model.SelectedDepartmentIds.Contains(int.Parse(department.Value)) ? "selected" : "";
+                                        <option value="@department.Value" isSelected data-tokens="@department.Text">
+                                            @department.Text
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="SelectedDepartmentIds" class="text-danger"></span>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -284,3 +307,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
