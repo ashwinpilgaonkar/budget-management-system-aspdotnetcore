@@ -4,6 +4,7 @@ using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
@@ -196,6 +197,9 @@ namespace budget_management_system_aspdotnetcore.Pages
                 speedType.SpeedTypeId = NewSpeedType.SpeedTypeId;
                 speedType.Code = NewSpeedType.Code;
                 speedType.Budget = NewSpeedType.Budget;
+                speedType.FundCode = NewSpeedType.FundCode;
+                speedType.ProgramCode = NewSpeedType.ProgramCode;
+                speedType.ClassCode = NewSpeedType.ClassCode;
 
                 await _context.SaveChangesAsync();
             }

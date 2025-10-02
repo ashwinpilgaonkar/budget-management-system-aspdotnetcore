@@ -1,4 +1,6 @@
-﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+﻿@using budget_management_system_aspdotnetcore.Services
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@inject IAuthenticationService AuthService
 <!DOCTYPE html>
     <html lang="en">
         <head>
@@ -20,28 +22,35 @@
                         <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                             @if (HttpContextAccessor.HttpContext.Session.GetString("Email") != null)
                             {
+                                var userRole = AuthService.GetUserRole(HttpContextAccessor.HttpContext);
+
                                 <ul class="navbar-nav flex-grow-1 justify-content-center">
                                     <li class="nav-item">
                                         <a class="nav-link text-dark" asp-area="" asp-page="/Index">Budget Amendments</a>
                                     </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Activitylog">Activity Log</a>
-                            </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Users">Users</a>
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/Activitylog">Activity Log</a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Departments">Departments</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Speedtypes">SpeedTypes</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Roles">Roles</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Admin">Admin Settings</a>
-                                    </li>
+
+                                    @if(!String.Equals(userRole, "5")) 
+                                    {
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-area="" asp-page="/Users">Users</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-area="" asp-page="/Departments">Departments</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-area="" asp-page="/Speedtypes">SpeedTypes</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-area="" asp-page="/Roles">Roles</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-area="" asp-page="/Admin">Admin Settings</a>
+                                        </li>
+                                    }
+
                                     <li class="nav-item">
                                         <a class="nav-link text-dark" asp-area="" asp-page="/Logout">Logout</a>
                                     </li>

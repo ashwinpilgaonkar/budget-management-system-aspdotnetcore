@@ -90,6 +90,44 @@
                                     </div>
                                 </div>
 
+                            <th>
+                                Fund Code
+                                <form method="get" class="d-inline">
+                                    <input type="hidden" name="handler" value="SortColumn" />
+                                    <input type="hidden" name="table" value="SpeedType" />
+                                    <input type="hidden" name="column" value="FundCode" />
+                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("FundCode")" />
+                                    <button type="submit" class="btn btn-link p-0">
+                                        <i class="fas @Model.GetSortIcon("FundCode")"></i>
+                                    </button>
+                                </form>
+                            </th>
+
+                            <th>
+                                Program Code
+                                <form method="get" class="d-inline">
+                                    <input type="hidden" name="handler" value="SortColumn" />
+                                    <input type="hidden" name="table" value="SpeedType" />
+                                    <input type="hidden" name="column" value="ProgramCode" />
+                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("ProgramCode")" />
+                                    <button type="submit" class="btn btn-link p-0">
+                                        <i class="fas @Model.GetSortIcon("ProgramCode")"></i>
+                                    </button>
+                                </form>
+                            </th>
+
+                            <th>
+                                Class Code
+                                <form method="get" class="d-inline">
+                                    <input type="hidden" name="handler" value="SortColumn" />
+                                    <input type="hidden" name="table" value="SpeedType" />
+                                    <input type="hidden" name="column" value="ClassCode" />
+                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("ClassCode")" />
+                                    <button type="submit" class="btn btn-link p-0">
+                                        <i class="fas @Model.GetSortIcon("ClassCode")"></i>
+                                    </button>
+                                </form>
+                            </th>
 
                             </th>
                             <th colspan="2">Actions</th>
@@ -105,7 +143,9 @@
                                         <td><input asp-for="NewSpeedType.SpeedTypeId" value="@speedType.SpeedTypeId" class="form-control" readonly /></td>
                                         <td><input asp-for="NewSpeedType.Code" value="@speedType.Code" class="form-control" /></td>
                                         <td><input asp-for="NewSpeedType.Budget" value="@speedType.Budget" class="form-control" /></td>
-
+                                        <td><input asp-for="NewSpeedType.FundCode" value="@speedType.FundCode" class="form-control" /></td>
+                                        <td><input asp-for="NewSpeedType.ProgramCode" value="@speedType.ProgramCode" class="form-control" /></td>
+                                        <td><input asp-for="NewSpeedType.ClassCode" value="@speedType.ClassCode" class="form-control" /></td>
                                         <td>
                                             <div class="d-flex justify-content-evenly">
                                                 <button type="submit" class="btn btn-success">Save</button>
@@ -124,6 +164,9 @@
                                     <td>@speedType.SpeedTypeId</td>
                                     <td>@speedType.Code</td>
                                     <td>@speedType.Budget</td>
+                                    <td>@speedType.FundCode</td>
+                                    <td>@speedType.ProgramCode</td>
+                                    <td>@speedType.ClassCode</td>
                                     <td>
                                         <div class="d-flex justify-content-evenly">
                                             <form method="post" asp-page-handler="EditSpeedType" asp-route-id="@speedType.SpeedTypeId" class="me-2">
@@ -194,10 +237,27 @@
                         <div class="mb-3">
                             <label asp-for="NewSpeedType.Code" class="form-label">SpeedType Code</label>
                             <input asp-for="NewSpeedType.Code" class="form-control" />
+                            <span asp-validation-for="NewSpeedType.Code" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
                             <label asp-for="NewSpeedType.Budget" class="form-label">Budget</label>
                             <input asp-for="NewSpeedType.Budget" class="form-control" />
+                            <span asp-validation-for="NewSpeedType.Budget" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="NewSpeedType.FundCode" class="form-label">Fund Code</label>
+                            <input asp-for="NewSpeedType.FundCode" class="form-control" />
+                            <span asp-validation-for="NewSpeedType.FundCode" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="NewSpeedType.ProgramCode" class="form-label">Program Code</label>
+                            <input asp-for="NewSpeedType.ProgramCode" class="form-control" />
+                            <span asp-validation-for="NewSpeedType.ProgramCode" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="NewSpeedType.ClassCode" class="form-label">Class Code</label>
+                            <input asp-for="NewSpeedType.ClassCode" class="form-control" />
+                            <span asp-validation-for="NewSpeedType.ClassCode" class="text-danger"></span>
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Add</button>
@@ -245,3 +305,7 @@
         }
     });
 </script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

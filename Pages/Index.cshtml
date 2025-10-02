@@ -103,17 +103,126 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-info mb-3 shadow-sm" style="border-radius: 12px;">
-                        <div class="card-body">
-                            <h5 class="card-title">Activity Summary</h5>
-                            <p class="card-text mb-1"><strong>Total Actions:</strong> @Model.OverviewTotalActionsThisMonth</p>
-                            <p class="card-text mb-1"><strong>Top User:</strong> @Model.OverviewMostActiveUser</p>
-                            <p class="card-text"><strong>Last Action:</strong> @Model.OverviewLastActivityTime</p>
+
+                @{
+                    var userRole = Model.userRole;
+                }
+
+                @if (!String.Equals(userRole, "5"))
+                {
+                    <div class="col-md-3">
+                        <div class="card text-white bg-info mb-3 shadow-sm" style="border-radius: 12px;">
+                            <div class="card-body">
+                                <h5 class="card-title">Activity Summary</h5>
+                                <p class="card-text mb-1"><strong>Total Actions:</strong> @Model.OverviewTotalActionsThisMonth</p>
+                                <p class="card-text mb-1"><strong>Top User:</strong> @Model.OverviewMostActiveUser</p>
+                                <p class="card-text"><strong>Last Action:</strong> @Model.OverviewLastActivityTime</p>
+                            </div>
                         </div>
                     </div>
+                }
+            </div>
+
+
+
+            <!-- Budget Amendments Section -->
+            <div class="mb-4">
+                <div class="accordion" id="budgetAmendmentsAccordion">
+
+                    @{
+                        var baIndex = 0;
+                        var userDepartmentsBA = Model.DepartmentsUserIsResponsibleFor;
+                    }
+                    @foreach (var amendment in Model.BudgetAmendmentsMain)
+                    {
+                        var amendmentIndex = baIndex;
+                        baIndex++;
+
+                        <div class="accordion-item mb-3">
+                            <h2 class="accordion-header" id="headingBA@(amendmentIndex)">
+                                <button class="accordion-button collapsed py-4" type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#collapseBA@(amendmentIndex)"
+                                        aria-expanded="false"
+                                        aria-controls="collapseBA@(amendmentIndex)">
+                                    <strong>@amendment.Name - @amendment.CreatedAt.ToString("MM/dd/yyyy")</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseBA@(amendmentIndex)" class="accordion-collapse collapse"
+                                 aria-labelledby="headingBA@(amendmentIndex)"
+                                 data-bs-parent="#budgetAmendmentsAccordion">
+                                <div class="accordion-body">
+                                    <!-- Nested Accordion for Departments -->
+                                    <div class="accordion" id="departmentsBA@(amendmentIndex)">
+
+                                        @foreach (var dept in userDepartmentsBA)
+                                        {
+                                            var deptId = $"Dept{dept.DepartmentID}";
+
+                                            <div class="accordion-item mb-2">
+                                                <h2 class="accordion-header" id="heading@(deptId)BA@(amendmentIndex)">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                            data-bs-toggle="collapse"
+                                                            data-bs-target="#collapse@(deptId)BA@(amendmentIndex)"
+                                                            aria-expanded="false"
+                                                            aria-controls="collapse@(deptId)BA@(amendmentIndex)">
+                                                        @dept.DepartmentName
+                                                    </button>
+                                                </h2>
+                                                <div id="collapse@(deptId)BA@(amendmentIndex)" class="accordion-collapse collapse"
+                                                     aria-labelledby="heading@(deptId)BA@(amendmentIndex)"
+                                                     data-bs-parent="#departmentsBA@(amendmentIndex)">
+                                                    <div class="accordion-body">
+
+                                                        <!-- Status Tabs for this department -->
+                                                        <ul class="nav nav-tabs justify-content-center mb-3">
+                                                            <li class="nav-item">
+                                                                <a class="nav-link @(Model.SelectedStatusTab == null ? "active" : "")"
+                                                                   href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=&SelectedBudgetAmendmentMainID=@amendment.BudgetAmendmentMainID">All</a>
+                                                            </li>
+                                                            @foreach (var status in Enum.GetNames(typeof(budget_management_system_aspdotnetcore.Entities.AmendmentStatus)))
+                                                            {
+                                                                var isActive = Model.SelectedStatusTab == status ? "active" : "";
+
+                                                                <li class="nav-item">
+                                                                    <a class="nav-link @isActive"
+                                                                       href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=@status&SelectedBudgetAmendmentMainID=@amendment.BudgetAmendmentMainID">@status</a>
+                                                                </li>
+                                                            }
+                                                        </ul>
+
+                                                        <!-- Your existing table code goes here -->
+                                                        <!-- Filter the table data by: -->
+                                                        <!-- 1. dept.DepartmentID -->
+                                                        <!-- 2. amendment.BudgetAmendmentMainID -->
+                                                        <!-- 3. Model.SelectedStatusTab (if applicable) -->
+
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered table-striped table-hover text-center">
+                                                                <!-- Your existing table header and body -->
+                                                                <!-- Make sure to filter Model.BudgetAmendments by: -->
+                                                                <!-- .Where(a => a.DepartmentID == dept.DepartmentID && a.BudgetAmendmentMainID == amendment.BudgetAmendmentMainID) -->
+                                                            </table>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
                 </div>
             </div>
+
+
+
+
+
 
             @{
                 var userDepartments = Model.DepartmentsUserIsResponsibleFor;
@@ -574,7 +683,7 @@
                                 <td colspan="2" class="@cellClass">$@netChange</td>
                                 <td colspan="7"></td>
 
-                                @if (Model.isAdmin)
+                                @if (!String.Equals(userRole, "5"))
                                 {
                                     if (categoryGroup.Any(a => a.Status.ToString().Equals("Approved")) || categoryGroup.Any(a => a.Status.ToString().Equals("Rejected")))
                                     {
@@ -588,7 +697,7 @@
                                     {
                                         <td colspan="2">
                                             <form method="post" asp-page-handler="SubmitCategory" asp-route-category="@categoryGroup.Key">
-                                                <button type="submit" class="btn btn-link text-nowrap">Submit Draft 🗒️</button>
+                                                <button type="submit" class="btn btn-link text-nowrap">Submit Draft<br /> 🗒️</button>
                                             </form>
                                         </td>
                                     }
@@ -610,7 +719,7 @@
 
                                     <td colspan="2">
                                         <button type="button" class="btn btn-link text-nowrap" data-bs-toggle="modal" data-bs-target="#extendDeadlineModal" data-category="@categoryGroup.Key">
-                                            Extend deadline ⌛
+                                            Extend deadline<br />⌛
                                         </button>
                                     </td>
                                     <div class="modal fade" id="extendDeadlineModal" tabindex="-1" aria-labelledby="extendDeadlineModalLabel" aria-hidden="true">
@@ -768,14 +877,15 @@
                                         <td colspan="4">
                                             @{
                                                 var isEnabled = false;
-                                                if (Model.isAdmin && (amendment.Status.ToString().Equals("Draft") || amendment.Status.ToString().Equals("Pending")))
+                                                if (!String.Equals(userRole, "5") && (amendment.Status.ToString().Equals("Draft") || amendment.Status.ToString().Equals("Pending")))
                                                 {
                                                     isEnabled = true;
                                                 }
-                                                else if (!Model.isAdmin && (amendment.Status.ToString().Equals("Draft")))
+                                                else if (!String.Equals(userRole, "5") && (amendment.Status.ToString().Equals("Draft")))
                                                 {
                                                     isEnabled = true;
-                                                } else
+                                                }
+                                                else
                                                 {
                                                     isEnabled = false;
                                                 }
@@ -854,7 +964,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addAmendmentModalLabel">Create New Budget Amendment</h5>
+                    <h5 class="modal-title" id="addAmendmentModalLabel">Create New Budget Amendment Entry</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -870,10 +980,10 @@
                             </div>
                             <div class="col-md-6 mb-3 d-flex flex-column">
                                 <label asp-for="SourceSpeedtype" class="form-label">Source SpeedType</label>
-                                <select asp-for="SourceSpeedtype" class="selectpicker w-100" data-live-search="true">
+                                <select asp-for="SourceSpeedtype" class="selectpicker w-100" data-live-search="true" id="sourceSpeedtype">
                                     @foreach (var speedtype in Model.SpeedTypes)
                                     {
-                                        <option value="@speedtype.SpeedTypeId" data-tokens="@speedtype.Code">
+                                        <option value="@speedtype.SpeedTypeId" data-tokens="@speedtype.Code" data-fundcode="@speedtype.FundCode" data-programcode="@speedtype.ProgramCode" data-classcode="@speedtype.ClassCode">
                                             @speedtype.Code
                                         </option>
                                     }
@@ -892,7 +1002,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewBudgetAmendment.FundCode" class="form-label">Fund Code</label>
-                                <input asp-for="NewBudgetAmendment.FundCode" class="form-control" />
+                                <input asp-for="NewBudgetAmendment.FundCode" class="form-control" id="fundCode" />
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewBudgetAmendment.DepartmentID" class="form-label">Department ID</label>
@@ -900,11 +1010,11 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewBudgetAmendment.ProgramCode" class="form-label">Program Code</label>
-                                <input asp-for="NewBudgetAmendment.ProgramCode" class="form-control" />
+                                <input asp-for="NewBudgetAmendment.ProgramCode" class="form-control" id="programCode" />
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewBudgetAmendment.ClassCode" class="form-label">Class Code</label>
-                                <input asp-for="NewBudgetAmendment.ClassCode" class="form-control" />
+                                <input asp-for="NewBudgetAmendment.ClassCode" class="form-control" id="classCode" />
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewBudgetAmendment.AcctDescription" class="form-label">Account Description</label>
@@ -1073,12 +1183,50 @@
             return true;
         }
 
+    document.addEventListener('DOMContentLoaded', function () {
+        const speedtypeSelect = document.getElementById('sourceSpeedtype');
+        const fundCodeInput = document.getElementById('fundCode');
+        const programCodeInput = document.getElementById('programCode');
+        const classCodeInput = document.getElementById('classCode');
+
+        // speedtypeSelect.addEventListener('change', function () {
+        //     const selectedOption = speedtypeSelect.options[speedtypeSelect.selectedIndex];
+        //     const fundCode = selectedOption.getAttribute('data-fundcode');
+        //     fundCodeInput.value = fundCode || '';
+        //     const programCode = selectedOption.getAttribute('data-programcode');
+        //     programCodeInput.value = programCode || '';
+        //     const classCode = selectedOption.getAttribute('data-classcode');
+        //     classCodeInput.value = classCode || '';
+        // });
+
+    function populateFields() {
+        const selectedOption = speedtypeSelect.options[speedtypeSelect.selectedIndex];
+        const fundCode = selectedOption.getAttribute('data-fundcode');
+        fundCodeInput.value = fundCode || '';
+        const programCode = selectedOption.getAttribute('data-programcode');
+        programCodeInput.value = programCode || '';
+        const classCode = selectedOption.getAttribute('data-classcode');
+        classCodeInput.value = classCode || '';
+    }
+
+       populateFields();
+        speedtypeSelect.addEventListener('change', populateFields);
+
+        [fundCodeInput, programCodeInput, classCodeInput].forEach(field => {
+        if (field) {
+            field.setAttribute('readonly', true);
+            field.style.backgroundColor = '#f0f0f0';
+        }
+        });
+
         const modal = document.getElementById('extendDeadlineModal');
         modal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         const category = button.getAttribute('data-category');
         const categoryInput = modal.querySelector('#modalCategory');
         categoryInput.value = category;
+    });
+
     });
     </script>
 

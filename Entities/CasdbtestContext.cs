@@ -23,6 +23,8 @@ public partial class CasdbtestContext : DbContext
 
     public DbSet<User> Users { get; set; }
 
+    public DbSet<BudgetAmendmentMain> BudgetAmendmentMain { get; set; }
+
     public DbSet<BudgetAmendment> BudgetAmendments { get; set; }
 
     public DbSet<BudgetAmendmentSetting> BudgetAmendmentSettings { get; set; }
@@ -41,6 +43,18 @@ public partial class CasdbtestContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<BudgetAmendmentMain>()
+            .HasOne(ba => ba.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(ba => ba.CreatedBy)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<BudgetAmendmentMain>()
+            .HasOne(ba => ba.UpdatedByUser)
+            .WithMany()
+            .HasForeignKey(ba => ba.UpdatedBy)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Configure the table if needed
         modelBuilder.Entity<BudgetAmendmentSetting>()

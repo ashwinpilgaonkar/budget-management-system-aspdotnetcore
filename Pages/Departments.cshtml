@@ -220,6 +220,7 @@
                         <div class="mb-3">
                             <label asp-for="NewDepartment.DepartmentName" class="form-label">Department Name</label>
                             <input asp-for="NewDepartment.DepartmentName" class="form-control" />
+                            <span asp-validation-for="NewDepartment.DepartmentName" class="text-danger"></span>
                         </div>
                         <div class="mb-3 d-flex flex-column">
                             <label asp-for="SelectedSpeedTypeIds" class="form-label">SpeedTypes</label>
@@ -232,6 +233,7 @@
                                     </option>
                                 }
                             </select>
+                            <span asp-validation-for="SelectedSpeedTypeIds" class="text-danger"></span>
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Add</button>
@@ -279,3 +281,7 @@
         }
     });
 </script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

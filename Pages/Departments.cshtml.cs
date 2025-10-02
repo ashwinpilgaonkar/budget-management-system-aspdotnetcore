@@ -31,6 +31,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         // ==============================================
         #region DEPARTMENTS
 
+        [BindProperty]
         public List<int> SelectedSpeedTypeIds { get; set; } = new List<int>();
 
         [BindProperty]
@@ -274,10 +275,21 @@ namespace budget_management_system_aspdotnetcore.Pages
                     }
                 }
 
+                Debug.WriteLine("========HERE in ONPOSTSAVFE || NOT NULL=========");
+
+                Debug.WriteLine(department);
+                Debug.WriteLine(department.DepartmentID);
+                Debug.WriteLine(department.DepartmentName);
+                Debug.WriteLine(department.DepartmentSpeedTypes.Count);
+                Debug.WriteLine(SelectedSpeedTypeIds.Count);
+
                 await _context.SaveChangesAsync();
+            } else
+            {
+                Debug.WriteLine("========HERE in ONPOSTSAVFE || NULL=========");
             }
 
-            await LoadFormDataAsync();
+                await LoadFormDataAsync();
             return RedirectToPage();
         }
 

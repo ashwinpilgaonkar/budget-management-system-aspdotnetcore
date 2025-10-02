@@ -30,6 +30,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         private readonly UserService _userService;
 
         public bool isAdmin { get; set; } = false;
+
+        public int userID { get; set; } = 0;
+
         public string userRole{ get; set; } = "";
 
         public string ActiveSortTable { get; set; } = "Department";
@@ -40,6 +43,8 @@ namespace budget_management_system_aspdotnetcore.Pages
         public List<int> PageSizes { get; set; } = new List<int> { 10, 20, 30 };
 
         public IEnumerable<SpeedType> SpeedTypes { get; set; }
+
+        public List<BudgetAmendmentMain> BudgetAmendmentsMain { get; set; }
 
         public List<BudgetAmendment> BudgetAmendments { get; set; }
 
@@ -171,6 +176,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             DateTime startDate, endDate;
 
+            var userRole = _authService.GetUserRole(HttpContext);
+            var userID = _authService.GetAuthenticatedUserID(HttpContext);
+
             if (string.IsNullOrEmpty(SelectedFinancialYear) && FinancialYearOptions.Any())
             {
                 SelectedFinancialYear = FinancialYearOptions.First();
@@ -196,6 +204,11 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             var amendmentOverviewQuery = _context.BudgetAmendments
                 .Where(a => a.CreatedAt >= startDate && a.CreatedAt <= endDate);
+
+            if (userRole == "5")
+            {
+                amendmentOverviewQuery = amendmentOverviewQuery.Where(a => a.CreatedBy == userID);
+            }
 
             var amendmentList = amendmentOverviewQuery.ToList();
 
@@ -237,6 +250,8 @@ namespace budget_management_system_aspdotnetcore.Pages
         public async Task LoadFormDataAsync()
         {
             userRole = _authService.GetUserRole(HttpContext);
+            userID = _authService.GetAuthenticatedUserID(HttpContext);
+
             SetDefaultFinancialYearRange();
             SetOverviewCardData();
 
@@ -247,6 +262,10 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
 
             SpeedTypes = await _speedTypeService.GetSpeedTypesAsync();
+
+            BudgetAmendmentsMain = await _context.BudgetAmendmentMain
+            .OrderByDescending(ba => ba.CreatedAt)
+            .ToListAsync();
 
             //Fetch BudgetAmendment Data
             var amendmentQuery = _context.BudgetAmendments.AsQueryable();
@@ -384,6 +403,16 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             if (SelectedUpdatedBy.HasValue)
                 amendmentQuery = amendmentQuery.Where(b => b.UpdatedBy == SelectedUpdatedBy);
+
+            if (String.Equals(userRole, "5"))
+            {
+                amendmentQuery = amendmentQuery.Where(b => b.CreatedBy == userID);
+            }
+
+            if (String.Equals(userRole, "6"))
+            {
+                amendmentQuery = amendmentQuery.Where(b => b.Status != AmendmentStatus.Draft || (b.Status == AmendmentStatus.Draft && b.CreatedBy == userID));
+            }
 
             BudgetAmendments = await amendmentQuery
             .Include(a => a.CreatedByUser)
