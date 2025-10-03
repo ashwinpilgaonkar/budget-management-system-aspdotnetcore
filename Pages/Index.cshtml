@@ -133,7 +133,7 @@
                         var baIndex = 0;
                         var userDepartmentsBA = Model.DepartmentsUserIsResponsibleFor;
                     }
-                    @foreach (var amendment in Model.BudgetAmendmentsMain)
+                    @foreach (var amendmentmain in Model.BudgetAmendmentsMain)
                     {
                         var amendmentIndex = baIndex;
                         baIndex++;
@@ -145,7 +145,7 @@
                                         data-bs-target="#collapseBA@(amendmentIndex)"
                                         aria-expanded="false"
                                         aria-controls="collapseBA@(amendmentIndex)">
-                                    <strong>@amendment.Name - @amendment.CreatedAt.ToString("MM/dd/yyyy")</strong>
+                                    <strong>@amendmentmain.Name - @amendmentmain.CreatedAt.ToString("MM/dd/yyyy")</strong>
                                 </button>
                             </h2>
                             <div id="collapseBA@(amendmentIndex)" class="accordion-collapse collapse"
@@ -178,7 +178,7 @@
                                                         <ul class="nav nav-tabs justify-content-center mb-3">
                                                             <li class="nav-item">
                                                                 <a class="nav-link @(Model.SelectedStatusTab == null ? "active" : "")"
-                                                                   href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=&SelectedBudgetAmendmentMainID=@amendment.BudgetAmendmentMainID">All</a>
+                                                                   href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID">All</a>
                                                             </li>
                                                             @foreach (var status in Enum.GetNames(typeof(budget_management_system_aspdotnetcore.Entities.AmendmentStatus)))
                                                             {
@@ -186,22 +186,652 @@
 
                                                                 <li class="nav-item">
                                                                     <a class="nav-link @isActive"
-                                                                       href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=@status&SelectedBudgetAmendmentMainID=@amendment.BudgetAmendmentMainID">@status</a>
+                                                                       href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=@status&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID">@status</a>
                                                                 </li>
                                                             }
                                                         </ul>
 
-                                                        <!-- Your existing table code goes here -->
-                                                        <!-- Filter the table data by: -->
-                                                        <!-- 1. dept.DepartmentID -->
-                                                        <!-- 2. amendment.BudgetAmendmentMainID -->
-                                                        <!-- 3. Model.SelectedStatusTab (if applicable) -->
-
                                                         <div class="table-responsive">
                                                             <table class="table table-bordered table-striped table-hover text-center">
-                                                                <!-- Your existing table header and body -->
-                                                                <!-- Make sure to filter Model.BudgetAmendments by: -->
-                                                                <!-- .Where(a => a.DepartmentID == dept.DepartmentID && a.BudgetAmendmentMainID == amendment.BudgetAmendmentMainID) -->
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>
+                                                                            Amendment ID
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="BudgetAmendmentID" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("BudgetAmendmentID")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("BudgetAmendmentID")"></i>
+                                                                                </button>
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            Category Name
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="CategoryName" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("CategoryName")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("CategoryName")"></i>
+                                                                                </button>
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            Adjustment Detail
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="AdjustmentDetail" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("AdjustmentDetail")" />
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            SpeedType
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="SpeedType" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("SpeedType")" />
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            Fund Code
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="FundCode" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("FundCode")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("FundCode")"></i>
+                                                                                </button>
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            Department ID
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="DepartmentID" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("DepartmentID")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("DepartmentID")"></i>
+                                                                                </button>
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            Program Code
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="ProgramCode" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("ProgramCode")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("ProgramCode")"></i>
+                                                                                </button>
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            Class Code
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="ClassCode" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("ClassCode")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("ClassCode")"></i>
+                                                                                </button>
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            Acct Description
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="AcctDescription" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("AcctDescription")" />
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            Budget Code
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="BudgetCode" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("BudgetCode")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("BudgetCode")"></i>
+                                                                                </button>
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            Position Number
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="PositionNumber" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("PositionNumber")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("PositionNumber")"></i>
+                                                                                </button>
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            Amount Increase
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="AmountIncrease" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("AmountIncrease")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("AmountIncrease")"></i>
+                                                                                </button>
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            Amount Decrease
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="AmountDecrease" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("AmountDecrease")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("AmountDecrease")"></i>
+                                                                                </button>
+                                                                            </form>
+                                                                        </th>
+                                                                        <th>
+                                                                            Created By
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="CreatedBy" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("CreatedBy")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("CreatedBy")"></i>
+                                                                                </button>
+                                                                            </form>
+
+                                                                            <div class="dropdown d-inline">
+                                                                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="createdByFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                                    <i class="fas fa-filter"></i>
+                                                                                </button>
+
+                                                                                <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
+                                                                                    <form method="get">
+                                                                                        <!-- Creator Dropdown -->
+                                                                                        <div class="mb-2">
+                                                                                            <label for="SelectedCreatedBy" class="form-label">Created By</label>
+                                                                                            <select name="SelectedCreatedBy" class="form-select form-select-sm">
+                                                                                                <option value="">Any</option>
+                                                                                                @foreach (var user in Model.CreatedByUsers)
+                                                                                                {
+                                                                                                    <option value="@user.Value" selected="@(Model.SelectedCreatedBy?.ToString() == user.Value)">
+                                                                                                        @user.Text
+                                                                                                    </option>
+                                                                                                }
+                                                                                            </select>
+                                                                                        </div>
+
+                                                                                        <!-- Date Range -->
+                                                                                        <div class="mb-2">
+                                                                                            <label class="form-label">From</label>
+                                                                                            <input type="date" name="CreatedFromDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" max="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                        </div>
+                                                                                        <div class="mb-2">
+                                                                                            <label class="form-label">To</label>
+                                                                                            <input type="date" name="CreatedToDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" max="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                        </div>
+
+                                                                                        <!-- Apply Button -->
+                                                                                        <div class="text-end mt-2">
+                                                                                            <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                                                                        </div>
+                                                                                    </form>
+                                                                                </div>
+                                                                            </div>
+                                                                        </th>
+
+                                                                        <th>
+                                                                            Edited By
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="EditedBy" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("EditedBy")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("EditedBy")"></i>
+                                                                                </button>
+                                                                            </form>
+
+                                                                            <div class="dropdown d-inline">
+                                                                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="editedByFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                                    <i class="fas fa-filter"></i>
+                                                                                </button>
+
+                                                                                <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
+                                                                                    <form method="get">
+                                                                                        <!-- Editor Dropdown -->
+                                                                                        <div class="mb-2">
+                                                                                            <label for="SelectedEditedBy" class="form-label">Edited By</label>
+                                                                                            <select name="SelectedEditedBy" class="form-select form-select-sm">
+                                                                                                <option value="">Any</option>
+                                                                                                @foreach (var user in Model.EditedByUsers)
+                                                                                                {
+                                                                                                    <option value="@user.Value" selected="@(Model.SelectedEditedBy?.ToString() == user.Value)">
+                                                                                                        @user.Text
+                                                                                                    </option>
+                                                                                                }
+                                                                                            </select>
+                                                                                        </div>
+
+                                                                                        <!-- Date Range -->
+                                                                                        <div class="mb-2">
+                                                                                            <label class="form-label">From</label>
+                                                                                            <input type="date" name="EditedFromDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                        </div>
+                                                                                        <div class="mb-2">
+                                                                                            <label class="form-label">To</label>
+                                                                                            <input type="date" name="EditedToDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                        </div>
+
+                                                                                        <!-- Apply Button -->
+                                                                                        <div class="text-end mt-2">
+                                                                                            <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                                                                        </div>
+                                                                                    </form>
+                                                                                </div>
+                                                                            </div>
+                                                                        </th>
+
+                                                                        <th>
+                                                                            Updated By
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="UpdatedBy" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("UpdatedBy")" />
+                                                                                <button type="submit" class="btn btn-link p-0">
+                                                                                    <i class="fas @Model.GetSortIcon("UpdatedBy")"></i>
+                                                                                </button>
+                                                                            </form>
+
+                                                                            <div class="dropdown d-inline">
+                                                                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="updatedByFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                                    <i class="fas fa-filter"></i>
+                                                                                </button>
+
+                                                                                <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
+                                                                                    <form method="get">
+                                                                                        <!-- Updater Dropdown -->
+                                                                                        <div class="mb-2">
+                                                                                            <label for="SelectedUpdatedBy" class="form-label">Updated By</label>
+                                                                                            <select name="SelectedUpdatedBy" class="form-select form-select-sm">
+                                                                                                <option value="">Any</option>
+                                                                                                @foreach (var user in Model.UpdatedByUsers)
+                                                                                                {
+                                                                                                    <option value="@user.Value" selected="@(Model.SelectedUpdatedBy?.ToString() == user.Value)">
+                                                                                                        @user.Text
+                                                                                                    </option>
+                                                                                                }
+                                                                                            </select>
+                                                                                        </div>
+
+                                                                                        <!-- Date Range -->
+                                                                                        <div class="mb-2">
+                                                                                            <label class="form-label">From</label>
+                                                                                            <input type="date" name="UpdatedFromDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                        </div>
+                                                                                        <div class="mb-2">
+                                                                                            <label class="form-label">To</label>
+                                                                                            <input type="date" name="UpdatedToDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                        </div>
+
+                                                                                        <!-- Apply Button -->
+                                                                                        <div class="text-end mt-2">
+                                                                                            <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                                                                        </div>
+                                                                                    </form>
+                                                                                </div>
+                                                                            </div>
+                                                                        </th>
+                                                                        <th>
+                                                                            Start Date
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="StartDate" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("StartDate")" />
+                                                                            </form>
+                                                                            <div class="dropdown d-inline">
+                                                                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="statusFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                                    <i class="fas fa-filter"></i>
+                                                                                </button>
+                                                                            </div>
+                                                                        </th>
+                                                                        <th>
+                                                                            Deadline
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="Deadline" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("Deadline")" />
+                                                                            </form>
+                                                                            <div class="dropdown d-inline">
+                                                                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="statusFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                                    <i class="fas fa-filter"></i>
+                                                                                </button>
+                                                                            </div>
+                                                                        </th>
+                                                                        <th>
+                                                                            Extension (Days)
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="Extension" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("Extension")" />
+                                                                            </form>
+                                                                            <div class="dropdown d-inline">
+                                                                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="statusFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                                    <i class="fas fa-filter"></i>
+                                                                                </button>
+                                                                            </div>
+                                                                        </th>
+                                                                        <th>
+                                                                            Status
+                                                                            <form method="get" class="d-inline">
+                                                                                <input type="hidden" name="handler" value="SortColumn" />
+                                                                                <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                <input type="hidden" name="column" value="Status" />
+                                                                                <input type="hidden" name="order" value="@Model.SortOrderForColumn("Status")" />
+                                                                            </form>
+                                                                            <div class="dropdown d-inline">
+                                                                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="statusFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                                    <i class="fas fa-filter"></i>
+                                                                                </button>
+
+                                                                                <div class="dropdown-menu p-3 shadow-lg" style="min-width: 200px;">
+                                                                                    <form method="get" id="statusFilterForm">
+                                                                                        @foreach (var status in Enum.GetNames(typeof(budget_management_system_aspdotnetcore.Entities.AmendmentStatus)))
+                                                                                        {
+                                                                                            <div class="form-check">
+                                                                                                <input class="form-check-input" type="checkbox" name="SelectedStatus" value="@status"
+                                                                                                       id="@status" @(Model.SelectedStatus.Contains(status) ? "checked" : "") />
+                                                                                                <label class="form-check-label" for="@status">@status</label>
+                                                                                            </div>
+                                                                                        }
+
+                                                                                        <div class="mt-2 text-end">
+                                                                                            <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                                                                        </div>
+                                                                                    </form>
+                                                                                </div>
+                                                                            </div>
+                                                                        </th>
+                                                                        <th colspan="4">Actions</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @foreach (var categoryGroup in Model.BudgetAmendments.GroupBy(a => a.CategoryName))
+                                                                    {
+                                                                        var totalIncrease = categoryGroup.Sum(a => a.AmountIncrease);
+                                                                        var totalDecrease = categoryGroup.Sum(a => a.AmountDecrease);
+
+                                                                        <!-- Submit checkbox: enabled only if all amendments in this category are Drafts -->
+                                                                        <tr class="table-primary align-middle">
+
+                                                                            <td colspan="1">
+                                                                                @{
+                                                                                    var allApproved = categoryGroup.All(a => a.Status.ToString().Equals("Draft"));
+                                                                                    var checkboxId = $"submitCheckbox_{categoryGroup.Key.Replace(" ", "_")}";
+                                                                                }
+                                                                                <div class="form-check">
+                                                                                    <input class="form-check-input category-submit-checkbox"
+                                                                                           type="checkbox"
+                                                                                           name="SelectedCategories"
+                                                                                           value="@categoryGroup.Key"
+                                                                                           id="@checkboxId"
+                                                                                           @(allApproved ? "" : "disabled") />
+                                                                                    <label class="form-check-label" for="@checkboxId">
+                                                                                    </label>
+                                                                                </div>
+                                                                            </td>
+
+                                                                            <td colspan="1"><strong>@categoryGroup.Key</strong></td>
+
+                                                                            @{
+                                                                                var netChange = totalIncrease - totalDecrease;
+                                                                                var cellClass = netChange == 0 ? "text-success" : "text-danger";
+                                                                            }
+                                                                            <td colspan="9"></td>
+                                                                            <td colspan="2" class="@cellClass">$@netChange</td>
+                                                                            <td colspan="7"></td>
+
+                                                                            @if (!String.Equals(userRole, "5"))
+                                                                            {
+                                                                                if (categoryGroup.Any(a => a.Status.ToString().Equals("Approved")) || categoryGroup.Any(a => a.Status.ToString().Equals("Rejected")))
+                                                                                {
+                                                                                    <td colspan="2">
+                                                                                        <form method="post" asp-page-handler="RevertCategory" asp-route-category="@categoryGroup.Key">
+                                                                                            <button type="submit" class="btn btn-link text-nowrap">Revert Decision ↩️</button>
+                                                                                        </form>
+                                                                                    </td>
+                                                                                }
+                                                                                else if (categoryGroup.Any(a => a.Status.ToString().Equals("Draft")))
+                                                                                {
+                                                                                    <td colspan="2">
+                                                                                        <form method="post" asp-page-handler="SubmitCategory" asp-route-category="@categoryGroup.Key">
+                                                                                            <button type="submit" class="btn btn-link text-nowrap">Submit Draft<br /> 🗒️</button>
+                                                                                        </form>
+                                                                                    </td>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <td colspan="2">
+                                                                                        <div class="d-flex justify-content-evenly gap-2">
+                                                                                            <form method="post" asp-page-handler="ApproveCategory" asp-route-category="@categoryGroup.Key" onsubmit="return validateNetChange(this)">
+                                                                                                <input type="hidden" name="NetChange" value="@netChange" />
+                                                                                                <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-link">Approve ✔️</button>
+                                                                                            </form>
+
+                                                                                            <form method="post" asp-page-handler="RejectCategory" asp-route-category="@categoryGroup.Key">
+                                                                                                <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-link">Reject ❌</button>
+                                                                                            </form>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                }
+
+                                                                                <td colspan="2">
+                                                                                    <button type="button" class="btn btn-link text-nowrap" data-bs-toggle="modal" data-bs-target="#extendDeadlineModal" data-category="@categoryGroup.Key">
+                                                                                        Extend deadline<br />⌛
+                                                                                    </button>
+                                                                                </td>
+                                                                                <div class="modal fade" id="extendDeadlineModal" tabindex="-1" aria-labelledby="extendDeadlineModalLabel" aria-hidden="true">
+                                                                                    <div class="modal-dialog">
+                                                                                        <div class="modal-content">
+                                                                                            <form method="post" asp-page-handler="ExtendDeadline">
+                                                                                                <div class="modal-header">
+                                                                                                    <h5 class="modal-title" id="extendDeadlineModalLabel">Extend Deadline</h5>
+                                                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                                                </div>
+                                                                                                <div class="modal-body">
+                                                                                                    <input type="hidden" name="category" id="modalCategory" />
+                                                                                                    <div class="mb-3">
+                                                                                                        <label for="extensionDays" class="form-label">Extension Days</label>
+                                                                                                        <input type="number" class="form-control" id="extensionDays" name="extensionDays" min="1" required />
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                                <div class="modal-footer">
+                                                                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                                                </div>
+                                                                                            </form>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            }
+
+                                                                            else
+                                                                            {
+                                                                                if (categoryGroup.Any(a => a.Status.ToString().Equals("Pending")))
+                                                                                {
+                                                                                    <td colspan="2">
+                                                                                        <form method="post" asp-page-handler="WithdrawCategory" asp-route-category="@categoryGroup.Key">
+                                                                                            <button type="submit" class="btn btn-link text-nowrap">Withdraw</button>
+                                                                                        </form>
+                                                                                    </td>
+                                                                                }
+                                                                                else if (categoryGroup.Any(a => a.Status.ToString().Equals("Draft")))
+                                                                                {
+                                                                                    <td colspan="2">
+                                                                                        <form method="post" asp-page-handler="SubmitCategory" asp-route-category="@categoryGroup.Key">
+                                                                                            <button type="submit" class="btn btn-link text-nowrap">Submit Draft</button>
+                                                                                        </form>
+                                                                                    </td>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <td colspan="2">
+                                                                                    </td>
+                                                                                }
+                                                                            }
+                                                                        </tr>
+
+                                                                        @foreach (var amendment in categoryGroup)
+                                                                        {
+                                                                            if (Model.EditingBudgetAmendmentID == amendment.BudgetAmendmentID)
+                                                                            {
+                                                                                <tr>
+                                                                                    <form method="post" asp-page-handler="SaveAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                                                                    <td><input asp-for="NewBudgetAmendment.BudgetAmendmentID" value="@amendment.BudgetAmendmentID" class="form-control" readonly /></td>
+                                                                                    <td><input asp-for="NewBudgetAmendment.CategoryName" value="@amendment.CategoryName" class="form-control" /></td>
+                                                                                    <td><input asp-for="NewBudgetAmendment.AdjustmentDetail" value="@amendment.AdjustmentDetail" class="form-control" /></td>
+                                                                                    <td>@amendment.SpeedType.Code</td>
+                                                                                    <input asp-for="@Model.SourceSpeedtype" type="hidden" value="@Model.SourceSpeedtype" />
+                                                                                    <input asp-for="@Model.DestinationSpeedtype" type="hidden" value="@Model.DestinationSpeedtype" />
+                                                                                    <td><input asp-for="NewBudgetAmendment.FundCode" value="@amendment.FundCode" class="form-control" /></td>
+                                                                                    <td><input asp-for="NewBudgetAmendment.DepartmentID" value="@amendment.DepartmentID" class="form-control" /></td>
+                                                                                    <td><input asp-for="NewBudgetAmendment.ProgramCode" value="@amendment.ProgramCode" class="form-control" /></td>
+                                                                                    <td><input asp-for="NewBudgetAmendment.ClassCode" value="@amendment.ClassCode" class="form-control" /></td>
+                                                                                    <td><input asp-for="NewBudgetAmendment.AcctDescription" value="@amendment.AcctDescription" class="form-control" /></td>
+                                                                                    <td><input asp-for="NewBudgetAmendment.BudgetCode" value="@amendment.BudgetCode" class="form-control" /></td>
+                                                                                    <td><input asp-for="NewBudgetAmendment.PositionNumber" value="@amendment.PositionNumber" class="form-control" /></td>
+                                                                                    <td><input asp-for="NewBudgetAmendment.AmountIncrease" value="@amendment.AmountIncrease" class="form-control" /></td>
+                                                                                    <td><input asp-for="NewBudgetAmendment.AmountDecrease" value="@amendment.AmountDecrease" class="form-control" /></td>
+                                                                                    <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                                                                    <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                                                                    <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                                                                    <td>@amendment.StartDate</td>
+                                                                                    <td>@amendment.Deadline</td>
+                                                                                    <td>@amendment.ExtensionDays</td>
+                                                                                    @{
+                                                                                        var isApproved = amendment.Status == AmendmentStatus.Approved;
+                                                                                        var statusClass = isApproved ? "text-primary" : "";
+
+                                                                                        switch (amendment.Status)
+                                                                                        {
+                                                                                            case AmendmentStatus.Approved:
+                                                                                                statusClass = "text-success";
+                                                                                                break;
+                                                                                            case AmendmentStatus.Rejected:
+                                                                                                statusClass = "text-danger";
+                                                                                                break;
+                                                                                            case AmendmentStatus.Draft:
+                                                                                                statusClass = "text-primary";
+                                                                                                break;
+                                                                                            default:
+                                                                                                statusClass = "";
+                                                                                                break;
+                                                                                        }
+                                                                                    }
+                                                                                    <td class="@statusClass">@amendment.Status</td>
+                                                                                    <td>
+                                                                                        <div class="d-flex justify-content-evenly gap-2">
+                                                                                            <button type="submit" class="btn btn-success">Save</button>
+                                                                                            <form method="post" asp-page-handler="CancelEditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                                                                                <button type="submit" class="btn btn-secondary">Cancel</button>
+                                                                                            </form>
+
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    </form>
+                                                                                </tr>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <tr>
+                                                                                    <td>@amendment.BudgetAmendmentID</td>
+                                                                                    <td>@amendment.CategoryName</td>
+                                                                                    <td>@amendment.AdjustmentDetail</td>
+                                                                                    <td>@amendment.SpeedType.Code</td>
+                                                                                    <td>@amendment.FundCode</td>
+                                                                                    <td>@amendment.DepartmentID</td>
+                                                                                    <td>@amendment.ProgramCode</td>
+                                                                                    <td>@amendment.ClassCode</td>
+                                                                                    <td>@amendment.AcctDescription</td>
+                                                                                    <td>@amendment.BudgetCode</td>
+                                                                                    <td>@amendment.PositionNumber</td>
+                                                                                    <td>@amendment.AmountIncrease</td>
+                                                                                    <td>@amendment.AmountDecrease</td>
+                                                                                    <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                                                                    <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                                                                    <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                                                                    <td>@amendment.StartDate</td>
+                                                                                    <td>@amendment.Deadline</td>
+                                                                                    <td>@amendment.ExtensionDays</td>
+                                                                                    @{
+                                                                                        var isApproved = amendment.Status == AmendmentStatus.Approved;
+                                                                                        var statusClass = isApproved ? "text-primary" : "";
+
+                                                                                        switch (amendment.Status)
+                                                                                        {
+                                                                                            case AmendmentStatus.Approved:
+                                                                                                statusClass = "text-success";
+                                                                                                break;
+                                                                                            case AmendmentStatus.Rejected:
+                                                                                                statusClass = "text-danger";
+                                                                                                break;
+                                                                                            case AmendmentStatus.Draft:
+                                                                                                statusClass = "text-primary";
+                                                                                                break;
+                                                                                            default:
+                                                                                                statusClass = "";
+                                                                                                break;
+                                                                                        }
+                                                                                    }
+                                                                                    <td class="@statusClass">@amendment.Status</td>
+                                                                                    <td colspan="4">
+                                                                                        @{
+                                                                                            var isEnabled = false;
+                                                                                            if (!String.Equals(userRole, "5") && (amendment.Status.ToString().Equals("Draft") || amendment.Status.ToString().Equals("Pending")))
+                                                                                            {
+                                                                                                isEnabled = true;
+                                                                                            }
+                                                                                            else if (!String.Equals(userRole, "5") && (amendment.Status.ToString().Equals("Draft")))
+                                                                                            {
+                                                                                                isEnabled = true;
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                isEnabled = false;
+                                                                                            }
+                                                                                        }
+                                                                                        <div class="d-flex justify-content-evenly gap-2">
+                                                                                            <form method="post" asp-page-handler="EditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                                                                                <button type="submit" disabled=@(!isEnabled) class="btn btn-outline-secondary">Edit</button>
+                                                                                            </form>
+                                                                                            <form method="post" asp-page-handler="DeleteAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                                                                                <button type="submit" disabled=@(!isEnabled) class="btn btn-outline-danger">Delete</button>
+                                                                                            </form>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                </tbody>
                                                             </table>
                                                         </div>
 
@@ -648,6 +1278,7 @@
                         </tr>
                     </thead>
                     <tbody>
+
                         @foreach (var categoryGroup in Model.BudgetAmendments.GroupBy(a => a.CategoryName))
                         {
                             var totalIncrease = categoryGroup.Sum(a => a.AmountIncrease);
@@ -1183,51 +1814,52 @@
             return true;
         }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const speedtypeSelect = document.getElementById('sourceSpeedtype');
-        const fundCodeInput = document.getElementById('fundCode');
-        const programCodeInput = document.getElementById('programCode');
-        const classCodeInput = document.getElementById('classCode');
+        document.addEventListener('DOMContentLoaded', function () {
+            const speedtypeSelect = document.getElementById('sourceSpeedtype');
+            const fundCodeInput = document.getElementById('fundCode');
+            const programCodeInput = document.getElementById('programCode');
+            const classCodeInput = document.getElementById('classCode');
 
-        // speedtypeSelect.addEventListener('change', function () {
-        //     const selectedOption = speedtypeSelect.options[speedtypeSelect.selectedIndex];
-        //     const fundCode = selectedOption.getAttribute('data-fundcode');
-        //     fundCodeInput.value = fundCode || '';
-        //     const programCode = selectedOption.getAttribute('data-programcode');
-        //     programCodeInput.value = programCode || '';
-        //     const classCode = selectedOption.getAttribute('data-classcode');
-        //     classCodeInput.value = classCode || '';
-        // });
+            // speedtypeSelect.addEventListener('change', function () {
+            //     const selectedOption = speedtypeSelect.options[speedtypeSelect.selectedIndex];
+            //     const fundCode = selectedOption.getAttribute('data-fundcode');
+            //     fundCodeInput.value = fundCode || '';
+            //     const programCode = selectedOption.getAttribute('data-programcode');
+            //     programCodeInput.value = programCode || '';
+            //     const classCode = selectedOption.getAttribute('data-classcode');
+            //     classCodeInput.value = classCode || '';
+            // });
 
-    function populateFields() {
-        const selectedOption = speedtypeSelect.options[speedtypeSelect.selectedIndex];
-        const fundCode = selectedOption.getAttribute('data-fundcode');
-        fundCodeInput.value = fundCode || '';
-        const programCode = selectedOption.getAttribute('data-programcode');
-        programCodeInput.value = programCode || '';
-        const classCode = selectedOption.getAttribute('data-classcode');
-        classCodeInput.value = classCode || '';
-    }
-
-       populateFields();
-        speedtypeSelect.addEventListener('change', populateFields);
-
-        [fundCodeInput, programCodeInput, classCodeInput].forEach(field => {
-        if (field) {
-            field.setAttribute('readonly', true);
-            field.style.backgroundColor = '#f0f0f0';
+        function populateFields() {
+            const selectedOption = speedtypeSelect.options[speedtypeSelect.selectedIndex];
+            const fundCode = selectedOption.getAttribute('data-fundcode');
+            fundCodeInput.value = fundCode || '';
+            const programCode = selectedOption.getAttribute('data-programcode');
+            programCodeInput.value = programCode || '';
+            const classCode = selectedOption.getAttribute('data-classcode');
+            classCodeInput.value = classCode || '';
         }
+
+           populateFields();
+            speedtypeSelect.addEventListener('change', populateFields);
+
+            [fundCodeInput, programCodeInput, classCodeInput].forEach(field => {
+            if (field) {
+                field.setAttribute('readonly', true);
+                field.style.backgroundColor = '#f0f0f0';
+            }
+            });
+
+            const modal = document.getElementById('extendDeadlineModal');
+            modal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const category = button.getAttribute('data-category');
+            const categoryInput = modal.querySelector('#modalCategory');
+            categoryInput.value = category;
         });
 
-        const modal = document.getElementById('extendDeadlineModal');
-        modal.addEventListener('show.bs.modal', function (event) {
-        const button = event.relatedTarget;
-        const category = button.getAttribute('data-category');
-        const categoryInput = modal.querySelector('#modalCategory');
-        categoryInput.value = category;
-    });
+        });
 
-    });
     </script>
 
 <style>
