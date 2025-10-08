@@ -33,6 +33,12 @@ namespace budget_management_system_aspdotnetcore.Entities
         public int? EditedBy { get; set; }
         public int? UpdatedBy { get; set; }
 
+        [Required]
+        [ForeignKey("BudgetAmendmentMain")]
+        public int BudgetAmendmentMainID { get; set; }
+
+        public virtual BudgetAmendmentMain BudgetAmendmentMain { get; set; }
+
         // Foreign key relationships
         [ForeignKey("CreatedBy")]
         public User? CreatedByUser { get; set; }

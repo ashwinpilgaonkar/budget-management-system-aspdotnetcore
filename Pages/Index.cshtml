@@ -29,6 +29,11 @@
             <div class="d-flex align-items-end justify-content-between flex-wrap gap-3 mb-4">
                 <!-- Financial Year Form -->
                 <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
+
+                    <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                    <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                    <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+
                     <div>
                         <label for="financialYear" class="form-label mb-1">Financial year:</label>
                         <select class="form-select form-select-sm" id="financialYear" name="SelectedFinancialYear" onchange="toggleDateRange(this.value)">
@@ -127,7 +132,7 @@
 
             <!-- Budget Amendments Section -->
             <div class="mb-4">
-                <div class="accordion" id="budgetAmendmentsAccordion">
+                <div class="accordion" id="budgetAmendmentsAccordion" >
 
                     @{
                         var baIndex = 0;
@@ -138,7 +143,7 @@
                         var amendmentIndex = baIndex;
                         baIndex++;
 
-                        <div class="accordion-item mb-3">
+                        <div class="accordion-item mb-3" data-ba-id="@amendmentmain.BudgetAmendmentMainID">
                             <h2 class="accordion-header" id="headingBA@(amendmentIndex)">
                                 <button class="accordion-button collapsed py-4" type="button"
                                         data-bs-toggle="collapse"
@@ -159,15 +164,20 @@
                                         {
                                             var deptId = $"Dept{dept.DepartmentID}";
 
-                                            <div class="accordion-item mb-2">
+                                            <div class="accordion-item mb-2" data-dept-id="@dept.DepartmentID">
                                                 <h2 class="accordion-header" id="heading@(deptId)BA@(amendmentIndex)">
-                                                    <button class="accordion-button collapsed" type="button"
+@*                                                     <button class="accordion-button collapsed" type="button"
                                                             data-bs-toggle="collapse"
                                                             data-bs-target="#collapse@(deptId)BA@(amendmentIndex)"
                                                             aria-expanded="false"
                                                             aria-controls="collapse@(deptId)BA@(amendmentIndex)">
                                                         @dept.DepartmentName
-                                                    </button>
+                                                    </button> *@
+                                                    <a href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=@Model.SelectedStatusTab&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")"
+                                                       class="accordion-button collapsed py-3 text-decoration-none"
+                                                       style="display: block;">
+                                                        @dept.DepartmentName
+                                                    </a>
                                                 </h2>
                                                 <div id="collapse@(deptId)BA@(amendmentIndex)" class="accordion-collapse collapse"
                                                      aria-labelledby="heading@(deptId)BA@(amendmentIndex)"
@@ -879,7 +889,7 @@
 
 
 
-            <ul class="nav nav-tabs justify-content-center">
+             <ul class="nav nav-tabs justify-content-center">
                 <li class="nav-item">
                     <a class="nav-link @(Model.SelectedStatusTab == null ? "active" : "")" href="?SelectedDepartmentID=@Model.SelectedDepartmentID&SelectedStatusTab=">All</a>
                 </li>
@@ -891,7 +901,7 @@
                         <a class="nav-link @isActive" href="?SelectedDepartmentID=@Model.SelectedDepartmentID&SelectedStatusTab=@status">@status</a>
                     </li>
                 }
-            </ul>
+            </ul> 
 
 
 
@@ -1681,6 +1691,36 @@
 }
 
     <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedBA = urlParams.get('SelectedBudgetAmendmentMainID');
+            const selectedDept = urlParams.get('SelectedDepartmentID');
+
+            if (selectedBA && selectedDept) {
+
+                const baAccordions = document.querySelectorAll('[id^="collapseBA"]');
+                baAccordions.forEach(accordion => {
+                    if (accordion.getAttribute('data-ba-id') == selectedBA) {
+                        new bootstrap.Collapse(accordion, { show: true });
+
+
+                        setTimeout(() => {
+                            const deptAccordions = accordion.querySelectorAll('[data-dept-id]');
+                            deptAccordions.forEach(deptAccordion => {
+                                if (deptAccordion.getAttribute('data-dept-id') == selectedDept) {
+                                    new bootstrap.Collapse(deptAccordion, { show: true });
+                                }
+                            });
+                        }, 350);
+                    }
+                });
+            }
+        });
+
+
+
+
         function selectAllCategoryCheckboxes() {
             document.querySelectorAll('.category-submit-checkbox:not(:disabled)').forEach(cb => cb.checked = true);
         }
@@ -1801,6 +1841,8 @@
                         e.stopPropagation();
                     });
             }
+
+
 
         });
 

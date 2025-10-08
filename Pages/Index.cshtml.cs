@@ -44,6 +44,9 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public IEnumerable<SpeedType> SpeedTypes { get; set; }
 
+        [BindProperty(SupportsGet = true)]
+        public int? SelectedBudgetAmendmentMainID { get; set; }
+
         public List<BudgetAmendmentMain> BudgetAmendmentsMain { get; set; }
 
         public List<BudgetAmendment> BudgetAmendments { get; set; }
@@ -303,6 +306,11 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (SelectedDepartmentID != 0)
             {
                 amendmentQuery = amendmentQuery.Where(b => b.DepartmentID == SelectedDepartmentID);
+            }
+
+            if (SelectedBudgetAmendmentMainID.HasValue)
+            {
+                amendmentQuery = amendmentQuery.Where(b => b.BudgetAmendmentMainID == SelectedBudgetAmendmentMainID.Value);
             }
 
             if (!string.IsNullOrEmpty(SortColumn) && ActiveSortTable == "AmendmentHistory")
