@@ -18,13 +18,6 @@
                     Create New +
                 </button>
             </div>
-            <!-- Search Bar -->
-            <form method="get">
-                <div class="input-group mb-3">
-                    <input type="text" name="BudgetAmendmentSearchTerm" class="form-control" placeholder="Search..." value="@Model.BudgetAmendmentSearchTerm" />
-                    <button type="submit" class="btn btn-outline-secondary">Search</button>
-                </div>
-            </form>
 
             <div class="d-flex align-items-end justify-content-between flex-wrap gap-3 mb-4">
                 <!-- Financial Year Form -->
@@ -178,23 +171,48 @@
                                                      aria-labelledby="heading@(deptId)BA@(amendmentIndex)"
                                                      data-bs-parent="#departmentsBA@(amendmentIndex)"
                                                      data-dept-id="@dept.DepartmentID">
+
                                                     <div class="accordion-body">
+
+                                                        <!-- Search Bar -->
+                                                        <form method="get">
+
+                                                            <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                            <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                            <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                            <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                            <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                            <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+
+                                                            <div class="input-group mb-3">
+                                                                <input type="text" name="BudgetAmendmentSearchTerm" class="form-control" placeholder="Search..." value="@Model.BudgetAmendmentSearchTerm" />
+                                                                <button type="submit" class="btn btn-outline-secondary">Search</button>
+                                                            </div>
+                                                        </form>
+
+                                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAmendmentModal"
+                                                        @(DateTime.Now < Model.BudgetAmendmentStartDate || DateTime.Now > Model.BudgetAmendmentEndDate ? "disabled" : "")>
+                                                            Create New +
+                                                        </button>
 
                                                         <!-- Status Tabs for this department -->
                                                         <ul class="nav nav-tabs justify-content-center mb-3">
-                                                            <li class="nav-item">
-                                                                <a class="nav-link @(Model.SelectedStatusTab == null ? "active" : "")"
-                                                                   href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID">All</a>
-                                                            </li>
-                                                            @foreach (var status in Enum.GetNames(typeof(budget_management_system_aspdotnetcore.Entities.AmendmentStatus)))
+                                                            @{
+                                                                var statusNames = Enum.GetNames(typeof(budget_management_system_aspdotnetcore.Entities.AmendmentStatus));
+                                                                var firstStatus = statusNames.FirstOrDefault();
+                                                            }
+                                                            @foreach (var status in statusNames)
                                                             {
-                                                                var isActive = Model.SelectedStatusTab == status ? "active" : "";
-
+                                                                var isActive = Model.SelectedStatusTab == status || (Model.SelectedStatusTab == null && status == firstStatus) ? "active" : "";
                                                                 <li class="nav-item">
                                                                     <a class="nav-link @isActive"
-                                                                       href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=@status&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID">@status</a>
+                                                                       href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=@status&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")">@status</a>
                                                                 </li>
                                                             }
+                                                            <li class="nav-item">
+                                                                <a class="nav-link"
+                                                                   href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")">All</a>
+                                                            </li>
                                                         </ul>
 
                                                         <div class="table-responsive">
@@ -841,6 +859,42 @@
                                                             </table>
                                                         </div>
 
+                                                        <!-- Pagination Controls -->
+                                                        <nav class="d-flex justify-content-between align-items-center my-3" aria-label="Budget Amendment Page navigation">
+                                                            <!-- Results per page dropdown on the left -->
+                                                            <div class="d-flex align-items-center">
+                                                                <label for="resultsPerPage" class="me-2">Results per page:</label>
+                                                                <select id="resultsPerPage" class="form-select me-3" style="width: auto;"
+                                                                        onchange="window.location.href = '@Url.Page(null, new { amendmentPageNumber = 1, amendmentsPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
+                                                                    @foreach (var size in Model.PageSizes)
+                                                                    {
+                                                                        <option value="@size" selected="@(Model.BudgetAmendmentResultsPerPage == size ? "selected" : null)">@size</option>
+                                                                    }
+                                                                </select>
+                                                            </div>
+                                                            @{
+                                                                int amendmentRecordsShown = Math.Min(Model.BudgetAmendmentResultsPerPage, Model.TotalBudgetAmendments - ((Model.BudgetAmendmentCurrentPage - 1) * Model.BudgetAmendmentResultsPerPage));
+                                                            }
+                                                            <span>Records: @amendmentRecordsShown of @Model.TotalBudgetAmendments</span>
+                                                            <ul class="pagination mb-0">
+                                                                <li class="page-item @(Model.BudgetAmendmentCurrentPage <= 1 ? "disabled" : "")">
+                                                                    <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.BudgetAmendmentCurrentPage - 1, resultsPerPage = Model.BudgetAmendmentResultsPerPage })"
+                                                                       aria-label="Previous">
+                                                                        <span aria-hidden="true">&laquo;</span>
+                                                                    </a>
+                                                                </li>
+                                                                <li class="page-item active">
+                                                                    <span class="page-link">@Model.BudgetAmendmentCurrentPage</span>
+                                                                </li>
+                                                                <li class="page-item @(Model.BudgetAmendmentCurrentPage >= Model.BudgetAmendmentTotalPages ? "disabled" : "")">
+                                                                    <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.BudgetAmendmentCurrentPage + 1, resultsPerPage = Model.BudgetAmendmentResultsPerPage })"
+                                                                       aria-label="Next">
+                                                                        <span aria-hidden="true">&raquo;</span>
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        </nav>
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -855,41 +909,6 @@
                 </div>
             </div>
 
-            <!-- Pagination Controls -->
-            <nav class="d-flex justify-content-between align-items-center my-3" aria-label="Budget Amendment Page navigation">
-                <!-- Results per page dropdown on the left -->
-                <div class="d-flex align-items-center">
-                    <label for="resultsPerPage" class="me-2">Results per page:</label>
-                    <select id="resultsPerPage" class="form-select me-3" style="width: auto;"
-                            onchange="window.location.href = '@Url.Page(null, new { amendmentPageNumber = 1, amendmentsPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
-                        @foreach (var size in Model.PageSizes)
-                        {
-                            <option value="@size" selected="@(Model.BudgetAmendmentResultsPerPage == size ? "selected" : null)">@size</option>
-                        }
-                    </select>
-                </div>
-                @{
-                    int amendmentRecordsShown = Math.Min(Model.BudgetAmendmentResultsPerPage, Model.TotalBudgetAmendments - ((Model.BudgetAmendmentCurrentPage - 1) * Model.BudgetAmendmentResultsPerPage));
-                }
-                <span>Records: @amendmentRecordsShown of @Model.TotalBudgetAmendments</span>
-                <ul class="pagination mb-0">
-                    <li class="page-item @(Model.BudgetAmendmentCurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.BudgetAmendmentCurrentPage - 1, resultsPerPage = Model.BudgetAmendmentResultsPerPage })"
-                           aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    <li class="page-item active">
-                        <span class="page-link">@Model.BudgetAmendmentCurrentPage</span>
-                    </li>
-                    <li class="page-item @(Model.BudgetAmendmentCurrentPage >= Model.BudgetAmendmentTotalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { pageNumber = Model.BudgetAmendmentCurrentPage + 1, resultsPerPage = Model.BudgetAmendmentResultsPerPage })"
-                           aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
             @if (DateTime.Now >= Model.BudgetAmendmentStartDate && DateTime.Now <= Model.BudgetAmendmentEndDate)
             {
                 <p>The budget amendment window is currently ACTIVE.</p>
