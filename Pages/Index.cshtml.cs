@@ -13,6 +13,7 @@ using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Vml;
 using Department = budget_management_system_aspdotnetcore.Entities.Department;
+using System.Security.Claims;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
@@ -49,6 +50,9 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public List<BudgetAmendmentMain> BudgetAmendmentsMain { get; set; }
 
+        [BindProperty]
+        public BudgetAmendmentMain NewBudgetAmendmentMain { get; set; }
+
         public List<BudgetAmendment> BudgetAmendments { get; set; }
 
         [BindProperty]
@@ -77,6 +81,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         [BindProperty]
         [Required]
         public int DestinationSpeedtype { get; set; }
+
+        public DateTime BudgetAmendmentMainStartDate { get; set; }
+        public DateTime BudgetAmendmentMainEndDate { get; set; }
 
         public DateTime BudgetAmendmentStartDate { get; set; }
         public DateTime BudgetAmendmentEndDate { get; set; }
@@ -138,6 +145,12 @@ namespace budget_management_system_aspdotnetcore.Pages
         [BindProperty(SupportsGet = true)]
         [DataType(DataType.Date)]
         public DateTime? CustomEndDate { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int? selectedBA { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int? selectedDept { get; set; }
 
         public int OverviewTotalCount { get; set; }
         public int OverviewApprovedCount { get; set; }
@@ -412,12 +425,20 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (SelectedUpdatedBy.HasValue)
                 amendmentQuery = amendmentQuery.Where(b => b.UpdatedBy == SelectedUpdatedBy);
 
+/*            //View Budget Amendments created only by logged in user
             if (String.Equals(userRole, "5"))
             {
                 amendmentQuery = amendmentQuery.Where(b => b.CreatedBy == userID);
-            }
+            }*/
 
+/*            //CFO and SA can view all BAs except drafts unless created by them
             if (String.Equals(userRole, "6"))
+            {
+                amendmentQuery = amendmentQuery.Where(b => b.Status != AmendmentStatus.Draft || (b.Status == AmendmentStatus.Draft && b.CreatedBy == userID));
+            }*/
+
+            //Keep drafts viewable only to user that created them. SA can view all drafts.
+            if (!String.Equals(userRole, "6"))
             {
                 amendmentQuery = amendmentQuery.Where(b => b.Status != AmendmentStatus.Draft || (b.Status == AmendmentStatus.Draft && b.CreatedBy == userID));
             }
@@ -444,6 +465,15 @@ namespace budget_management_system_aspdotnetcore.Pages
             {
                 BudgetAmendmentStartDate = new DateTime(DateTime.Now.Year, 4, 1); // Example: April 1st as start
                 BudgetAmendmentEndDate = BudgetAmendmentStartDate.AddYears(1).AddDays(-1); // March 31st as end
+            }
+
+            var currentMainAmendment = await _context.BudgetAmendmentMain
+                .FirstOrDefaultAsync(ba => ba.BudgetAmendmentMainID == SelectedBudgetAmendmentMainID);
+
+            if (currentMainAmendment != null)
+            {
+                BudgetAmendmentMainStartDate = currentMainAmendment.StartDate;
+                BudgetAmendmentMainEndDate = currentMainAmendment.EndDate;
             }
 
             var userId = _authService.GetAuthenticatedUserID(HttpContext);
@@ -486,6 +516,26 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return SortOrder == "asc" ? "fa-arrow-up" : "fa-arrow-down";
             }
             return "fa-sort";
+        }
+
+        public async Task<IActionResult> OnPostAddAmendmentMainAsync()
+        {
+            if (!ModelState.IsValid)
+            {
+/*                return Page();*/
+            }
+
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            NewBudgetAmendmentMain.CreatedAt = DateTime.Now;
+            NewBudgetAmendmentMain.CreatedBy = _authService.GetAuthenticatedUserID(HttpContext);
+            NewBudgetAmendmentMain.UpdatedAt = DateTime.Now;
+            NewBudgetAmendmentMain.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
+
+            _context.BudgetAmendmentMain.Add(NewBudgetAmendmentMain);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostAddAmendmentAsync()
@@ -558,6 +608,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             EditingBudgetAmendmentID = id;
 
+            selectedBA = SelectedBudgetAmendmentMainID;
+            selectedDept = SelectedDepartmentID;
+
             var amendment = await _context.BudgetAmendments.FindAsync(id);
 
             if (amendment != null)
@@ -588,7 +641,6 @@ namespace budget_management_system_aspdotnetcore.Pages
             }*/
 
             await LoadFormDataAsync();
-
             return Page();
         }
 
