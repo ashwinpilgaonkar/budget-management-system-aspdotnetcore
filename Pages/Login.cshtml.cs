@@ -38,6 +38,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
 
+        [TempData]
         public string ErrorMessage { get; set; }
 
         public async Task<IActionResult> OnPostAsync()
@@ -46,7 +47,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             if (user == null)
             {
-                ErrorMessage = "Invalid username or password.";
+                ErrorMessage = "User does not exist";
                 Debug.WriteLine(ErrorMessage);
                 return Page();
             }
@@ -68,7 +69,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
 
             // Invalid login attempt
-            ErrorMessage = "Password does not match or User does not exist";
+            ErrorMessage = "Invalid password";
             Debug.WriteLine(ErrorMessage);
             return Page();
         }

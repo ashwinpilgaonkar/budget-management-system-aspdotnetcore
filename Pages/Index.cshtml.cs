@@ -85,9 +85,6 @@ namespace budget_management_system_aspdotnetcore.Pages
         public DateTime BudgetAmendmentMainStartDate { get; set; }
         public DateTime BudgetAmendmentMainEndDate { get; set; }
 
-        public DateTime BudgetAmendmentStartDate { get; set; }
-        public DateTime BudgetAmendmentEndDate { get; set; }
-
         [BindProperty]
         [Range(0.01, double.MaxValue, ErrorMessage = "Transfer amount must be greater than zero")]
         public double TransferAmount { get; set; }
@@ -97,7 +94,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         public int SelectedDepartmentID { get; set; } = 0;
 
         [BindProperty(SupportsGet = true)]
-        public string SelectedStatusTab { get; set; }
+        public string SelectedStatusTab { get; set; } = AmendmentStatus.Pending.ToString();
 
         [BindProperty(SupportsGet = true)]
         public List<string> SelectedStatus { get; set; }
@@ -454,19 +451,6 @@ namespace budget_management_system_aspdotnetcore.Pages
             TotalBudgetAmendments = await amendmentQuery.CountAsync();
             BudgetAmendmentTotalPages = (int)Math.Ceiling(TotalBudgetAmendments / (double)BudgetAmendmentResultsPerPage);
 
-            //Fetch Budget Amendment Settings
-            var amendmentSettings = await _context.BudgetAmendmentSettings.FirstOrDefaultAsync();
-            if (amendmentSettings != null)
-            {
-                BudgetAmendmentStartDate = amendmentSettings.StartDate;
-                BudgetAmendmentEndDate = amendmentSettings.EndDate;
-            }
-            else
-            {
-                BudgetAmendmentStartDate = new DateTime(DateTime.Now.Year, 4, 1); // Example: April 1st as start
-                BudgetAmendmentEndDate = BudgetAmendmentStartDate.AddYears(1).AddDays(-1); // March 31st as end
-            }
-
             var currentMainAmendment = await _context.BudgetAmendmentMain
                 .FirstOrDefaultAsync(ba => ba.BudgetAmendmentMainID == SelectedBudgetAmendmentMainID);
 
@@ -820,12 +804,12 @@ namespace budget_management_system_aspdotnetcore.Pages
                     return RedirectToPage();
                 }*/
 
-        public async Task<IActionResult> OnPostApproveCategoryAsync(string category)
+        public async Task<IActionResult> OnPostApproveCategoryAsync()
         {
-            if (string.IsNullOrEmpty(category))
-                return BadRequest("Invalid category");
+            if (SelectedDepartmentID == 0)
+                return BadRequest("Invalid department");
 
-            var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
+            var amendments = _context.BudgetAmendments.Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Pending);
             var categoryName = "";
 
             foreach (var amendment in amendments)
@@ -834,19 +818,61 @@ namespace budget_management_system_aspdotnetcore.Pages
                 amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext); 
                 amendment.UpdatedAt = DateTime.Now;
                 categoryName = amendment.CategoryName;
+                await UpdateUserActivityLogAsync(categoryName, ActivityType.Approved);
             }
 
             await _context.SaveChangesAsync();
-            await UpdateUserActivityLogAsync(categoryName, ActivityType.Approved);
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostRejectCategoryAsync(string category)
-        {
-            if (string.IsNullOrEmpty(category))
-                return BadRequest("Invalid category");
+        /*        public async Task<IActionResult> OnPostApproveCategoryAsync(string category)
+                {
+                    if (string.IsNullOrEmpty(category))
+                        return BadRequest("Invalid category");
 
-            var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
+                    var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
+                    var categoryName = "";
+
+                    foreach (var amendment in amendments)
+                    {
+                        amendment.Status = AmendmentStatus.Approved;
+                        amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
+                        amendment.UpdatedAt = DateTime.Now;
+                        categoryName = amendment.CategoryName;
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await UpdateUserActivityLogAsync(categoryName, ActivityType.Approved);
+                    return RedirectToPage();
+                }*/
+
+        /*        public async Task<IActionResult> OnPostRejectCategoryAsync(string category)
+                {
+                    if (string.IsNullOrEmpty(category))
+                        return BadRequest("Invalid category");
+
+                    var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
+                    var categoryName = "";
+
+                    foreach (var amendment in amendments)
+                    {
+                        amendment.Status = AmendmentStatus.Rejected;
+                        amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
+                        amendment.UpdatedAt = DateTime.Now;
+                        categoryName = amendment.CategoryName;
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await UpdateUserActivityLogAsync(categoryName, ActivityType.Rejected);
+                    return RedirectToPage();
+                }*/
+
+        public async Task<IActionResult> OnPostRejectCategoryAsync()
+        {
+            if (SelectedDepartmentID == 0)
+                return BadRequest("Invalid department");
+
+            var amendments = _context.BudgetAmendments.Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Pending);
             var categoryName = "";
 
             foreach (var amendment in amendments)
@@ -855,19 +881,40 @@ namespace budget_management_system_aspdotnetcore.Pages
                 amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
                 amendment.UpdatedAt = DateTime.Now;
                 categoryName = amendment.CategoryName;
+                await UpdateUserActivityLogAsync(categoryName, ActivityType.Rejected);
             }
 
             await _context.SaveChangesAsync();
-            await UpdateUserActivityLogAsync(categoryName, ActivityType.Rejected);
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostRevertCategoryAsync(string category)
-        {
-            if (string.IsNullOrEmpty(category))
-                return BadRequest("Invalid category");
+        /*        public async Task<IActionResult> OnPostRevertCategoryAsync(string category)
+                {
+                    if (string.IsNullOrEmpty(category))
+                        return BadRequest("Invalid category");
 
-            var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
+                    var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
+                    var categoryName = "";
+
+                    foreach (var amendment in amendments)
+                    {
+                        amendment.Status = AmendmentStatus.Pending;
+                        amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
+                        amendment.UpdatedAt = DateTime.Now;
+                        categoryName = amendment.CategoryName;
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await UpdateUserActivityLogAsync(categoryName, ActivityType.Reverted);
+                    return RedirectToPage();
+                }*/
+
+        public async Task<IActionResult> OnPostRevertCategoryAsync()
+        {
+            if (SelectedDepartmentID == 0)
+                return BadRequest("Invalid department");
+
+            var amendments = _context.BudgetAmendments.Where(a => a.DepartmentID == SelectedDepartmentID && (a.Status == AmendmentStatus.Approved || a.Status == AmendmentStatus.Rejected));
             var categoryName = "";
 
             foreach (var amendment in amendments)
@@ -876,10 +923,10 @@ namespace budget_management_system_aspdotnetcore.Pages
                 amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
                 amendment.UpdatedAt = DateTime.Now;
                 categoryName = amendment.CategoryName;
+                await UpdateUserActivityLogAsync(categoryName, ActivityType.Reverted);
             }
 
             await _context.SaveChangesAsync();
-            await UpdateUserActivityLogAsync(categoryName, ActivityType.Reverted);
             return RedirectToPage();
         }
 
@@ -955,35 +1002,104 @@ namespace budget_management_system_aspdotnetcore.Pages
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostExtendDeadlineAsync(string category, int extensionDays)
+        /*        public async Task<IActionResult> OnPostExtendDeadlineAsync(string category, int extensionDays)
+                {
+                    if (string.IsNullOrWhiteSpace(category) || extensionDays <= 0)
+                    {
+                        TempData["Error"] = "Invalid category or extension days.";
+                        return RedirectToPage(); // Stay on the same page
+                    }
+
+                    // Fetch matching amendments by category
+                    var amendments = await _context.BudgetAmendments
+                        .Where(a => a.CategoryName == category)
+                        .ToListAsync();
+
+                    if (amendments.Count == 0)
+                    {
+                        TempData["Error"] = "No amendments found for the selected category.";
+                        return RedirectToPage();
+                    }
+
+                    // Extend deadlines
+                    foreach (var amendment in amendments)
+                    { 
+                        amendment.ExtensionDays = extensionDays;
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    TempData["Success"] = $"Deadline extended by {extensionDays} days for category '{category}'.";
+                    return RedirectToPage();
+                }*/
+
+        public async Task<IActionResult> OnPostExtendDeadlineAsync(
+            int extensionDays,
+            int? SelectedDepartmentID,
+            int? SelectedBudgetAmendmentMainID,
+            string SelectedStatusTab,
+            string SelectedFinancialYear,
+            DateTime? CustomStartDate,
+            DateTime? CustomEndDate)
         {
-            if (string.IsNullOrWhiteSpace(category) || extensionDays <= 0)
+            if (extensionDays <= 0)
             {
-                TempData["Error"] = "Invalid category or extension days.";
-                return RedirectToPage(); // Stay on the same page
-            }
-
-            // Fetch matching amendments by category
-            var amendments = await _context.BudgetAmendments
-                .Where(a => a.CategoryName == category)
-                .ToListAsync();
-
-            if (amendments.Count == 0)
-            {
-                TempData["Error"] = "No amendments found for the selected category.";
+                TempData["Error"] = "Invalid extension days.";
                 return RedirectToPage();
             }
 
-            // Extend deadlines
+            var amendmentQuery = _context.BudgetAmendments.AsQueryable();
+
+            // Apply filters based on current view
+            if (SelectedBudgetAmendmentMainID.HasValue)
+            {
+                amendmentQuery = amendmentQuery.Where(a => a.BudgetAmendmentMainID == SelectedBudgetAmendmentMainID.Value);
+            }
+
+            if (SelectedDepartmentID.HasValue && SelectedDepartmentID != 0)
+            {
+                amendmentQuery = amendmentQuery.Where(a => a.DepartmentID == SelectedDepartmentID.Value);
+            }
+
+            if (!string.IsNullOrEmpty(SelectedStatusTab))
+            {
+                amendmentQuery = amendmentQuery.Where(a => a.Status.ToString() == SelectedStatusTab);
+            }
+
+            var amendments = await amendmentQuery.ToListAsync();
+
+            if (amendments.Count == 0)
+            {
+                TempData["Error"] = "No amendments found in the current view.";
+                return RedirectToPage(new
+                {
+                    SelectedDepartmentID,
+                    SelectedBudgetAmendmentMainID,
+                    SelectedStatusTab,
+                    SelectedFinancialYear,
+                    CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
+                    CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
+                });
+            }
+
+            // Extend deadlines for all visible records
             foreach (var amendment in amendments)
-            { 
-                amendment.ExtensionDays = extensionDays;
+            {
+                amendment.ExtensionDays = (amendment.ExtensionDays) + extensionDays;
             }
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Deadline extended by {extensionDays} days for category '{category}'.";
-            return RedirectToPage();
+            TempData["Success"] = $"Deadline extended by {extensionDays} days for {amendments.Count} record(s).";
+            return RedirectToPage(new
+            {
+                SelectedDepartmentID,
+                SelectedBudgetAmendmentMainID,
+                SelectedStatusTab,
+                SelectedFinancialYear,
+                CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
+                CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
+            });
         }
 
         /*        public async Task<IActionResult> OnPostRejectAmendmentAsync(int id)

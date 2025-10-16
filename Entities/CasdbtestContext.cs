@@ -27,8 +27,6 @@ public partial class CasdbtestContext : DbContext
 
     public DbSet<BudgetAmendment> BudgetAmendments { get; set; }
 
-    public DbSet<BudgetAmendmentSetting> BudgetAmendmentSettings { get; set; }
-
     public DbSet<UserActivityLog> UserActivityLogs { get; set; }
 
     public DbSet<Role> Roles { get; set; }
@@ -55,11 +53,6 @@ public partial class CasdbtestContext : DbContext
             .WithMany()
             .HasForeignKey(ba => ba.UpdatedBy)
             .OnDelete(DeleteBehavior.Restrict);
-
-        // Configure the table if needed
-        modelBuilder.Entity<BudgetAmendmentSetting>()
-            .ToTable("BudgetAmendmentSettings")
-            .HasKey(b => b.Id);
 
         modelBuilder.Entity<BudgetAmendment>()
             .Property(b => b.Status)
