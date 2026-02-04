@@ -457,7 +457,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (currentMainAmendment != null)
             {
                 BudgetAmendmentMainStartDate = currentMainAmendment.StartDate;
-                BudgetAmendmentMainEndDate = currentMainAmendment.EndDate;
+                BudgetAmendmentMainEndDate = currentMainAmendment.ExtendedDeadline;
             }
 
             var userId = _authService.GetAuthenticatedUserID(HttpContext);
@@ -502,26 +502,6 @@ namespace budget_management_system_aspdotnetcore.Pages
             return "fa-sort";
         }
 
-        public async Task<IActionResult> OnPostAddAmendmentMainAsync()
-        {
-            if (!ModelState.IsValid)
-            {
-/*                return Page();*/
-            }
-
-            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-
-            NewBudgetAmendmentMain.CreatedAt = DateTime.Now;
-            NewBudgetAmendmentMain.CreatedBy = _authService.GetAuthenticatedUserID(HttpContext);
-            NewBudgetAmendmentMain.UpdatedAt = DateTime.Now;
-            NewBudgetAmendmentMain.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
-
-            _context.BudgetAmendmentMain.Add(NewBudgetAmendmentMain);
-            await _context.SaveChangesAsync();
-
-            return RedirectToPage();
-        }
-
         public async Task<IActionResult> OnPostAddAmendmentAsync()
         {
             if (!ModelState.IsValid)
@@ -552,7 +532,8 @@ namespace budget_management_system_aspdotnetcore.Pages
                 UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext),
                 EditedBy = _authService.GetAuthenticatedUserID(HttpContext),
                 EditedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                UpdatedAt = DateTime.Now,
+                BudgetAmendmentMainID = NewBudgetAmendment.BudgetAmendmentMainID
             };
 
             var budgetAmendment2 = new BudgetAmendment
@@ -576,16 +557,28 @@ namespace budget_management_system_aspdotnetcore.Pages
                 UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext),
                 EditedBy = _authService.GetAuthenticatedUserID(HttpContext),
                 EditedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                UpdatedAt = DateTime.Now,
+                BudgetAmendmentMainID = NewBudgetAmendment.BudgetAmendmentMainID
             };
 
             _context.BudgetAmendments.Add(budgetAmendment1);
             _context.BudgetAmendments.Add(budgetAmendment2);
+
+            SelectedStatusTab = AmendmentStatus.Draft.ToString();
+
             await _context.SaveChangesAsync();
 
             await LoadFormDataAsync();
 
-            return RedirectToPage();
+            return RedirectToPage(new
+            {
+                SelectedDepartmentID,
+                SelectedBudgetAmendmentMainID,
+                SelectedStatusTab,
+                SelectedFinancialYear,
+                CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
+                CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
+            });
         }
 
         public async Task<IActionResult> OnPostEditAmendmentAsync(int id)
@@ -726,7 +719,15 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             await LoadFormDataAsync();
 
-            return RedirectToPage();
+            return RedirectToPage(new
+            {
+                SelectedDepartmentID,
+                SelectedBudgetAmendmentMainID,
+                SelectedStatusTab,
+                SelectedFinancialYear,
+                CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
+                CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
+            });
         }
 
         /*        public async Task<IActionResult> OnPostApproveAmendmentAsync(int id)
@@ -809,21 +810,26 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (SelectedDepartmentID == 0)
                 return BadRequest("Invalid department");
 
-            var amendments = _context.BudgetAmendments.Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Pending);
+            var amendments = await _context.BudgetAmendments
+                .Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Pending)
+                .ToListAsync();
+
             var categoryName = "";
 
             foreach (var amendment in amendments)
             {
                 amendment.Status = AmendmentStatus.Approved;
-                amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext); 
+                amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
                 amendment.UpdatedAt = DateTime.Now;
+
                 categoryName = amendment.CategoryName;
-                await UpdateUserActivityLogAsync(categoryName, ActivityType.Approved);
+                await UpdateUserActivityLogAsync(amendment.CategoryName, ActivityType.Approved);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToPage();
         }
+
 
         /*        public async Task<IActionResult> OnPostApproveCategoryAsync(string category)
                 {
@@ -872,7 +878,9 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (SelectedDepartmentID == 0)
                 return BadRequest("Invalid department");
 
-            var amendments = _context.BudgetAmendments.Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Pending);
+            var amendments = await _context.BudgetAmendments
+                .Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Pending)
+                .ToListAsync();
             var categoryName = "";
 
             foreach (var amendment in amendments)
@@ -880,6 +888,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 amendment.Status = AmendmentStatus.Rejected;
                 amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
                 amendment.UpdatedAt = DateTime.Now;
+
                 categoryName = amendment.CategoryName;
                 await UpdateUserActivityLogAsync(categoryName, ActivityType.Rejected);
             }
@@ -914,16 +923,17 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (SelectedDepartmentID == 0)
                 return BadRequest("Invalid department");
 
-            var amendments = _context.BudgetAmendments.Where(a => a.DepartmentID == SelectedDepartmentID && (a.Status == AmendmentStatus.Approved || a.Status == AmendmentStatus.Rejected));
+            var amendments = await _context.BudgetAmendments.Where(a => a.DepartmentID == SelectedDepartmentID && (a.Status == AmendmentStatus.Approved || a.Status == AmendmentStatus.Rejected)).ToListAsync();
             var categoryName = "";
 
             foreach (var amendment in amendments)
             {
-                amendment.Status = AmendmentStatus.Pending;
+                amendment.Status = AmendmentStatus.Rejected;
                 amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
                 amendment.UpdatedAt = DateTime.Now;
+
                 categoryName = amendment.CategoryName;
-                await UpdateUserActivityLogAsync(categoryName, ActivityType.Reverted);
+                await UpdateUserActivityLogAsync(categoryName, ActivityType.Rejected);
             }
 
             await _context.SaveChangesAsync();
@@ -935,7 +945,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (string.IsNullOrEmpty(category))
                 return BadRequest("Invalid category");
 
-            var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
+            var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category && a.Status == AmendmentStatus.Pending);
             var categoryName = "";
 
             foreach (var amendment in amendments)
@@ -944,10 +954,10 @@ namespace budget_management_system_aspdotnetcore.Pages
                 amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
                 amendment.UpdatedAt = DateTime.Now;
                 categoryName = amendment.CategoryName;
+                await UpdateUserActivityLogAsync(categoryName, ActivityType.Withdrawn);
             }
 
             await _context.SaveChangesAsync();
-            await UpdateUserActivityLogAsync(categoryName, ActivityType.Withdrawn);
             return RedirectToPage();
         }
 
@@ -1032,75 +1042,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                     TempData["Success"] = $"Deadline extended by {extensionDays} days for category '{category}'.";
                     return RedirectToPage();
                 }*/
-
-        public async Task<IActionResult> OnPostExtendDeadlineAsync(
-            int extensionDays,
-            int? SelectedDepartmentID,
-            int? SelectedBudgetAmendmentMainID,
-            string SelectedStatusTab,
-            string SelectedFinancialYear,
-            DateTime? CustomStartDate,
-            DateTime? CustomEndDate)
-        {
-            if (extensionDays <= 0)
-            {
-                TempData["Error"] = "Invalid extension days.";
-                return RedirectToPage();
-            }
-
-            var amendmentQuery = _context.BudgetAmendments.AsQueryable();
-
-            // Apply filters based on current view
-            if (SelectedBudgetAmendmentMainID.HasValue)
-            {
-                amendmentQuery = amendmentQuery.Where(a => a.BudgetAmendmentMainID == SelectedBudgetAmendmentMainID.Value);
-            }
-
-            if (SelectedDepartmentID.HasValue && SelectedDepartmentID != 0)
-            {
-                amendmentQuery = amendmentQuery.Where(a => a.DepartmentID == SelectedDepartmentID.Value);
-            }
-
-            if (!string.IsNullOrEmpty(SelectedStatusTab))
-            {
-                amendmentQuery = amendmentQuery.Where(a => a.Status.ToString() == SelectedStatusTab);
-            }
-
-            var amendments = await amendmentQuery.ToListAsync();
-
-            if (amendments.Count == 0)
-            {
-                TempData["Error"] = "No amendments found in the current view.";
-                return RedirectToPage(new
-                {
-                    SelectedDepartmentID,
-                    SelectedBudgetAmendmentMainID,
-                    SelectedStatusTab,
-                    SelectedFinancialYear,
-                    CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
-                    CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
-                });
-            }
-
-            // Extend deadlines for all visible records
-            foreach (var amendment in amendments)
-            {
-                amendment.ExtensionDays = (amendment.ExtensionDays) + extensionDays;
-            }
-
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = $"Deadline extended by {extensionDays} days for {amendments.Count} record(s).";
-            return RedirectToPage(new
-            {
-                SelectedDepartmentID,
-                SelectedBudgetAmendmentMainID,
-                SelectedStatusTab,
-                SelectedFinancialYear,
-                CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
-                CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
-            });
-        }
 
         /*        public async Task<IActionResult> OnPostRejectAmendmentAsync(int id)
                 {

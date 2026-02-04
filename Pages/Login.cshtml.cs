@@ -52,6 +52,15 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return Page();
             }
 
+            var role = _context.Roles.SingleOrDefault(r => r.RoleID == user.RoleID);
+
+            if (role == null)
+            {
+                ErrorMessage = "Invalid user. Does not have assigned role.";
+                Debug.WriteLine(ErrorMessage);
+                return Page();
+            }
+
             // Compare entered password with stored hash
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(Password, user.Password);
             bool isActiveUser = user.Status == UserStatus.active;
@@ -63,6 +72,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 HttpContext.Session.SetString("FirstName", user.FirstName);
                 HttpContext.Session.SetString("LastName", user.LastName);
                 HttpContext.Session.SetString("RoleID", user.RoleID.ToString());
+                HttpContext.Session.SetString("RoleName", role.RoleName);
 
                 // Successful login, redirect to Index
                 return RedirectToPage("/Index");

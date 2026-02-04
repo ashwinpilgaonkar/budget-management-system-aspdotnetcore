@@ -29,44 +29,64 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var role in Model.Roles)
+
+                        @if (Model.Roles != null)
+                        {
+                            @foreach (var role in Model.Roles)
+                            {
+                                <tr>
+                                    <td>@role.RoleID</td>
+                                    <td>@role.RoleName</td>
+                                </tr>
+                            }
+                        }
+
+                        else
                         {
                             <tr>
-                                <td>@role.RoleID</td>
-                                <td>@role.RoleName</td>
+                                <td colspan="23" class="text-center py-5">
+                                    <div class="py-5">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted mb-0">No records found</p>
+                                        <small class="text-muted">Contact your administrator to add a new role</small>
+                                    </div>
+                                </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
 
-            <!-- Pagination Controls -->
-            <nav class="d-flex justify-content-between align-items-center my-3" aria-label="Role Page navigation">
-                <div>
-                    <label for="resultsPerPage" class="me-2">Results per page:</label>
-                    <select id="resultsPerPage" class="form-select d-inline w-auto" onchange="window.location.href='@Url.Page(null, new { rolePageNumber = 1, rolesPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
-                        @foreach (var size in Model.PageSizes)
-                        {
-                            <option value="@size" selected="@(Model.RoleResultsPerPage == size ? "selected" : null)">@size</option>
-                        }
-                    </select>
-                </div>
-                @{
-                    int rolesShownCount = Math.Min(Model.RoleResultsPerPage, Model.TotalRoles - ((Model.RoleCurrentPage - 1) * Model.RoleResultsPerPage));
-                }
-                <span>Records: @rolesShownCount of @Model.TotalRoles</span>
-                <ul class="pagination mb-0">
-                    <li class="page-item @(Model.RoleCurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { rolePageNumber = Model.RoleCurrentPage - 1, rolesPerPage = Model.RoleResultsPerPage })">&laquo;</a>
-                    </li>
-                    <li class="page-item active">
-                        <span class="page-link">@Model.RoleCurrentPage</span>
-                    </li>
-                    <li class="page-item @(Model.RoleCurrentPage >= Model.RoleTotalPages ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Page(null, new { rolePageNumber = Model.RoleCurrentPage + 1, rolesPerPage = Model.RoleResultsPerPage })">&raquo;</a>
-                    </li>
-                </ul>
-            </nav>
+            @if (Model.Roles != null)
+            {
+                <!-- Pagination Controls -->
+                <nav class="d-flex justify-content-between align-items-center my-3" aria-label="Role Page navigation">
+                    <div>
+                        <label for="resultsPerPage" class="me-2">Results per page:</label>
+                        <select id="resultsPerPage" class="form-select d-inline w-auto" onchange="window.location.href='@Url.Page(null, new { rolePageNumber = 1, rolesPerPage = "__PLACEHOLDER__" })'.replace('__PLACEHOLDER__', this.value)">
+                            @foreach (var size in Model.PageSizes)
+                            {
+                                <option value="@size" selected="@(Model.RoleResultsPerPage == size ? "selected" : null)">@size</option>
+                            }
+                        </select>
+                    </div>
+                    @{
+                        int rolesShownCount = Math.Min(Model.RoleResultsPerPage, Model.TotalRoles - ((Model.RoleCurrentPage - 1) * Model.RoleResultsPerPage));
+                    }
+                    <span>Records: @rolesShownCount of @Model.TotalRoles</span>
+                    <ul class="pagination mb-0">
+                        <li class="page-item @(Model.RoleCurrentPage <= 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Page(null, new { rolePageNumber = Model.RoleCurrentPage - 1, rolesPerPage = Model.RoleResultsPerPage })">&laquo;</a>
+                        </li>
+                        <li class="page-item active">
+                            <span class="page-link">@Model.RoleCurrentPage</span>
+                        </li>
+                        <li class="page-item @(Model.RoleCurrentPage >= Model.RoleTotalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Page(null, new { rolePageNumber = Model.RoleCurrentPage + 1, rolesPerPage = Model.RoleResultsPerPage })">&raquo;</a>
+                        </li>
+                    </ul>
+                </nav>
+            }
         </div>
     </div>
 </div>

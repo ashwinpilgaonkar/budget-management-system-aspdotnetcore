@@ -34,6 +34,9 @@ namespace budget_management_system_aspdotnetcore.Entities
         [Required]
         public DateTime EndDate { get; set; } = DateTime.Now;
 
+        [Required]
+        public DateTime ExtendedDeadline { get; set; } = DateTime.Now;
+
         // Navigation properties
         public virtual User CreatedByUser { get; set; }
         public virtual User UpdatedByUser { get; set; }

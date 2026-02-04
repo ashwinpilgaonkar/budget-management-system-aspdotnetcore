@@ -26,8 +26,14 @@
 
                                 <ul class="navbar-nav flex-grow-1 justify-content-center">
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Index">Budget Amendments</a>
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/Index">View Budget Amendments</a>
                                     </li>
+                                    @if (!String.Equals(userRole, "5"))
+                                    {
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-area="" asp-page="/BAEdit">Modify Budget Amendments</a>
+                                        </li>
+                                    }
                                     <li class="nav-item">
                                         <a class="nav-link text-dark" asp-area="" asp-page="/Activitylog">Activity Log</a>
                                     </li>
@@ -55,7 +61,7 @@
                                 <p>
                                     Welcome @HttpContextAccessor.HttpContext.Session.GetString("FirstName")
                                     @HttpContextAccessor.HttpContext.Session.GetString("LastName")
-@*                                     @(Model.isAdmin ? "(Admin)" : "") *@
+                                    (@HttpContextAccessor.HttpContext.Session.GetString("RoleName"))
                                 </p>
                             }
                         </div>
@@ -69,8 +75,8 @@
             </div>
 
             <footer class="border-top footer text-muted">
-                <div class="container">
-                    &copy; 2025 - CAS Budget Management
+                <div class="container text-center">
+                    &copy; 2026 - CAS Budget Management
                 </div>
             </footer>
 

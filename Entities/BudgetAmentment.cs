@@ -48,16 +48,6 @@ namespace budget_management_system_aspdotnetcore.Entities
 
         [ForeignKey("UpdatedBy")]
         public User? UpdatedByUser { get; set; }
-
-        [Required]
-        public DateTime StartDate { get; set; }
-
-        [Required]
-        public DateTime Deadline { get; set; }
-
-        [Required]
-        [DefaultValue(0)]
-        public int ExtensionDays { get; set; }
     }
 
     public enum AmendmentStatus
