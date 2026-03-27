@@ -50,20 +50,6 @@
                         <button type="submit" class="btn btn-sm btn-outline-primary">Apply</button>
                     </div>
                 </form>
-
-                <!-- Submit Amendments Section -->
-                <div class="text-end">
-                    <label class="form-label d-block mb-1">Submit Drafts for Approval:</label>
-                    <div class="d-flex align-items-end gap-2 flex-wrap justify-content-end">
-                        <button type="button" class="btn btn-sm btn-outline-dark" onclick="selectAllCategoryCheckboxes()">Select All</button>
-                        <button type="button" class="btn btn-sm btn-outline-dark" onclick="deselectAllCategoryCheckboxes()">Deselect All</button>
-
-                        <form method="post" asp-page-handler="SubmitSelectedCategories" class="d-inline">
-                            <input type="hidden" name="SelectedCategoryList" id="selectedCategoryList" />
-                            <button type="submit" class="btn btn-sm btn-outline-primary" onclick="confirmAndSubmitCategories()" id="submitBtn" disabled>Submit</button>
-                        </form>
-                    </div>
-                </div>
             </div>
 
 
@@ -155,7 +141,25 @@
                                             data-bs-target="#collapseBA@(amendmentIndex)"
                                             aria-expanded="false"
                                             aria-controls="collapseBA@(amendmentIndex)">
-                                        <strong>@amendmentmain.Name - [@amendmentmain.StartDate.ToString("MM/dd/yyyy") to @amendmentmain.ExtendedDeadline.ToString("MM/dd/yyyy")]</strong>
+                                        <div class="d-flex justify-content-between w-100">
+                                            <strong>@amendmentmain.Name - [@amendmentmain.StartDate.ToString("MM/dd/yyyy") to @amendmentmain.ExtendedDeadline.ToString("MM/dd/yyyy")]</strong>
+                                            @{
+                                                var relatedAmendments = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID).ToList();
+
+                                                if (relatedAmendments.Any(ba => ba.Status == AmendmentStatus.Pending))
+                                                {
+                                                    <span class="badge text-primary">PENDING</span>
+                                                }
+                                                else if (relatedAmendments.Any() && relatedAmendments.All(ba => ba.Status == AmendmentStatus.Approved))
+                                                {
+                                                    <span class="badge text-success">APPROVED</span>
+                                                }
+                                                else if (relatedAmendments.Any() && relatedAmendments.All(ba => ba.Status == AmendmentStatus.Rejected))
+                                                {
+                                                    <span class="badge text-danger">REJECTED</span>
+                                                }
+                                            }
+                                        </div>
                                     </button>
                                 </h2>
                                 <div id="collapseBA@(amendmentIndex)" class="accordion-collapse collapse"
@@ -177,6 +181,22 @@
                                                            style="display: block;"
                                                            @Html.Raw(Model.SelectedDepartmentID == dept.DepartmentID && Model.SelectedBudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID ? $"data-bs-toggle=\"collapse\" data-bs-target=\"#collapse{deptId}BA{amendmentIndex}\"" : "")>
                                                             @dept.DepartmentName
+                                                            @{
+                                                                var relatedDeptAmendments = Model.BudgetAmendmentsAll.Where(ba => ba.DepartmentID == dept.DepartmentID).ToList();
+
+                                                                if (relatedDeptAmendments.Any(ba => ba.Status == AmendmentStatus.Pending))
+                                                                {
+                                                                    <span class="badge text-primary">PENDING</span>
+                                                                }
+                                                                else if (relatedDeptAmendments.Any() && relatedDeptAmendments.All(ba => ba.Status == AmendmentStatus.Approved))
+                                                                {
+                                                                    <span class="badge text-success">APPROVED</span>
+                                                                }
+                                                                else if (relatedDeptAmendments.Any() && relatedDeptAmendments.All(ba => ba.Status == AmendmentStatus.Rejected))
+                                                                {
+                                                                    <span class="badge text-danger">REJECTED</span>
+                                                                }
+                                                            }
                                                         </a>
                                                     </h2>
                                                     <div id="collapse@(deptId)BA@(amendmentIndex)" class="accordion-collapse collapse"
@@ -201,71 +221,76 @@
                                                                     </div>
                                                                 </form>
 
-                                                                @if (!String.Equals(userRole, "5"))
+
+                                                                @if (Model.SelectedStatusTab == AmendmentStatus.Pending.ToString() && !String.Equals(userRole, "5"))
                                                                 {
+                                                                    <form method="post" asp-page-handler="ApproveCategory" onsubmit="return validateNetChange(this)">
+                                                                        <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                        <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                        <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                        <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                        <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                        <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to approve all these entries?');" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link">Approve All ✔️</button>
+                                                                    </form>
 
-                                                                    @if (Model.SelectedStatusTab == AmendmentStatus.Pending.ToString())
-                                                                    {
-                                                                        <form method="post" asp-page-handler="ApproveCategory" onsubmit="return validateNetChange(this)">
-                                                                            <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
-                                                                            <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
-                                                                            <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
-                                                                            <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
-                                                                            <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
-                                                                            <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                            <button type="submit" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link">Approve All ✔️</button>
-                                                                        </form>
+                                                                    <form method="post" asp-page-handler="RejectCategory">
+                                                                        <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                        <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                        <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                        <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                        <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                        <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to reject all these entries?');" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link">Reject All ❌</button>
+                                                                    </form>
 
-                                                                        <form method="post" asp-page-handler="RejectCategory">
-                                                                            <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
-                                                                            <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
-                                                                            <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
-                                                                            <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
-                                                                            <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
-                                                                            <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                            <button type="submit" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link">Reject All ❌</button>
-                                                                        </form>
-
-                                                                        <form method="post" asp-page-handler="WithdrawCategory">
-                                                                            <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
-                                                                            <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
-                                                                            <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
-                                                                            <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
-                                                                            <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
-                                                                            <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                            <button type="submit" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link text-nowrap">Withdraw ↩️</button>
-                                                                        </form>
-                                                                    }
-
-                                                                    else if (Model.SelectedStatusTab == AmendmentStatus.Approved.ToString() || Model.SelectedStatusTab == AmendmentStatus.Rejected.ToString())
-                                                                    {
-                                                                        <form method="post" asp-page-handler="RevertCategory">
-                                                                            <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
-                                                                            <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
-                                                                            <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
-                                                                            <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
-                                                                            <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
-                                                                            <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                            <button type="submit" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link text-nowrap">Revert Decision ↩️</button>
-                                                                        </form>
-                                                                    }
-
-                                                                    else if (Model.SelectedStatusTab == AmendmentStatus.Draft.ToString())
-                                                                    {
-                                                                        <form method="post" asp-page-handler="SubmitCategory">
-                                                                            <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
-                                                                            <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
-                                                                            <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
-                                                                            <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
-                                                                            <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
-                                                                            <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                            <button type="submit" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link text-nowrap">Submit Selected Drafts 🗒️</button>
-                                                                        </form>
-                                                                    }
-
-                                                                    else 
-                                                                    {}
+                                                                    <form method="post" asp-page-handler="WithdrawCategory">
+                                                                        <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                        <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                        <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                        <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                        <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                        <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to revert all these entries back to Drafts?');" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link text-nowrap">Withdraw ↩️</button>
+                                                                    </form>
                                                                 }
+
+                                                                else if((Model.SelectedStatusTab == AmendmentStatus.Approved.ToString() || Model.SelectedStatusTab == AmendmentStatus.Rejected.ToString()) && !String.Equals(userRole, "5"))
+                                                                {
+                                                                    <form method="post" asp-page-handler="RevertCategory">
+                                                                        <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                        <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                        <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                        <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                        <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                        <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                        <button type="submit" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link text-nowrap">Revert Decision ↩️</button>
+                                                                    </form>
+                                                                }
+
+                                                                else if (Model.SelectedStatusTab == AmendmentStatus.Draft.ToString())
+                                                                {
+                                                                    <form method="post" asp-page-handler="SubmitCategory">
+                                                                        <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                        <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                        <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                        <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                        <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                        <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+
+                                                                        <div class="text-end">
+                                                                            <div class="d-flex align-items-end gap-2 flex-wrap justify-content-end">
+                                                                                <form method="post" asp-page-handler="SubmitSelectedCategories" class="d-inline">
+                                                                                    <input type="hidden" name="SelectedCategoryList" id="selectedCategoryList" />
+                                                                                    <button type="submit" class="btn btn-link text-nowrap" onclick="return confirm(`Are you sure you want to submit all Drafts for review?`);" id="submitBtn" disabled="@(!Model.BudgetAmendments.Any())">Submit Drafts for review 🗒️</button>
+                                                                                </form>
+                                                                            </div>
+                                                                        </div>
+                                                                    </form>
+                                                                }
+
+                                                                else 
+                                                                {}
 
                                                                 <button type="button" class="btn btn-primary flex-shrink-0" data-bs-toggle="modal" data-bs-target="#addAmendmentModal"
                                                                         @(DateTime.Now < Model.BudgetAmendmentMainStartDate || DateTime.Now > Model.BudgetAmendmentMainEndDate ? "disabled" : "")>
@@ -361,22 +386,7 @@
                                                                     <thead>
                                                                         <tr>
                                                                             <th>
-                                                                                Amendment ID
-                                                                                <form method="get" class="d-inline">
-                                                                                    <input type="hidden" name="handler" value="SortColumn" />
-                                                                                    <input type="hidden" name="table" value="AmendmentHistory" />
-                                                                                    <input type="hidden" name="column" value="BudgetAmendmentID" />
-                                                                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("BudgetAmendmentID")" />
-                                                                                    <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
-                                                                                    <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
-                                                                                    <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
-                                                                                    <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
-                                                                                    <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
-                                                                                    <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                                    <button type="submit" class="btn btn-link p-0">
-                                                                                        <i class="fas @Model.GetSortIcon("BudgetAmendmentID")"></i>
-                                                                                    </button>
-                                                                                </form>
+                                                                                #
                                                                             </th>
                                                                             <th>
                                                                                 Category Name
@@ -534,179 +544,183 @@
                                                                                     </button>
                                                                                 </form>
                                                                             </th>
-                                                                            <th>
-                                                                                Created By
-                                                                                <form method="get" class="d-inline">
-                                                                                    <input type="hidden" name="handler" value="SortColumn" />
-                                                                                    <input type="hidden" name="table" value="AmendmentHistory" />
-                                                                                    <input type="hidden" name="column" value="CreatedBy" />
-                                                                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("CreatedBy")" />
-                                                                                    <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
-                                                                                    <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
-                                                                                    <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
-                                                                                    <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
-                                                                                    <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
-                                                                                    <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                                    <button type="submit" class="btn btn-link p-0">
-                                                                                        <i class="fas @Model.GetSortIcon("CreatedBy")"></i>
-                                                                                    </button>
-                                                                                </form>
 
-                                                                                <div class="dropdown d-inline">
-                                                                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="createdByFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                                        <i class="fas fa-filter"></i>
-                                                                                    </button>
+                                                                            @if (!String.Equals(userRole, "5"))
+                                                                            {
+                                                                                <th>
+                                                                                    Created By
+                                                                                    <form method="get" class="d-inline">
+                                                                                        <input type="hidden" name="handler" value="SortColumn" />
+                                                                                        <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                        <input type="hidden" name="column" value="CreatedBy" />
+                                                                                        <input type="hidden" name="order" value="@Model.SortOrderForColumn("CreatedBy")" />
+                                                                                        <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                                        <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                        <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                                        <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                                        <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <button type="submit" class="btn btn-link p-0">
+                                                                                            <i class="fas @Model.GetSortIcon("CreatedBy")"></i>
+                                                                                        </button>
+                                                                                    </form>
 
-                                                                                    <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
-                                                                                        <form method="get">
-                                                                                            <!-- Creator Dropdown -->
-                                                                                            <div class="mb-2">
-                                                                                                <label for="SelectedCreatedBy" class="form-label">Created By</label>
-                                                                                                <select name="SelectedCreatedBy" class="form-select form-select-sm">
-                                                                                                    <option value="">Any</option>
-                                                                                                    @foreach (var user in Model.CreatedByUsers)
-                                                                                                    {
-                                                                                                        <option value="@user.Value" selected="@(Model.SelectedCreatedBy?.ToString() == user.Value)">
-                                                                                                            @user.Text
-                                                                                                        </option>
-                                                                                                    }
-                                                                                                </select>
-                                                                                            </div>
+                                                                                    <div class="dropdown d-inline">
+                                                                                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="createdByFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                                            <i class="fas fa-filter"></i>
+                                                                                        </button>
 
-                                                                                            <!-- Date Range -->
-                                                                                            <div class="mb-2">
-                                                                                                <label class="form-label">From</label>
-                                                                                                <input type="date" name="CreatedFromDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" max="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
-                                                                                            </div>
-                                                                                            <div class="mb-2">
-                                                                                                <label class="form-label">To</label>
-                                                                                                <input type="date" name="CreatedToDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" max="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
-                                                                                            </div>
+                                                                                        <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
+                                                                                            <form method="get">
+                                                                                                <!-- Creator Dropdown -->
+                                                                                                <div class="mb-2">
+                                                                                                    <label for="SelectedCreatedBy" class="form-label">Created By</label>
+                                                                                                    <select name="SelectedCreatedBy" class="form-select form-select-sm">
+                                                                                                        <option value="">Any</option>
+                                                                                                        @foreach (var user in Model.CreatedByUsers)
+                                                                                                        {
+                                                                                                            <option value="@user.Value" selected="@(Model.SelectedCreatedBy?.ToString() == user.Value)">
+                                                                                                                @user.Text
+                                                                                                            </option>
+                                                                                                        }
+                                                                                                    </select>
+                                                                                                </div>
 
-                                                                                            <!-- Apply Button -->
-                                                                                            <div class="text-end mt-2">
-                                                                                                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
-                                                                                            </div>
-                                                                                        </form>
+                                                                                                <!-- Date Range -->
+                                                                                                <div class="mb-2">
+                                                                                                    <label class="form-label">From</label>
+                                                                                                    <input type="date" name="CreatedFromDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" max="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                                </div>
+                                                                                                <div class="mb-2">
+                                                                                                    <label class="form-label">To</label>
+                                                                                                    <input type="date" name="CreatedToDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" max="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                                </div>
+
+                                                                                                <!-- Apply Button -->
+                                                                                                <div class="text-end mt-2">
+                                                                                                    <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                                                                                </div>
+                                                                                            </form>
+                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            </th>
+                                                                                </th>
 
-                                                                            <th>
-                                                                                Edited By
-                                                                                <form method="get" class="d-inline">
-                                                                                    <input type="hidden" name="handler" value="SortColumn" />
-                                                                                    <input type="hidden" name="table" value="AmendmentHistory" />
-                                                                                    <input type="hidden" name="column" value="EditedBy" />
-                                                                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("EditedBy")" />
-                                                                                    <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
-                                                                                    <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
-                                                                                    <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
-                                                                                    <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
-                                                                                    <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
-                                                                                    <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                                    <button type="submit" class="btn btn-link p-0">
-                                                                                        <i class="fas @Model.GetSortIcon("EditedBy")"></i>
-                                                                                    </button>
-                                                                                </form>
+                                                                                <th>
+                                                                                    Edited By
+                                                                                    <form method="get" class="d-inline">
+                                                                                        <input type="hidden" name="handler" value="SortColumn" />
+                                                                                        <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                        <input type="hidden" name="column" value="EditedBy" />
+                                                                                        <input type="hidden" name="order" value="@Model.SortOrderForColumn("EditedBy")" />
+                                                                                        <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                                        <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                        <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                                        <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                                        <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <button type="submit" class="btn btn-link p-0">
+                                                                                            <i class="fas @Model.GetSortIcon("EditedBy")"></i>
+                                                                                        </button>
+                                                                                    </form>
 
-                                                                                <div class="dropdown d-inline">
-                                                                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="editedByFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                                        <i class="fas fa-filter"></i>
-                                                                                    </button>
+                                                                                    <div class="dropdown d-inline">
+                                                                                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="editedByFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                                            <i class="fas fa-filter"></i>
+                                                                                        </button>
 
-                                                                                    <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
-                                                                                        <form method="get">
-                                                                                            <!-- Editor Dropdown -->
-                                                                                            <div class="mb-2">
-                                                                                                <label for="SelectedEditedBy" class="form-label">Edited By</label>
-                                                                                                <select name="SelectedEditedBy" class="form-select form-select-sm">
-                                                                                                    <option value="">Any</option>
-                                                                                                    @foreach (var user in Model.EditedByUsers)
-                                                                                                    {
-                                                                                                        <option value="@user.Value" selected="@(Model.SelectedEditedBy?.ToString() == user.Value)">
-                                                                                                            @user.Text
-                                                                                                        </option>
-                                                                                                    }
-                                                                                                </select>
-                                                                                            </div>
+                                                                                        <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
+                                                                                            <form method="get">
+                                                                                                <!-- Editor Dropdown -->
+                                                                                                <div class="mb-2">
+                                                                                                    <label for="SelectedEditedBy" class="form-label">Edited By</label>
+                                                                                                    <select name="SelectedEditedBy" class="form-select form-select-sm">
+                                                                                                        <option value="">Any</option>
+                                                                                                        @foreach (var user in Model.EditedByUsers)
+                                                                                                        {
+                                                                                                            <option value="@user.Value" selected="@(Model.SelectedEditedBy?.ToString() == user.Value)">
+                                                                                                                @user.Text
+                                                                                                            </option>
+                                                                                                        }
+                                                                                                    </select>
+                                                                                                </div>
 
-                                                                                            <!-- Date Range -->
-                                                                                            <div class="mb-2">
-                                                                                                <label class="form-label">From</label>
-                                                                                                <input type="date" name="EditedFromDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
-                                                                                            </div>
-                                                                                            <div class="mb-2">
-                                                                                                <label class="form-label">To</label>
-                                                                                                <input type="date" name="EditedToDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
-                                                                                            </div>
+                                                                                                <!-- Date Range -->
+                                                                                                <div class="mb-2">
+                                                                                                    <label class="form-label">From</label>
+                                                                                                    <input type="date" name="EditedFromDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                                </div>
+                                                                                                <div class="mb-2">
+                                                                                                    <label class="form-label">To</label>
+                                                                                                    <input type="date" name="EditedToDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                                </div>
 
-                                                                                            <!-- Apply Button -->
-                                                                                            <div class="text-end mt-2">
-                                                                                                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
-                                                                                            </div>
-                                                                                        </form>
+                                                                                                <!-- Apply Button -->
+                                                                                                <div class="text-end mt-2">
+                                                                                                    <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                                                                                </div>
+                                                                                            </form>
+                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            </th>
+                                                                                </th>
 
-                                                                            <th>
-                                                                                Updated By
-                                                                                <form method="get" class="d-inline">
-                                                                                    <input type="hidden" name="handler" value="SortColumn" />
-                                                                                    <input type="hidden" name="table" value="AmendmentHistory" />
-                                                                                    <input type="hidden" name="column" value="UpdatedBy" />
-                                                                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("UpdatedBy")" />
-                                                                                    <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
-                                                                                    <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
-                                                                                    <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
-                                                                                    <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
-                                                                                    <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
-                                                                                    <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                                    <button type="submit" class="btn btn-link p-0">
-                                                                                        <i class="fas @Model.GetSortIcon("UpdatedBy")"></i>
-                                                                                    </button>
-                                                                                </form>
+                                                                                <th>
+                                                                                    Updated By
+                                                                                    <form method="get" class="d-inline">
+                                                                                        <input type="hidden" name="handler" value="SortColumn" />
+                                                                                        <input type="hidden" name="table" value="AmendmentHistory" />
+                                                                                        <input type="hidden" name="column" value="UpdatedBy" />
+                                                                                        <input type="hidden" name="order" value="@Model.SortOrderForColumn("UpdatedBy")" />
+                                                                                        <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                                        <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                        <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                                        <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                                        <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <button type="submit" class="btn btn-link p-0">
+                                                                                            <i class="fas @Model.GetSortIcon("UpdatedBy")"></i>
+                                                                                        </button>
+                                                                                    </form>
 
-                                                                                <div class="dropdown d-inline">
-                                                                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="updatedByFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                                        <i class="fas fa-filter"></i>
-                                                                                    </button>
+                                                                                    <div class="dropdown d-inline">
+                                                                                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="updatedByFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                                            <i class="fas fa-filter"></i>
+                                                                                        </button>
 
-                                                                                    <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
-                                                                                        <form method="get">
-                                                                                            <!-- Updater Dropdown -->
-                                                                                            <div class="mb-2">
-                                                                                                <label for="SelectedUpdatedBy" class="form-label">Updated By</label>
-                                                                                                <select name="SelectedUpdatedBy" class="form-select form-select-sm">
-                                                                                                    <option value="">Any</option>
-                                                                                                    @foreach (var user in Model.UpdatedByUsers)
-                                                                                                    {
-                                                                                                        <option value="@user.Value" selected="@(Model.SelectedUpdatedBy?.ToString() == user.Value)">
-                                                                                                            @user.Text
-                                                                                                        </option>
-                                                                                                    }
-                                                                                                </select>
-                                                                                            </div>
+                                                                                        <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
+                                                                                            <form method="get">
+                                                                                                <!-- Updater Dropdown -->
+                                                                                                <div class="mb-2">
+                                                                                                    <label for="SelectedUpdatedBy" class="form-label">Updated By</label>
+                                                                                                    <select name="SelectedUpdatedBy" class="form-select form-select-sm">
+                                                                                                        <option value="">Any</option>
+                                                                                                        @foreach (var user in Model.UpdatedByUsers)
+                                                                                                        {
+                                                                                                            <option value="@user.Value" selected="@(Model.SelectedUpdatedBy?.ToString() == user.Value)">
+                                                                                                                @user.Text
+                                                                                                            </option>
+                                                                                                        }
+                                                                                                    </select>
+                                                                                                </div>
 
-                                                                                            <!-- Date Range -->
-                                                                                            <div class="mb-2">
-                                                                                                <label class="form-label">From</label>
-                                                                                                <input type="date" name="UpdatedFromDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
-                                                                                            </div>
-                                                                                            <div class="mb-2">
-                                                                                                <label class="form-label">To</label>
-                                                                                                <input type="date" name="UpdatedToDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
-                                                                                            </div>
+                                                                                                <!-- Date Range -->
+                                                                                                <div class="mb-2">
+                                                                                                    <label class="form-label">From</label>
+                                                                                                    <input type="date" name="UpdatedFromDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                                </div>
+                                                                                                <div class="mb-2">
+                                                                                                    <label class="form-label">To</label>
+                                                                                                    <input type="date" name="UpdatedToDate" class="form-control form-control-sm" min="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                                </div>
 
-                                                                                            <!-- Apply Button -->
-                                                                                            <div class="text-end mt-2">
-                                                                                                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
-                                                                                            </div>
-                                                                                        </form>
+                                                                                                <!-- Apply Button -->
+                                                                                                <div class="text-end mt-2">
+                                                                                                    <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                                                                                </div>
+                                                                                            </form>
+                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            </th>
+                                                                                </th>
+                                                                            }
                                                                             <th>
                                                                                 Status
                                                                             </th>
@@ -726,31 +740,17 @@
                                                                                 </td>
                                                                             </tr>
                                                                         }
+                                                                        @{
+                                                                            int index = 1;
+                                                                        }
                                                                         @foreach (var categoryGroup in Model.BudgetAmendments.GroupBy(a => a.CategoryName))
                                                                         {
                                                                             var totalIncrease = categoryGroup.Sum(a => a.AmountIncrease);
                                                                             var totalDecrease = categoryGroup.Sum(a => a.AmountDecrease);
 
-                                                                            <!-- Submit checkbox: enabled only if all amendments in this category are Drafts -->
                                                                             <tr class="table-primary align-middle">
 
-                                                                                <td colspan="1">
-                                                                                    @{
-                                                                                        var allApproved = categoryGroup.All(a => a.Status.ToString().Equals("Draft"));
-                                                                                        var checkboxId = $"submitCheckbox_{categoryGroup.Key.Replace(" ", "_")}";
-                                                                                    }
-                                                                                    <div class="form-check">
-                                                                                        <input class="form-check-input category-submit-checkbox"
-                                                                                               type="checkbox"
-                                                                                               name="SelectedCategories"
-                                                                                               value="@categoryGroup.Key"
-                                                                                               id="@checkboxId"
-                                                                                               @(allApproved ? "" : "disabled") />
-                                                                                        <label class="form-check-label" for="@checkboxId">
-                                                                                        </label>
-                                                                                    </div>
-                                                                                </td>
-
+                                                                                <td colspan="1"></td>
                                                                                 <td colspan="1"><strong>@categoryGroup.Key</strong></td>
 
                                                                                 @{
@@ -760,66 +760,6 @@
                                                                                 <td colspan="9"></td>
                                                                                 <td colspan="2" class="@cellClass">$@netChange</td>
                                                                                 <td colspan="7"></td>
-
-                                                                                @if (!String.Equals(userRole, "5"))
-                                                                                {
-                                                                                    if (categoryGroup.Any(a => a.Status.ToString().Equals("Approved")) || categoryGroup.Any(a => a.Status.ToString().Equals("Rejected")))
-                                                                                    {
-                                                                                        <td colspan="2">
-                                                                                            <form method="post" asp-page-handler="RevertCategory" asp-route-category="@categoryGroup.Key">
-                                                                                                <button type="submit" class="btn btn-link text-nowrap">Revert Decision ↩️</button>
-                                                                                            </form>
-                                                                                        </td>
-                                                                                    }
-                                                                                    else if (categoryGroup.Any(a => a.Status.ToString().Equals("Draft")))
-                                                                                    {
-                                                                                        <td colspan="2">
-                                                                                            <form method="post" asp-page-handler="SubmitCategory" asp-route-category="@categoryGroup.Key">
-                                                                                                <button type="submit" class="btn btn-link text-nowrap">Submit Draft<br /> 🗒️</button>
-                                                                                            </form>
-                                                                                        </td>
-                                                                                    }
-                                                                                    else
-                                                                                    {
-                                                                                        <td colspan="2">
-                                                                                            <div class="d-flex justify-content-evenly gap-2">
-                                                                                                <form method="post" asp-page-handler="ApproveCategory" asp-route-category="@categoryGroup.Key" onsubmit="return validateNetChange(this)">
-                                                                                                    <input type="hidden" name="NetChange" value="@netChange" />
-                                                                                                    <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-link">Approve ✔️</button>
-                                                                                                </form>
-
-                                                                                                <form method="post" asp-page-handler="RejectCategory" asp-route-category="@categoryGroup.Key">
-                                                                                                    <button type="submit" disabled=@(!categoryGroup.Any(a => a.Status.ToString().Equals("Pending"))) class="btn btn-link">Reject ❌</button>
-                                                                                                </form>
-                                                                                            </div>
-                                                                                        </td>
-                                                                                    }
-                                                                                }
-
-                                                                                else
-                                                                                {
-                                                                                    if (categoryGroup.Any(a => a.Status.ToString().Equals("Pending")))
-                                                                                    {
-                                                                                        <td colspan="2">
-                                                                                            <form method="post" asp-page-handler="WithdrawCategory" asp-route-category="@categoryGroup.Key">
-                                                                                                <button type="submit" class="btn btn-link text-nowrap">Withdraw</button>
-                                                                                            </form>
-                                                                                        </td>
-                                                                                    }
-                                                                                    else if (categoryGroup.Any(a => a.Status.ToString().Equals("Draft")))
-                                                                                    {
-                                                                                        <td colspan="2">
-                                                                                            <form method="post" asp-page-handler="SubmitCategory" asp-route-category="@categoryGroup.Key">
-                                                                                                <button type="submit" class="btn btn-link text-nowrap">Submit Draft</button>
-                                                                                            </form>
-                                                                                        </td>
-                                                                                    }
-                                                                                    else
-                                                                                    {
-                                                                                        <td colspan="2">
-                                                                                        </td>
-                                                                                    }
-                                                                                }
                                                                             </tr>
 
                                                                             @foreach (var amendment in categoryGroup)
@@ -827,7 +767,7 @@
                                                                                 if (Model.EditingBudgetAmendmentID == amendment.BudgetAmendmentID)
                                                                                 {
                                                                                     <tr>
-                                                                                        <form method="post" asp-page-handler="SaveAmendment" asp-route-id="@amendment.BudgetAmendmentID">
+                                                                                        <form method="post" asp-route-id="@amendment.BudgetAmendmentID">
                                                                                         <td><input asp-for="NewBudgetAmendment.BudgetAmendmentID" value="@amendment.BudgetAmendmentID" class="form-control" readonly /></td>
                                                                                         <td><input asp-for="NewBudgetAmendment.CategoryName" value="@amendment.CategoryName" class="form-control" /></td>
                                                                                         <td><input asp-for="NewBudgetAmendment.AdjustmentDetail" value="@amendment.AdjustmentDetail" class="form-control" /></td>
@@ -869,11 +809,16 @@
                                                                                         <td class="@statusClass">@amendment.Status</td>
                                                                                         <td>
                                                                                             <div class="d-flex justify-content-evenly gap-2">
-                                                                                                <button type="submit" class="btn btn-success">Save</button>
-                                                                                                <form method="post" asp-page-handler="CancelEditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
-                                                                                                    <button type="submit" class="btn btn-secondary">Cancel</button>
-                                                                                                </form>
-
+                                                                                                <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                                                <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                                <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                                                <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                                                <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input asp-for="@Model.SourceSpeedtype" type="hidden" value="@Model.SourceSpeedtype" />
+                                                                                                <input asp-for="@Model.DestinationSpeedtype" type="hidden" value="@Model.DestinationSpeedtype" />
+                                                                                                <button type="submit" asp-page-handler="SaveAmendment" class="btn btn-success">Save</button>
+                                                                                                <button type="submit" asp-page-handler="CancelEditAmendment" class="btn btn-secondary">Cancel</button>
                                                                                             </div>
                                                                                         </td>
                                                                                         </form>
@@ -882,7 +827,7 @@
                                                                                 else
                                                                                 {
                                                                                     <tr>
-                                                                                        <td>@amendment.BudgetAmendmentID</td>
+                                                                                        <td>@index</td>
                                                                                         <td>@amendment.CategoryName</td>
                                                                                         <td>@amendment.AdjustmentDetail</td>
                                                                                         <td>@amendment.SpeedType.Code</td>
@@ -895,9 +840,12 @@
                                                                                         <td>@amendment.PositionNumber</td>
                                                                                         <td>@amendment.AmountIncrease</td>
                                                                                         <td>@amendment.AmountDecrease</td>
-                                                                                        <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
-                                                                                        <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
-                                                                                        <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                                                                        @if (!String.Equals(userRole, "5"))
+                                                                                        {
+                                                                                            <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                                                                            <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                                                                            <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
+                                                                                        }
                                                                                         @{
                                                                                             var isApproved = amendment.Status == AmendmentStatus.Approved;
                                                                                             var statusClass = isApproved ? "text-primary" : "";
@@ -922,11 +870,7 @@
                                                                                         <td colspan="4">
                                                                                             @{
                                                                                                 var isEnabled = false;
-                                                                                                if (!String.Equals(userRole, "5") && (amendment.Status.ToString().Equals("Draft") || amendment.Status.ToString().Equals("Pending")))
-                                                                                                {
-                                                                                                    isEnabled = true;
-                                                                                                }
-                                                                                                else if (String.Equals(userRole, "5") && (amendment.Status.ToString().Equals("Draft")))
+                                                                                                if (amendment.Status.ToString().Equals("Draft"))
                                                                                                 {
                                                                                                     isEnabled = true;
                                                                                                 }
@@ -943,6 +887,8 @@
                                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                                     <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                                    <input asp-for="@Model.SourceSpeedtype" type="hidden" value="@Model.SourceSpeedtype" />
+                                                                                                    <input asp-for="@Model.DestinationSpeedtype" type="hidden" value="@Model.DestinationSpeedtype" />
                                                                                                     <button type="submit" disabled=@(!isEnabled) class="btn btn-outline-secondary">Edit</button>
                                                                                                 </form>
                                                                                                 <form method="post" asp-page-handler="DeleteAmendment" asp-route-id="@amendment.BudgetAmendmentID">
@@ -952,12 +898,13 @@
                                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                                     <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                                                    <button type="submit" disabled=@(!isEnabled) class="btn btn-outline-danger">Delete</button>
+                                                                                                    <button type="submit" onclick="return confirm('Are you sure you want to delete this item?');" disabled=@(!isEnabled) class="btn btn-outline-danger">Delete</button>
                                                                                                 </form>
                                                                                             </div>
                                                                                         </td>
                                                                                     </tr>
                                                                                 }
+                                                                                index++;
                                                                             }
                                                                         }
                                                                     </tbody>
@@ -1065,6 +1012,7 @@
                                         </option>
                                     }
                                 </select>
+                                <div class="invalid-feedback" id="speedtypeError">Destination SpeedType must be different from Source SpeedType.</div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="NewBudgetAmendment.FundCode" class="form-label">Fund Code</label>
@@ -1124,88 +1072,7 @@
     <partial name="_ValidationScriptsPartial" />
 }
 
-    <script>
-
-        // window.addEventListener('beforeunload', function () {
-        //     sessionStorage.setItem('scrollPosition', window.scrollY);
-        // });
-
-        // document.addEventListener('DOMContentLoaded', function () {
-
-        // const scrollPosition = sessionStorage.getItem('scrollPosition');
-        // if (scrollPosition) {
-        //     window.scrollTo(0, parseInt(scrollPosition));
-        //     sessionStorage.removeItem('scrollPosition');
-        // }
-
-        //     const urlParams = new URLSearchParams(window.location.search);
-        //     const selectedBA = urlParams.get('SelectedBudgetAmendmentMainID');
-        //     const selectedDept = urlParams.get('SelectedDepartmentID');
-
-        //     if (selectedBA && selectedDept) {
-
-        //         const baAccordions = document.querySelectorAll('[id^="collapseBA"]');
-        //         baAccordions.forEach(accordion => {
-        //             if (accordion.getAttribute('data-ba-id') == selectedBA) {
-        //                 new bootstrap.Collapse(accordion, { show: true });
-
-        //                 setTimeout(() => {
-        //                     const deptAccordions = accordion.querySelectorAll('[data-dept-id]');
-        //                     deptAccordions.forEach(deptAccordion => {
-        //                         if (deptAccordion.getAttribute('data-dept-id') == selectedDept) {
-        //                             new bootstrap.Collapse(deptAccordion, { show: true });
-        //                         }
-        //                     });
-        //                 }, 350);
-        //             }
-        //         });
-        //     }
-        // });
-
-    // window.addEventListener('beforeunload', function () {
-    //     sessionStorage.setItem('scrollToBottom', 'true');
-    // });
-
-    // document.addEventListener('DOMContentLoaded', function () {
-    //     const urlParams = new URLSearchParams(window.location.search);
-    //     const selectedBA = urlParams.get('SelectedBudgetAmendmentMainID');
-    //     const selectedDept = urlParams.get('SelectedDepartmentID');
-
-    //     if (selectedBA && selectedDept) {
-    //         Find and open the budget amendment
-    //         const baAccordions = document.querySelectorAll('[id^="collapseBA"]');
-    //         baAccordions.forEach(accordion => {
-    //             if (accordion.getAttribute('data-ba-id') == selectedBA) {
-    //                 new bootstrap.Collapse(accordion, { show: true });
-
-    //                 Wait for parent to open, then open department
-    //                 setTimeout(() => {
-    //                     const deptAccordions = accordion.querySelectorAll('[data-dept-id]');
-    //                     deptAccordions.forEach(deptAccordion => {
-    //                         if (deptAccordion.getAttribute('data-dept-id') == selectedDept) {
-    //                             new bootstrap.Collapse(deptAccordion, { show: true });
-    //                         }
-    //                     });
-
-    //                     Scroll to bottom after accordions have opened
-    //                     setTimeout(() => {
-    //                         window.scrollTo(0, document.body.scrollHeight);
-    //                         sessionStorage.removeItem('scrollToBottom');
-    //                     }, 400); Wait for nested accordion animation to complete
-
-    //                 }, 350);
-    //             }
-    //         });
-    //     } else {
-    //         If no accordions to open, just scroll immediately
-    //         const shouldScrollToBottom = sessionStorage.getItem('scrollToBottom');
-    //         if (shouldScrollToBottom) {
-    //             window.scrollTo(0, document.body.scrollHeight);
-    //             sessionStorage.removeItem('scrollToBottom');
-    //         }
-    //     }
-    // });
-
+<script>
     window.addEventListener('beforeunload', function () {
         sessionStorage.setItem('scrollPosition', window.scrollY);
     });
@@ -1250,156 +1117,111 @@
         }
     });
 
-        function selectAllCategoryCheckboxes() {
-            document.querySelectorAll('.category-submit-checkbox:not(:disabled)').forEach(cb => cb.checked = true);
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+        const sourceSpeedtype = document.getElementById('sourceSpeedtype');
+        const destinationSpeedtype = document.getElementById('destinationSpeedtype');
+        const speedtypeError = document.getElementById('speedtypeError');
+        const form = sourceSpeedtype.closest('form');
 
-        function deselectAllCategoryCheckboxes() {
-            document.querySelectorAll('.category-submit-checkbox').forEach(cb => cb.checked = false);
-        }
+        function validateSpeedtypes() {
+            const sourceValue = sourceSpeedtype.value;
+            const destValue = destinationSpeedtype.value;
 
-        function confirmAndSubmitCategories() {
-            const selected = Array.from(document.querySelectorAll(".category-submit-checkbox:checked"))
-                .filter(cb => !cb.disabled);
-
-            if (selected.length === 0) {
-                alert("Please select at least one category to submit.");
-                return;
-            }
-
-            const confirmSubmit = confirm(`Are you sure you want to submit ${selected.length} selected amendment${selected.length > 1 ? 's' : ''} for approval?`);
-
-            if (confirmSubmit) {
-                prepareSelectedCategories();
-
-                document.querySelector('form[method="post"][asp-page-handler="SubmitSelectedCategories"]').submit();
-            }
-        }
-
-        function prepareSelectedCategories() {
-            const selected = Array.from(document.querySelectorAll(".category-submit-checkbox:checked"))
-                .filter(cb => !cb.disabled)
-                .map(cb => cb.value);
-
-            document.getElementById("selectedCategoryList").value = selected.join(",");
-        }
-
-        function toggleDateRange(selectedValue) {
-            const isCustom = selectedValue === "Custom";
-            document.getElementById("customDateRange").classList.toggle("d-none", !isCustom);
-            document.getElementById("customDateRangeTo").classList.toggle("d-none", !isCustom);
-        }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            toggleDateRange(document.getElementById("financialYear").value);
-        });
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const submitBtn = document.getElementById("submitBtn");
-            const checkboxes = document.querySelectorAll(".category-submit-checkbox");
-
-            function updateSubmitButtonState() {
-                const anyChecked = Array.from(checkboxes)
-                    .some(cb => !cb.disabled && cb.checked);
-
-                submitBtn.disabled = !anyChecked;
-            }
-
-            checkboxes.forEach(cb => {
-                cb.addEventListener("change", updateSubmitButtonState);
-            });
-
-            window.selectAllCategoryCheckboxes = function () {
-                checkboxes.forEach(cb => {
-                    if (!cb.disabled) cb.checked = true;
-                });
-                updateSubmitButtonState();
-            };
-
-            window.deselectAllCategoryCheckboxes = function () {
-                checkboxes.forEach(cb => {
-                    if (!cb.disabled) cb.checked = false;
-                });
-                updateSubmitButtonState();
-            };
-
-            updateSubmitButtonState();
-        });
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const checkboxes = document.querySelectorAll("#statusFilterForm input[type='checkbox']");
-
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener("change", function () {
-                    const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
-
-                    if (checkedBoxes.length === 0) {
-                        this.checked = true;
-                    }
-                });
-            });
-
-            statusDropdownMenu = document.querySelector('#statusFilterDropdown + .dropdown-menu');
-
-            if (statusDropdownMenu) {
-                statusDropdownMenu.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                    });
-            }
-
-            createdByDropdownMenu = document.querySelector('#createdByFilterDropdown + .dropdown-menu');
-
-            if (createdByDropdownMenu) {
-                createdByDropdownMenu.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                    });
-            }
-
-            editedByDropdownMenu = document.querySelector('#editedByFilterDropdown + .dropdown-menu');
-
-            if (editedByDropdownMenu) {
-                editedByDropdownMenu.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                    });
-            }
-
-            updatedByDropdownMenu = document.querySelector('#updatedByFilterDropdown + .dropdown-menu');
-
-            if (updatedByDropdownMenu) {
-                updatedByDropdownMenu.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                    });
-            }
-
-
-
-        });
-
-        function validateNetChange(form) {
-
-            const netChangeValue = parseFloat(form.querySelector('input[name="NetChange"]').value);
-            if (netChangeValue !== 0) {
-                window.alert("Cannot approve category: Balance is not zero.");
+            if (sourceValue && destValue && sourceValue === destValue) {
+                destinationSpeedtype.classList.add('is-invalid');
+                speedtypeError.style.display = 'block';
                 return false;
+            } else {
+                destinationSpeedtype.classList.remove('is-invalid');
+                speedtypeError.style.display = 'none';
+                return true;
             }
-            return true;
         }
+
+        // Validate on change (for bootstrap-select, use 'changed.bs.select' event)
+        $(sourceSpeedtype).on('changed.bs.select', validateSpeedtypes);
+        $(destinationSpeedtype).on('changed.bs.select', validateSpeedtypes);
+
+        // Prevent form submission if invalid
+        form.addEventListener('submit', function(e) {
+            if (!validateSpeedtypes()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+    });
+
+    function toggleDateRange(selectedValue) {
+        const isCustom = selectedValue === "Custom";
+        document.getElementById("customDateRange").classList.toggle("d-none", !isCustom);
+        document.getElementById("customDateRangeTo").classList.toggle("d-none", !isCustom);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        toggleDateRange(document.getElementById("financialYear").value);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const checkboxes = document.querySelectorAll("#statusFilterForm input[type='checkbox']");
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener("change", function () {
+                const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+
+                if (checkedBoxes.length === 0) {
+                    this.checked = true;
+                }
+            });
+        });
+
+        statusDropdownMenu = document.querySelector('#statusFilterDropdown + .dropdown-menu');
+
+        if (statusDropdownMenu) {
+            statusDropdownMenu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+        }
+
+        createdByDropdownMenu = document.querySelector('#createdByFilterDropdown + .dropdown-menu');
+
+        if (createdByDropdownMenu) {
+            createdByDropdownMenu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+        }
+
+        editedByDropdownMenu = document.querySelector('#editedByFilterDropdown + .dropdown-menu');
+
+        if (editedByDropdownMenu) {
+            editedByDropdownMenu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+        }
+
+        updatedByDropdownMenu = document.querySelector('#updatedByFilterDropdown + .dropdown-menu');
+
+        if (updatedByDropdownMenu) {
+            updatedByDropdownMenu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+        }
+    });
+
+    function validateNetChange(form) {
+
+        const netChangeValue = parseFloat(form.querySelector('input[name="NetChange"]').value);
+        if (netChangeValue !== 0) {
+            window.alert("Cannot approve category: Balance is not zero.");
+            return false;
+        }
+        return true;
+    }
 
         document.addEventListener('DOMContentLoaded', function () {
             const speedtypeSelect = document.getElementById('sourceSpeedtype');
             const fundCodeInput = document.getElementById('fundCode');
             const programCodeInput = document.getElementById('programCode');
             const classCodeInput = document.getElementById('classCode');
-
-            // speedtypeSelect.addEventListener('change', function () {
-            //     const selectedOption = speedtypeSelect.options[speedtypeSelect.selectedIndex];
-            //     const fundCode = selectedOption.getAttribute('data-fundcode');
-            //     fundCodeInput.value = fundCode || '';
-            //     const programCode = selectedOption.getAttribute('data-programcode');
-            //     programCodeInput.value = programCode || '';
-            //     const classCode = selectedOption.getAttribute('data-classcode');
-            //     classCodeInput.value = classCode || '';
-            // });
 
         function populateFields() {
             const selectedOption = speedtypeSelect.options[speedtypeSelect.selectedIndex];
@@ -1422,7 +1244,7 @@
             });
         });
 
-    </script>
+</script>
 
 <style>
     .nav-pills .nav-link {

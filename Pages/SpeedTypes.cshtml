@@ -28,16 +28,7 @@
                     <thead>
                         <tr>
                             <th>
-                                SpeedType ID
-                                <form method="get" class="d-inline">
-                                    <input type="hidden" name="handler" value="SortColumn" />
-                                    <input type="hidden" name="table" value="SpeedType" />
-                                    <input type="hidden" name="column" value="SpeedTypeId" />
-                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("SpeedTypeId")" />
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas @Model.GetSortIcon("SpeedTypeId")"></i>
-                                    </button>
-                                </form>
+                                #
                             </th>
                             <th>
                                 Code
@@ -136,6 +127,7 @@
                     <tbody>
                         @if (Model.SpeedTypes != null)
                         {
+                            int index = 1;
                             @foreach (var speedType in Model.SpeedTypes)
                             {
                                 if (Model.EditingSpeedTypeID == speedType.SpeedTypeId)
@@ -163,7 +155,7 @@
                                 else
                                 {
                                     <tr>
-                                        <td>@speedType.SpeedTypeId</td>
+                                        <td>@index</td>
                                         <td>@speedType.Code</td>
                                         <td>@speedType.Budget</td>
                                         <td>@speedType.FundCode</td>
@@ -181,6 +173,7 @@
                                         </td>
                                     </tr>
                                 }
+                                index++;
                             }
                         }
 
