@@ -425,24 +425,6 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (SelectedUpdatedBy.HasValue)
                 amendmentQuery = amendmentQuery.Where(b => b.UpdatedBy == SelectedUpdatedBy);
 
-/*            //View Budget Amendments created only by logged in user
-            if (String.Equals(userRole, "5"))
-            {
-                amendmentQuery = amendmentQuery.Where(b => b.CreatedBy == userID);
-            }*/
-
-/*            //CFO and SA can view all BAs except drafts unless created by them
-            if (String.Equals(userRole, "6"))
-            {
-                amendmentQuery = amendmentQuery.Where(b => b.Status != AmendmentStatus.Draft || (b.Status == AmendmentStatus.Draft && b.CreatedBy == userID));
-            }*/
-
-            //Keep drafts viewable only to user that created them. SA can view all drafts.
-            if (!String.Equals(userRole, "6"))
-            {
-                amendmentQuery = amendmentQuery.Where(b => b.Status != AmendmentStatus.Draft || (b.Status == AmendmentStatus.Draft && b.CreatedBy == userID));
-            }
-
             BudgetAmendments = await amendmentQuery
             .Include(a => a.CreatedByUser)
             .Include(a => a.EditedByUser)

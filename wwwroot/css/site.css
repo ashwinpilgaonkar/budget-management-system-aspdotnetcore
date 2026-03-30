@@ -33,3 +33,147 @@ th form button {
     font-size: 1rem;
     cursor: pointer;
 }
+
+.page-title {
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--bs-body-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+    letter-spacing: 0.01em;
+}
+    .page-title::before {
+        content: '';
+        display: block;
+        width: 4px;
+        height: 28px;
+        background: #185FA5;
+        border-radius: 2px;
+    }
+
+.ba-acc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    width: 100%;
+}
+
+.ba-acc-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    min-width: 0;
+}
+
+.ba-acc-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.ba-acc-divider {
+    width: 1px;
+    height: 28px;
+    background: rgba(0,0,0,0.15);
+    flex-shrink: 0;
+}
+
+.ba-acc-dates {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.ba-acc-date-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.ba-acc-date-lbl {
+    font-size: 10px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1.2;
+}
+
+.ba-acc-date-val {
+    font-size: 13px;
+    color: #555;
+    font-family: monospace;
+    line-height: 1.4;
+}
+
+.ba-acc-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.inner-acc-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.inner-dept-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--bs-body-color);
+    letter-spacing: 0.01em;
+}
+
+.inner-pipe {
+    color: #ccc;
+    font-size: 13px;
+}
+
+.inner-status {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+}
+
+.inner-status--pending {
+    color: #185FA5;
+}
+
+.inner-status--approved {
+    color: #1a6e35;
+}
+
+.inner-status--rejected {
+    color: #a32d2d;
+}
+
+.inner-acc-left ~ .accordion-button::after {
+    display: none;
+}
+
+.accordion-button.inner-acc-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+    .accordion-button.inner-acc-btn::after {
+        display: none !important;
+    }
+
+.inner-chevron {
+    color: #aaa;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+/* Rotate chevron when expanded */
+.accordion-button:not(.collapsed) .inner-chevron {
+    transform: rotate(180deg);
+}
