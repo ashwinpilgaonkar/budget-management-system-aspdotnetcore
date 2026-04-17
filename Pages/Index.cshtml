@@ -136,10 +136,10 @@
 
                             <div class="accordion-item mb-3">
                                 <h2 class="accordion-header" id="headingBA@(amendmentIndex)">
-                                    <button class="accordion-button collapsed py-4" type="button"
+                                    <button class="accordion-button @(amendmentIndex == 0 ? "" : "collapsed") py-4" type="button"
                                             data-bs-toggle="collapse"
                                             data-bs-target="#collapseBA@(amendmentIndex)"
-                                            aria-expanded="false"
+                                            aria-expanded="@(amendmentIndex == 0 ? "true" : "false")"
                                             aria-controls="collapseBA@(amendmentIndex)">
                                         <div class="d-flex justify-content-between w-100 align-items-center">
                                             <div class="ba-acc-left">
@@ -180,7 +180,7 @@
                                         </div>
                                     </button>
                                 </h2>
-                                <div id="collapseBA@(amendmentIndex)" class="accordion-collapse collapse"
+                                <div id="collapseBA@(amendmentIndex)" class="accordion-collapse collapse @(amendmentIndex == 0 ? "show" : "")"
                                      aria-labelledby="headingBA@(amendmentIndex)"
                                      data-bs-parent="#budgetAmendmentsAccordion"
                                      data-ba-id="@amendmentmain.BudgetAmendmentMainID">
@@ -188,16 +188,20 @@
                                         <!-- Nested Accordion for Departments -->
                                         <div class="accordion" id="departmentsBA@(amendmentIndex)">
 
+                                            @{ var deptIndex = 0; }
                                             @foreach (var dept in userDepartmentsBA)
                                             {
                                                 var deptId = $"Dept{dept.DepartmentID}";
+                                                var isDefaultExpanded = amendmentIndex == 0 && deptIndex == 0 && Model.SelectedDepartmentID == 0 && !Model.SelectedBudgetAmendmentMainID.HasValue;
+                                                var isDeptSelected = Model.SelectedDepartmentID == dept.DepartmentID && Model.SelectedBudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID;
+                                                deptIndex++;
 
                                                 <div class="accordion-item mb-2">
                                                     <h2 class="accordion-header" id="heading@(deptId)BA@(amendmentIndex)">
-                                                        <a href="@(Model.SelectedDepartmentID == dept.DepartmentID && Model.SelectedBudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID ? "javascript:void(0);" : $"?SelectedDepartmentID={dept.DepartmentID}&SelectedStatusTab={Model.SelectedStatusTab}&SelectedBudgetAmendmentMainID={amendmentmain.BudgetAmendmentMainID}&SelectedFinancialYear={Model.SelectedFinancialYear}&CustomStartDate={Model.CustomStartDate?.ToString("yyyy-MM-dd")}&CustomEndDate={Model.CustomEndDate?.ToString("yyyy-MM-dd")}")"
-                                                           class="inner-acc-btn accordion-button @(Model.SelectedDepartmentID == dept.DepartmentID && Model.SelectedBudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID ? "" : "collapsed") py-3 text-decoration-none"
+                                                        <a href="@(isDeptSelected ? "javascript:void(0);" : $"?SelectedDepartmentID={dept.DepartmentID}&SelectedStatusTab={Model.SelectedStatusTab}&SelectedBudgetAmendmentMainID={amendmentmain.BudgetAmendmentMainID}&SelectedFinancialYear={Model.SelectedFinancialYear}&CustomStartDate={Model.CustomStartDate?.ToString("yyyy-MM-dd")}&CustomEndDate={Model.CustomEndDate?.ToString("yyyy-MM-dd")}")"
+                                                           class="inner-acc-btn accordion-button @(isDeptSelected || isDefaultExpanded ? "" : "collapsed") py-3 text-decoration-none"
                                                            style="display: block;"
-                                                           @Html.Raw(Model.SelectedDepartmentID == dept.DepartmentID && Model.SelectedBudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID ? $"data-bs-toggle=\"collapse\" data-bs-target=\"#collapse{deptId}BA{amendmentIndex}\"" : "")>
+                                                           @Html.Raw(isDeptSelected || isDefaultExpanded ? $"data-bs-toggle=\"collapse\" data-bs-target=\"#collapse{deptId}BA{amendmentIndex}\"" : "")>
                                                             
                                                             <div class="inner-acc-left">
                                                                 <span class="inner-dept-name">@dept.DepartmentName</span>
@@ -230,7 +234,7 @@
                                                            
                                                         </a>
                                                     </h2>
-                                                    <div id="collapse@(deptId)BA@(amendmentIndex)" class="accordion-collapse collapse"
+                                                    <div id="collapse@(deptId)BA@(amendmentIndex)" class="accordion-collapse collapse @(isDeptSelected || isDefaultExpanded ? "show" : "")"
                                                          aria-labelledby="heading@(deptId)BA@(amendmentIndex)"
                                                          data-bs-parent="#departmentsBA@(amendmentIndex)"
                                                          data-dept-id="@dept.DepartmentID">
