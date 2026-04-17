@@ -123,6 +123,12 @@
             {
                 <!-- Budget Amendments Section -->
                 <div class="mb-4">
+                    <ul class="nav nav-tabs mb-3" id="baMainStatusTabs">
+                        <li class="nav-item"><a class="nav-link active" href="#" data-ba-filter="all">All</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" data-ba-filter="Pending">Pending</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" data-ba-filter="Approved">Approved</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" data-ba-filter="Rejected">Rejected</a></li>
+                    </ul>
                     <div class="accordion" id="budgetAmendmentsAccordion">
 
                         @{
@@ -134,7 +140,15 @@
                             var amendmentIndex = baIndex;
                             baIndex++;
 
-                            <div class="accordion-item mb-3">
+                            
+                                var baRelated = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID).ToList();
+                                var baMainStatus = baRelated.Any(ba => ba.Status == AmendmentStatus.Pending) ? "Pending"
+                                    : (baRelated.Any() && baRelated.All(ba => ba.Status == AmendmentStatus.Approved)) ? "Approved"
+                                    : (baRelated.Any() && baRelated.All(ba => ba.Status == AmendmentStatus.Rejected)) ? "Rejected"
+                                    : "None";
+                            
+
+                            <div class="accordion-item mb-3" data-ba-main-status="@baMainStatus">
                                 <h2 class="accordion-header" id="headingBA@(amendmentIndex)">
                                     <button class="accordion-button @(amendmentIndex == 0 ? "" : "collapsed") py-4" type="button"
                                             data-bs-toggle="collapse"
@@ -1265,3 +1279,25 @@
             border-color: #0d6efd;
         }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('#baMainStatusTabs .nav-link').forEach(function (tab) {
+            tab.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelectorAll('#baMainStatusTabs .nav-link').forEach(function (t) {
+                    t.classList.remove('active');
+                });
+                this.classList.add('active');
+                var filter = this.getAttribute('data-ba-filter');
+                document.querySelectorAll('#budgetAmendmentsAccordion > .accordion-item').forEach(function (item) {
+                    if (filter === 'all' || item.getAttribute('data-ba-main-status') === filter) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+    });
+</script>
