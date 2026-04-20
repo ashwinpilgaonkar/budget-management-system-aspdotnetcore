@@ -260,18 +260,6 @@
                                                                         <button type="submit" onclick="return confirm('Are you sure you want to reject all these entries?');" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link">Reject All ❌</button>
                                                                     </form>
 
-                                                                    <form method="post" asp-page-handler="WithdrawCategory">
-                                                                        <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
-                                                                        <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
-                                                                        <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
-                                                                        <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
-                                                                        <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                        <button type="submit" onclick="return confirm('Are you sure you want to revert all these entries back to Drafts?');" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link text-nowrap">Withdraw ↩️</button>
-                                                                    </form>
                                                                 }
 
                                                                 else if((Model.SelectedStatusTab == AmendmentStatus.Approved.ToString() || Model.SelectedStatusTab == AmendmentStatus.Rejected.ToString()) && !String.Equals(userRole, "5"))

@@ -16,7 +16,6 @@
         Submitted,
         Approved,
         Rejected,
-        Withdrawn,
         Reverted,
         Edited,
         Deleted

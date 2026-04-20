@@ -881,34 +881,6 @@ namespace budget_management_system_aspdotnetcore.Pages
             });
         }
 
-        public async Task<IActionResult> OnPostWithdrawCategoryAsync()
-        {
-            if (SelectedDepartmentID == 0)
-                return BadRequest("Invalid department");
-
-            var amendments = await _context.BudgetAmendments.Where(a => a.DepartmentID == SelectedDepartmentID && (a.Status == AmendmentStatus.Pending)).ToListAsync();
-            var categoryName = "";
-
-            foreach (var amendment in amendments)
-            {
-                amendment.Status = AmendmentStatus.Draft;
-                amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
-                amendment.UpdatedAt = DateTime.Now;
-                categoryName = amendment.CategoryName;
-                await UpdateUserActivityLogAsync(categoryName, ActivityType.Withdrawn);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToPage(new
-            {
-                SelectedDepartmentID,
-                SelectedBudgetAmendmentMainID,
-                SelectedStatusTab,
-                SelectedFinancialYear,
-                CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
-                CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
-            });
-        }
 
         /*        public async Task<IActionResult> OnPostSubmitCategoryAsync(string category)
                 {
