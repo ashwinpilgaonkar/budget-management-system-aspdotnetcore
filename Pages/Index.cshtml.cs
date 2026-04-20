@@ -589,7 +589,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             var amendment = await _context.BudgetAmendments.FindAsync(id);
 
-            if (amendment != null && amendment.Status == AmendmentStatus.Draft)
+            if (amendment != null && (amendment.Status == AmendmentStatus.Draft || amendment.Status == AmendmentStatus.Rejected))
             {
                 EditingBudgetAmendmentID = id;
 
@@ -759,7 +759,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return NotFound();
             }
 
-            if (amendment.Status == AmendmentStatus.Draft)
+            if (amendment.Status == AmendmentStatus.Draft || amendment.Status == AmendmentStatus.Rejected)
             {
                 var categoryName = amendment.CategoryName;
 

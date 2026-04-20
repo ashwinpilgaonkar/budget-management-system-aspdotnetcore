@@ -262,19 +262,31 @@
 
                                                                 }
 
-                                                                else if((Model.SelectedStatusTab == AmendmentStatus.Approved.ToString() || Model.SelectedStatusTab == AmendmentStatus.Rejected.ToString()) && !String.Equals(userRole, "5"))
+                                                                else if(Model.SelectedStatusTab == AmendmentStatus.Approved.ToString() && !String.Equals(userRole, "5"))
                                                                 {
                                                                     <form method="post" asp-page-handler="RevertCategory">
                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                         <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                         <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                        <button type="submit" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link text-nowrap">Revert Decision ↩️</button>
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to undo this decision?');" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link text-nowrap">Revert Decision ↩️</button>
+                                                                    </form>
+                                                                }
+
+                                                                @if (Model.SelectedStatusTab == AmendmentStatus.Rejected.ToString())
+                                                                {
+                                                                    <form method="post" asp-page-handler="RevertCategory">
+                                                                        <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                        <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                        <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                        <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                        <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to resubmit these entries for review?');" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link text-nowrap">Resubmit for review 🗒️</button>
                                                                     </form>
                                                                 }
 
@@ -284,8 +296,6 @@
                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                         <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -742,7 +752,7 @@
                                                                             <th>
                                                                                 Status
                                                                             </th>
-                                                                            @if (!String.Equals(userRole, "5") || Model.SelectedStatusTab==AmendmentStatus.Draft.ToString())
+                                                                            @if (!String.Equals(userRole, "5") || Model.SelectedStatusTab==AmendmentStatus.Draft.ToString() || Model.SelectedStatusTab==AmendmentStatus.Rejected.ToString())
                                                                             {
                                                                                 <th colspan="4">Actions</th>                                                                                
                                                                             }
@@ -899,17 +909,9 @@
                                                                                         <td class="@statusClass">@amendment.Status</td>
                                                                                         <td colspan="4">
                                                                                             @{
-                                                                                                var isEnabled = false;
-                                                                                                if (amendment.Status.ToString().Equals("Draft"))
-                                                                                                {
-                                                                                                    isEnabled = true;
-                                                                                                }
-                                                                                                else
-                                                                                                {
-                                                                                                    isEnabled = false;
-                                                                                                }
+                                                                                                var isEnabled = amendment.Status == AmendmentStatus.Draft || amendment.Status == AmendmentStatus.Rejected;
                                                                                             }
-                                                                                            @if (!String.Equals(userRole, "5") || Model.SelectedStatusTab==AmendmentStatus.Draft.ToString())
+                                                                                            @if (!String.Equals(userRole, "5") || Model.SelectedStatusTab==AmendmentStatus.Draft.ToString() || Model.SelectedStatusTab==AmendmentStatus.Rejected.ToString())
                                                                                             {
                                                                                                 <div class="d-flex justify-content-evenly gap-2">
                                                                                                     <form method="post" asp-page-handler="EditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
