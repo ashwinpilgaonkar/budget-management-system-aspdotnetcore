@@ -1,0 +1,104 @@
+@page "/dashboard"
+@model DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-fluid">
+
+    @{
+        var userRole = Model.userRole;
+    }
+
+    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="page-title">Dashboard</h3>
+            </div>
+
+            <form method="get" class="d-flex align-items-end gap-3 flex-wrap mb-4">
+                <div>
+                    <label for="financialYear" class="form-label mb-1">Financial year:</label>
+                    <select class="form-select form-select-sm" id="financialYear" name="SelectedFinancialYear" onchange="toggleDateRange(this.value)">
+                        @foreach (var fy in Model.FinancialYearOptions)
+                        {
+                            <option value="@fy" selected="@(fy == Model.SelectedFinancialYear ? "selected" : null)">@fy</option>
+                        }
+                    </select>
+                </div>
+                <div class="d-none" id="customDateRange">
+                    <label class="form-label mb-1">From</label>
+                    <input type="date" name="CustomStartDate" class="form-control form-control-sm" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="d-none" id="customDateRangeTo">
+                    <label class="form-label mb-1">To</label>
+                    <input type="date" name="CustomEndDate" class="form-control form-control-sm" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Apply</button>
+                </div>
+            </form>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-header">Total Amendments</div>
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.OverviewTotalCount</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-header">Approved</div>
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.OverviewApprovedCount</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-header">Pending</div>
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.OverviewPendingCount</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger mb-3">
+                        <div class="card-header">Rejected</div>
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.OverviewRejectedCount</h5>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!String.Equals(userRole, "5"))
+                {
+                    <div class="col-md-3">
+                        <div class="card text-white bg-info mb-3 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Activity Summary</h5>
+                                <p class="card-text mb-1"><strong>Total Actions:</strong> @Model.OverviewTotalActionsThisMonth</p>
+                                <p class="card-text mb-1"><strong>Top User:</strong> @Model.OverviewMostActiveUser</p>
+                                <p class="card-text"><strong>Last Action:</strong> @Model.OverviewLastActivityTime</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleDateRange(selectedValue) {
+        const isCustom = selectedValue === "Custom";
+        document.getElementById("customDateRange").classList.toggle("d-none", !isCustom);
+        document.getElementById("customDateRangeTo").classList.toggle("d-none", !isCustom);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        toggleDateRange(document.getElementById("financialYear").value);
+    });
+</script>

@@ -18,7 +18,7 @@
                 <h3 class="page-title">Budget Amendments</h3>
             </div>
 
-            <div class="d-flex align-items-end justify-content-between flex-wrap gap-3 mb-4">
+            <div class="d-flex align-items-end justify-content-between flex-wrap gap-3">
                 <!-- Financial Year Form -->
                 <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
 
@@ -54,54 +54,6 @@
             </div>
 
 
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card text-white bg-primary mb-3">
-                        <div class="card-header">Total Amendments</div>
-                        <div class="card-body">
-                            <h5 class="card-title">@Model.OverviewTotalCount</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-success mb-3">
-                        <div class="card-header">Approved</div>
-                        <div class="card-body">
-                            <h5 class="card-title">@Model.OverviewApprovedCount</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-warning mb-3">
-                        <div class="card-header">Pending</div>
-                        <div class="card-body">
-                            <h5 class="card-title">@Model.OverviewPendingCount</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-white bg-danger mb-3">
-                        <div class="card-header">Rejected</div>
-                        <div class="card-body">
-                            <h5 class="card-title">@Model.OverviewRejectedCount</h5>
-                        </div>
-                    </div>
-                </div>
-
-                @if (!String.Equals(userRole, "5"))
-                {
-                    <div class="col-md-3">
-                        <div class="card text-white bg-info mb-3 shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title">Activity Summary</h5>
-                                <p class="card-text mb-1"><strong>Total Actions:</strong> @Model.OverviewTotalActionsThisMonth</p>
-                                <p class="card-text mb-1"><strong>Top User:</strong> @Model.OverviewMostActiveUser</p>
-                                <p class="card-text"><strong>Last Action:</strong> @Model.OverviewLastActivityTime</p>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
 
             <!-- Budget Amendments Section -->
             <div class="mb-4">
