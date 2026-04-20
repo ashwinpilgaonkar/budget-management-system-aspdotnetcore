@@ -24,6 +24,7 @@
 
                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
 
                     <div>
@@ -102,33 +103,38 @@
                 }
             </div>
 
+            <!-- Budget Amendments Section -->
+            <div class="mb-4">
+                <ul class="nav nav-tabs justify-content-center mb-3">
+                    @{
+                        var baMainTabs = new[] { (Label: "All", Value: ""), (Label: "Pending", Value: "Pending"), (Label: "Approved", Value: "Approved"), (Label: "Rejected", Value: "Rejected") };
+                    }
+                    @foreach (var tab in baMainTabs)
+                    {
+                        var isTabActive = (string.IsNullOrEmpty(tab.Value) && string.IsNullOrEmpty(Model.SelectedBAMainStatusTab)) || tab.Value == Model.SelectedBAMainStatusTab ? "active" : "";
+                        <li class="nav-item">
+                            <a class="nav-link @isTabActive"
+                               href="?SelectedBAMainStatusTab=@tab.Value&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")">@tab.Label</a>
+                        </li>
+                    }
+                </ul>
+
             @if (!Model.BudgetAmendmentsMain.Any())
             {
-                <tr>
-                    <td colspan="23" class="text-center py-5">
-                        <div class="d-flex justify-content-center align-items-center">
-                            <div class="card" style="background-color: #e9ecef; border: 1px solid #dee2e6; padding: 3rem; width: 100%;">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted mb-0">No records found</p>
-                                    <small class="text-muted">Create a new amendment from the Modify Budget Amendments tab</small>
-                                </div>
-                            </div>
+                <div class="d-flex justify-content-center align-items-center">
+                    <div class="card" style="background-color: #e9ecef; border: 1px solid #dee2e6; padding: 3rem; width: 100%;">
+                        <div class="card-body text-center">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No records found</p>
+                            <small class="text-muted">Create a new amendment from the Modify Budget Amendments tab</small>
                         </div>
-                    </td>
-                </tr>
+                    </div>
+                </div>
             }
 
             else
             {
-                <!-- Budget Amendments Section -->
-                <div class="mb-4">
-                    <ul class="nav nav-tabs mb-3" id="baMainStatusTabs">
-                        <li class="nav-item"><a class="nav-link active" href="#" data-ba-filter="all">All</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#" data-ba-filter="Pending">Pending</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#" data-ba-filter="Approved">Approved</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#" data-ba-filter="Rejected">Rejected</a></li>
-                    </ul>
+                    <div class="mb-4">
                     <div class="accordion" id="budgetAmendmentsAccordion">
 
                         @{
@@ -139,6 +145,7 @@
                         {
                             var amendmentIndex = baIndex;
                             baIndex++;
+                            var isFirstLoadDefault = amendmentIndex == 0 && Model.SelectedDepartmentID == 0 && !Model.SelectedBudgetAmendmentMainID.HasValue;
 
                             
                                 var baRelated = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID).ToList();
@@ -150,10 +157,10 @@
 
                             <div class="accordion-item mb-3" data-ba-main-status="@baMainStatus">
                                 <h2 class="accordion-header" id="headingBA@(amendmentIndex)">
-                                    <button class="accordion-button @(amendmentIndex == 0 ? "" : "collapsed") py-4" type="button"
+                                    <button class="accordion-button @(isFirstLoadDefault ? "" : "collapsed") py-4" type="button"
                                             data-bs-toggle="collapse"
                                             data-bs-target="#collapseBA@(amendmentIndex)"
-                                            aria-expanded="@(amendmentIndex == 0 ? "true" : "false")"
+                                            aria-expanded="@(isFirstLoadDefault ? "true" : "false")"
                                             aria-controls="collapseBA@(amendmentIndex)">
                                         <div class="d-flex justify-content-between w-100 align-items-center">
                                             <div class="ba-acc-left">
@@ -194,7 +201,7 @@
                                         </div>
                                     </button>
                                 </h2>
-                                <div id="collapseBA@(amendmentIndex)" class="accordion-collapse collapse @(amendmentIndex == 0 ? "show" : "")"
+                                <div id="collapseBA@(amendmentIndex)" class="accordion-collapse collapse @(isFirstLoadDefault ? "show" : "")"
                                      aria-labelledby="headingBA@(amendmentIndex)"
                                      data-bs-parent="#budgetAmendmentsAccordion"
                                      data-ba-id="@amendmentmain.BudgetAmendmentMainID">
@@ -212,7 +219,7 @@
 
                                                 <div class="accordion-item mb-2">
                                                     <h2 class="accordion-header" id="heading@(deptId)BA@(amendmentIndex)">
-                                                        <a href="@(isDeptSelected ? "javascript:void(0);" : $"?SelectedDepartmentID={dept.DepartmentID}&SelectedStatusTab={Model.SelectedStatusTab}&SelectedBudgetAmendmentMainID={amendmentmain.BudgetAmendmentMainID}&SelectedFinancialYear={Model.SelectedFinancialYear}&CustomStartDate={Model.CustomStartDate?.ToString("yyyy-MM-dd")}&CustomEndDate={Model.CustomEndDate?.ToString("yyyy-MM-dd")}")"
+                                                        <a href="@(isDeptSelected ? "javascript:void(0);" : $"?SelectedDepartmentID={dept.DepartmentID}&SelectedStatusTab={Model.SelectedStatusTab}&SelectedBAMainStatusTab={Model.SelectedBAMainStatusTab}&SelectedBudgetAmendmentMainID={amendmentmain.BudgetAmendmentMainID}&SelectedFinancialYear={Model.SelectedFinancialYear}&CustomStartDate={Model.CustomStartDate?.ToString("yyyy-MM-dd")}&CustomEndDate={Model.CustomEndDate?.ToString("yyyy-MM-dd")}")"
                                                            class="inner-acc-btn accordion-button @(isDeptSelected || isDefaultExpanded ? "" : "collapsed") py-3 text-decoration-none"
                                                            style="display: block;"
                                                            @Html.Raw(isDeptSelected || isDefaultExpanded ? $"data-bs-toggle=\"collapse\" data-bs-target=\"#collapse{deptId}BA{amendmentIndex}\"" : "")>
@@ -248,7 +255,7 @@
                                                            
                                                         </a>
                                                     </h2>
-                                                    <div id="collapse@(deptId)BA@(amendmentIndex)" class="accordion-collapse collapse @(isDeptSelected || isDefaultExpanded ? "show" : "")"
+                                                    <div id="collapse@(deptId)BA@(amendmentIndex)" class="accordion-collapse collapse @(isDefaultExpanded ? "show" : "")"
                                                          aria-labelledby="heading@(deptId)BA@(amendmentIndex)"
                                                          data-bs-parent="#departmentsBA@(amendmentIndex)"
                                                          data-dept-id="@dept.DepartmentID">
@@ -260,6 +267,8 @@
                                                                 <form method="get" class="flex-grow-1">
                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -276,6 +285,9 @@
                                                                     <form method="post" asp-page-handler="ApproveCategory" onsubmit="return validateNetChange(this)">
                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -286,6 +298,9 @@
                                                                     <form method="post" asp-page-handler="RejectCategory">
                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -296,6 +311,9 @@
                                                                     <form method="post" asp-page-handler="WithdrawCategory">
                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -309,6 +327,9 @@
                                                                     <form method="post" asp-page-handler="RevertCategory">
                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -322,6 +343,9 @@
                                                                     <form method="post" asp-page-handler="SubmitCategory">
                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -376,7 +400,7 @@
                                                                     var isActive = Model.SelectedStatusTab == status.ToString() ? "active" : "";
                                                                     <li class="nav-item">
                                                                         <a class="nav-link @isActive"
-                                                                           href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=@status&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")">@status.GetDisplayName()</a>
+                                                                           href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=@status&SelectedBAMainStatusTab=@Model.SelectedBAMainStatusTab&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")">@status.GetDisplayName()</a>
                                                                     </li>
                                                                 }
                                                                 @{
@@ -384,7 +408,7 @@
                                                                 }
                                                                 <li class="nav-item">
                                                                     <a class="nav-link @isAllActive"
-                                                                       href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")">All</a>
+                                                                       href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=&SelectedBAMainStatusTab=@Model.SelectedBAMainStatusTab&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")">All</a>
                                                                 </li>
                                                             </ul>
 
@@ -404,6 +428,10 @@
                                                                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("CategoryName")" />
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -428,6 +456,10 @@
                                                                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("FundCode")" />
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -449,6 +481,10 @@
                                                                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("ProgramCode")" />
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -467,6 +503,10 @@
                                                                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("ClassCode")" />
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -488,6 +528,10 @@
                                                                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("BudgetCode")" />
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -506,6 +550,10 @@
                                                                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("PositionNumber")" />
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -524,6 +572,10 @@
                                                                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("AmountIncrease")" />
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -542,6 +594,10 @@
                                                                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("AmountDecrease")" />
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -563,6 +619,11 @@
                                                                                         <input type="hidden" name="order" value="@Model.SortOrderForColumn("CreatedBy")" />
                                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -621,6 +682,11 @@
                                                                                         <input type="hidden" name="order" value="@Model.SortOrderForColumn("EditedBy")" />
                                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -679,6 +745,11 @@
                                                                                         <input type="hidden" name="order" value="@Model.SortOrderForColumn("UpdatedBy")" />
                                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -824,6 +895,12 @@
                                                                                             <div class="d-flex justify-content-evenly gap-2">
                                                                                                 <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                                 <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                                <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                                 <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                                 <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                                 <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -898,6 +975,13 @@
                                                                                                     <form method="post" asp-page-handler="EditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
                                                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                                <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -909,6 +993,13 @@
                                                                                                     <form method="post" asp-page-handler="DeleteAmendment" asp-route-id="@amendment.BudgetAmendmentID">
                                                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                                <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -933,7 +1024,7 @@
                                                                 <div class="d-flex align-items-center">
                                                                     <label for="resultsPerPage" class="me-2">Results per page:</label>
                                                                     <select id="resultsPerPage" class="form-select me-3" style="width: auto;"
-                                                                            onchange="window.location.href = '?amendmentPageNumber=1&amendmentsPerPage=' + this.value + '&SelectedDepartmentID=@Model.SelectedDepartmentID&SelectedStatusTab=@Model.SelectedStatusTab&SelectedBudgetAmendmentMainID=@Model.SelectedBudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")'">
+                                                                            onchange="window.location.href = '?amendmentPageNumber=1&amendmentsPerPage=' + this.value + '&SelectedDepartmentID=@Model.SelectedDepartmentID&SelectedStatusTab=@Model.SelectedStatusTab&SelectedBAMainStatusTab=@Model.SelectedBAMainStatusTab&SelectedBudgetAmendmentMainID=@Model.SelectedBudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")'">
                                                                         @foreach (var size in Model.PageSizes)
                                                                         {
                                                                             <option value="@size" selected="@(Model.BudgetAmendmentResultsPerPage == size ? "selected" : null)">@size</option>
@@ -946,7 +1037,7 @@
                                                                 <span>Records: @amendmentRecordsShown of @Model.TotalBudgetAmendments</span>
                                                                 <ul class="pagination mb-0">
                                                                     <li class="page-item @(Model.BudgetAmendmentCurrentPage <= 1 ? "disabled" : "")">
-                                                                        <a class="page-link" href="?amendmentPageNumber=@(Model.BudgetAmendmentCurrentPage - 1)&amendmentsPerPage=@Model.BudgetAmendmentResultsPerPage&SelectedDepartmentID=@Model.SelectedDepartmentID&SelectedStatusTab=@Model.SelectedStatusTab&SelectedBudgetAmendmentMainID=@Model.SelectedBudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")"
+                                                                        <a class="page-link" href="?amendmentPageNumber=@(Model.BudgetAmendmentCurrentPage - 1)&amendmentsPerPage=@Model.BudgetAmendmentResultsPerPage&SelectedDepartmentID=@Model.SelectedDepartmentID&SelectedStatusTab=@Model.SelectedStatusTab&SelectedBAMainStatusTab=@Model.SelectedBAMainStatusTab&SelectedBudgetAmendmentMainID=@Model.SelectedBudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")"
                                                                            aria-label="Previous">
                                                                             <span aria-hidden="true">&laquo;</span>
                                                                         </a>
@@ -955,7 +1046,7 @@
                                                                         <span class="page-link">@Model.BudgetAmendmentCurrentPage</span>
                                                                     </li>
                                                                     <li class="page-item @(Model.BudgetAmendmentCurrentPage >= Model.BudgetAmendmentTotalPages ? "disabled" : "")">
-                                                                        <a class="page-link" href="?amendmentPageNumber=@(Model.BudgetAmendmentCurrentPage + 1)&amendmentsPerPage=@Model.BudgetAmendmentResultsPerPage&SelectedDepartmentID=@Model.SelectedDepartmentID&SelectedStatusTab=@Model.SelectedStatusTab&SelectedBudgetAmendmentMainID=@Model.SelectedBudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")"
+                                                                        <a class="page-link" href="?amendmentPageNumber=@(Model.BudgetAmendmentCurrentPage + 1)&amendmentsPerPage=@Model.BudgetAmendmentResultsPerPage&SelectedDepartmentID=@Model.SelectedDepartmentID&SelectedStatusTab=@Model.SelectedStatusTab&SelectedBAMainStatusTab=@Model.SelectedBAMainStatusTab&SelectedBudgetAmendmentMainID=@Model.SelectedBudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")"
                                                                            aria-label="Next">
                                                                             <span aria-hidden="true">&raquo;</span>
                                                                         </a>
@@ -984,7 +1075,9 @@
                 </form>
             }
 
- 
+            </div>
+
+
         </div>
     </div>
 
@@ -1069,6 +1162,7 @@
                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                         <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
@@ -1280,24 +1374,3 @@
         }
 </style>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('#baMainStatusTabs .nav-link').forEach(function (tab) {
-            tab.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelectorAll('#baMainStatusTabs .nav-link').forEach(function (t) {
-                    t.classList.remove('active');
-                });
-                this.classList.add('active');
-                var filter = this.getAttribute('data-ba-filter');
-                document.querySelectorAll('#budgetAmendmentsAccordion > .accordion-item').forEach(function (item) {
-                    if (filter === 'all' || item.getAttribute('data-ba-main-status') === filter) {
-                        item.style.display = '';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-            });
-        });
-    });
-</script>
