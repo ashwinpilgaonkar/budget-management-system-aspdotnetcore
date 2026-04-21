@@ -150,7 +150,7 @@
                                 if (Model.EditingSpeedTypeID == speedType.SpeedTypeId)
                                 {
                                     <tr>
-                                        <form method="post" asp-page-handler="SaveSpeedType" asp-route-id="@speedType.SpeedTypeId">
+                                        <form method="post" asp-route-id="@speedType.SpeedTypeId">
                                         <td>@index</td>
                                         <td><input asp-for="NewSpeedType.Code" value="@speedType.Code" class="form-control" /></td>
                                         <td><input asp-for="NewSpeedType.Budget" value="@speedType.Budget" class="form-control" /></td>
@@ -159,10 +159,8 @@
                                         <td><input asp-for="NewSpeedType.ClassCode" value="@speedType.ClassCode" class="form-control" /></td>
                                         <td>
                                             <div class="d-flex justify-content-evenly">
-                                                <button type="submit" class="btn btn-success">Save</button>
-                                                <form method="post" asp-page-handler="CancelEditSpeedType" asp-route-id="@speedType.SpeedTypeId">
-                                                    <button type="submit" class="btn btn-secondary">Cancel</button>
-                                                </form>
+                                                <button type="submit" asp-page-handler="SaveSpeedType" asp-route-id="@speedType.SpeedTypeId" class="btn btn-success" onclick="return confirm('Save changes to this speed type?')">Save</button>
+                                                <button type="submit" asp-page-handler="CancelEditSpeedType" asp-route-id="@speedType.SpeedTypeId" class="btn btn-secondary" onclick="return confirm('Cancel editing? Unsaved changes will be lost.')">Cancel</button>
                                             </div>
                                         </td>
                                         </form>

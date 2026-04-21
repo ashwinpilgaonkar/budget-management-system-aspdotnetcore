@@ -180,12 +180,6 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!_authService.IsAuthenticated(HttpContext))
                 return RedirectToPage("/Login");
 
-            if (!ModelState.IsValid)
-            {
-                await LoadFormDataAsync();
-                return Page();
-            }
-
             NewUser.Password = BCrypt.Net.BCrypt.HashPassword(NewUser.Password);
 
             NewUser.DepartmentsResponsibleFor = await _context.Departments
@@ -234,12 +228,6 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             if (!_authService.IsAuthenticated(HttpContext))
                 return RedirectToPage("/Login");
-
-            if (!ModelState.IsValid)
-            {
-                await LoadFormDataAsync();
-                return Page();
-            }
 
             var user = await _context.Users
                 .Include(u => u.DepartmentsResponsibleFor)

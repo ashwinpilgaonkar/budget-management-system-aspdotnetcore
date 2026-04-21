@@ -89,7 +89,8 @@
                                 if (Model.EditingDepartmentID == dept.DepartmentID)
                                 {
                                     <tr>
-                                        <form method="post" asp-page-handler="SaveDepartment" asp-route-id="@dept.DepartmentID">
+                                        <form method="post" asp-route-id="@dept.DepartmentID">
+                                        <input type="hidden" asp-for="NewDepartment.DepartmentID" value="@dept.DepartmentID" />
                                         <td>@index</td>
                                         <td><input asp-for="NewDepartment.DepartmentName" value="@dept.DepartmentName" class="form-control" /></td>
                                         <td>
@@ -112,10 +113,8 @@
                                         </td>
                                         <td>
                                             <div class="d-flex justify-content-evenly">
-                                                <button type="submit" class="btn btn-success">Save</button>
-                                                <form method="post" asp-page-handler="CancelEditDepartment" asp-route-id="@dept.DepartmentID">
-                                                    <button type="submit" class="btn btn-secondary">Cancel</button>
-                                                </form>
+                                                <button type="submit" asp-page-handler="SaveDepartment" asp-route-id="@dept.DepartmentID" class="btn btn-success" onclick="return confirm('//Are you sure you want to save these changes?')">Save</button>
+                                                <button type="submit" asp-page-handler="CancelEditDepartment" asp-route-id="@dept.DepartmentID" class="btn btn-secondary" onclick="return confirm('Are you sure you want to cancel editing? Unsaved changes will be lost.')">Cancel</button>
                                             </div>
                                         </td>
                                         </form>

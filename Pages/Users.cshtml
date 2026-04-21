@@ -125,6 +125,7 @@
                                     <!-- Editing row (no modal) -->
                                     <tr>
                                         <form method="post" asp-route-id="@user.UserId">
+                                            <input type="hidden" asp-for="NewUser.UserId" value="@user.UserId" />
                                             <td>@index</td>
                                             <td><input asp-for="NewUser.Email" value="@user.Email" class="form-control" /></td>
                                             <td><input asp-for="NewUser.FirstName" value="@user.FirstName" class="form-control" /></td>
@@ -153,8 +154,8 @@
                                             </td>
                                                 <td>
                                                 <div class="d-flex justify-content-evenly">
-                                                    <button type="submit" asp-page-handler="SaveUser" class="btn btn-success">Save</button>
-                                                    <button type="submit" asp-page-handler="CancelEditUser" class="btn btn-secondary">Cancel</button>
+                                                    <button type="submit" asp-page-handler="SaveUser" asp-route-id="@user.UserId" class="btn btn-success" onclick="return confirm('Save changes to this user?')">Save</button>
+                                                    <button type="submit" asp-page-handler="CancelEditUser" asp-route-id="@user.UserId" class="btn btn-secondary" onclick="return confirm('Cancel editing? Unsaved changes will be lost.')">Cancel</button>
                                                 </div>
                                             </td>
                                         </form>

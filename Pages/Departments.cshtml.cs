@@ -162,12 +162,6 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!_authService.IsAuthenticated(HttpContext))
                 return RedirectToPage("/Login");
 
-            if (!ModelState.IsValid)
-            {
-                await LoadFormDataAsync();
-                return Page();
-            }
-
             _context.Departments.Add(NewDepartment);
             await _context.SaveChangesAsync();
 
@@ -223,12 +217,6 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             if (!_authService.IsAuthenticated(HttpContext))
                 return RedirectToPage("/Login");
-
-            if (!ModelState.IsValid)
-            {
-                await LoadFormDataAsync();
-                return Page();
-            }
 
             var department = await _context.Departments
                 .Include(d => d.DepartmentSpeedTypes)
