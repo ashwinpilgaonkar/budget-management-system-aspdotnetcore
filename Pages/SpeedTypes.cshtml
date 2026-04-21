@@ -1,11 +1,13 @@
-﻿@page "/speedtypes"
+@page "/speedtypes"
 @model SpeedTypesModel
 @{
     ViewData["Title"] = "SpeedTypes";
 }
 
 <div class="container">
-    
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9">
     <!-- SpeedType List Card -->
     <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
         <div class="card-body">
@@ -37,6 +39,9 @@
                                     <input type="hidden" name="table" value="SpeedType" />
                                     <input type="hidden" name="column" value="Code" />
                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("Code")" />
+                                    <input type="hidden" name="speedTypePageNumber" value="@Model.SpeedTypeCurrentPage" />
+                                    <input type="hidden" name="speedTypesPerPage" value="@Model.SpeedTypeResultsPerPage" />
+                                    <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("Code")"></i>
                                     </button>
@@ -49,6 +54,9 @@
                                     <input type="hidden" name="table" value="SpeedType" />
                                     <input type="hidden" name="column" value="Budget" />
                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("Budget")" />
+                                    <input type="hidden" name="speedTypePageNumber" value="@Model.SpeedTypeCurrentPage" />
+                                    <input type="hidden" name="speedTypesPerPage" value="@Model.SpeedTypeResultsPerPage" />
+                                    <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("Budget")"></i>
                                     </button>
@@ -80,6 +88,7 @@
                                         </form>
                                     </div>
                                 </div>
+                            </th>
 
                             <th>
                                 Fund Code
@@ -88,6 +97,9 @@
                                     <input type="hidden" name="table" value="SpeedType" />
                                     <input type="hidden" name="column" value="FundCode" />
                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("FundCode")" />
+                                    <input type="hidden" name="speedTypePageNumber" value="@Model.SpeedTypeCurrentPage" />
+                                    <input type="hidden" name="speedTypesPerPage" value="@Model.SpeedTypeResultsPerPage" />
+                                    <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("FundCode")"></i>
                                     </button>
@@ -101,6 +113,9 @@
                                     <input type="hidden" name="table" value="SpeedType" />
                                     <input type="hidden" name="column" value="ProgramCode" />
                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("ProgramCode")" />
+                                    <input type="hidden" name="speedTypePageNumber" value="@Model.SpeedTypeCurrentPage" />
+                                    <input type="hidden" name="speedTypesPerPage" value="@Model.SpeedTypeResultsPerPage" />
+                                    <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("ProgramCode")"></i>
                                     </button>
@@ -114,13 +129,15 @@
                                     <input type="hidden" name="table" value="SpeedType" />
                                     <input type="hidden" name="column" value="ClassCode" />
                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("ClassCode")" />
+                                    <input type="hidden" name="speedTypePageNumber" value="@Model.SpeedTypeCurrentPage" />
+                                    <input type="hidden" name="speedTypesPerPage" value="@Model.SpeedTypeResultsPerPage" />
+                                    <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("ClassCode")"></i>
                                     </button>
                                 </form>
                             </th>
 
-                            </th>
                             <th colspan="2">Actions</th>
                         </tr>
                     </thead>
@@ -157,16 +174,17 @@
                                     <tr>
                                         <td>@index</td>
                                         <td>@speedType.Code</td>
-                                        <td>@speedType.Budget</td>
+                                        <td>$@speedType.Budget.ToString("N2")</td>
                                         <td>@speedType.FundCode</td>
                                         <td>@speedType.ProgramCode</td>
                                         <td>@speedType.ClassCode</td>
                                         <td>
-                                            <div class="d-flex justify-content-evenly">
-                                                <form method="post" asp-page-handler="EditSpeedType" asp-route-id="@speedType.SpeedTypeId" class="me-2">
+                                            <div class="d-flex justify-content-evenly gap-3">
+                                                <form method="post" asp-page-handler="EditSpeedType" asp-route-id="@speedType.SpeedTypeId">
                                                     <button type="submit" class="btn btn-outline-secondary">Edit</button>
                                                 </form>
-                                                <form method="post" asp-page-handler="DeleteSpeedType" asp-route-id="@speedType.SpeedTypeId">
+                                                <form method="post" asp-page-handler="DeleteSpeedType" asp-route-id="@speedType.SpeedTypeId"
+                                                      onsubmit="return confirm('Delete speed type \'@speedType.Code\'? This cannot be undone.')">
                                                     <button type="submit" class="btn btn-outline-danger">Delete</button>
                                                 </form>
                                             </div>
@@ -180,11 +198,11 @@
                         else
                         {
                         <tr>
-                            <td colspan="23" class="text-center py-5">
+                            <td colspan="8" class="text-center py-5">
                                 <div class="py-5">
                                     <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                                     <p class="text-muted mb-0">No records found</p>
-                                    <small class="text-muted">Click the Add New + button to create a new user</small>
+                                    <small class="text-muted">Click the Add New + button to create a new speed type</small>
                                 </div>
                             </td>
                         </tr>
@@ -233,6 +251,9 @@
                     </button>
                 </form>
             }
+
+        </div>
+    </div>
 
         </div>
     </div>

@@ -1,0 +1,30 @@
+@model budget_management_system_aspdotnetcore.ViewModels.BAMainTabBarViewModel
+@{
+    var tabs = new[] {
+        (Label: "Pending",  Value: "Pending"),
+        (Label: "Approved", Value: "Approved"),
+        (Label: "Rejected", Value: "Rejected"),
+        (Label: "All",      Value: "")
+    };
+}
+<ul class="nav nav-tabs justify-content-center mb-3">
+    @foreach (var tab in tabs)
+    {
+        var isActive = (string.IsNullOrEmpty(tab.Value) && string.IsNullOrEmpty(Model.SelectedBAMainStatusTab))
+                    || tab.Value == Model.SelectedBAMainStatusTab;
+        var tabCount = Model.TabCounts.GetValueOrDefault(tab.Value, 0);
+        var isAllTab = string.IsNullOrEmpty(tab.Value);
+        var liClass = isAllTab ? "nav-item tab-all-separator" : "nav-item";
+        var badgeClass = isAllTab ? "badge badge-ghost" : "badge bg-secondary ms-1";
+        <li class="@liClass">
+            <a class="nav-link @(isActive ? "active" : "")"
+               href="?SelectedBAMainStatusTab=@tab.Value&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")">
+                @tab.Label
+                @if (tabCount > 0)
+                {
+                    <span class="@badgeClass">@tabCount</span>
+                }
+            </a>
+        </li>
+    }
+</ul>

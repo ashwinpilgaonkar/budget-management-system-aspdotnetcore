@@ -19,48 +19,37 @@
             </div>
 
             <div class="d-flex align-items-end justify-content-between flex-wrap gap-3">
-                <!-- Financial Year Form -->
-                <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
-
-                    <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
-                    <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
-
-                    <div>
-                        <label for="financialYear" class="form-label mb-1">Financial year:</label>
-                        <select class="form-select form-select-sm" id="financialYear" name="SelectedFinancialYear" onchange="toggleDateRange(this.value)">
-                            @foreach (var fy in Model.FinancialYearOptions)
-                            {
-                                <option value="@fy" selected="@(fy == Model.SelectedFinancialYear ? "selected" : null)">@fy</option>
-                            }
-                        </select>
-                    </div>
-
-                    <div class="d-none" id="customDateRange">
-                        <label class="form-label mb-1">From</label>
-                        <input type="date" name="CustomStartDate" class="form-control form-control-sm" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
-                    </div>
-
-                    <div class="d-none" id="customDateRangeTo">
-                        <label class="form-label mb-1">To</label>
-                        <input type="date" name="CustomEndDate" class="form-control form-control-sm" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                    </div>
-
-                    <div>
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Apply</button>
-                    </div>
-                </form>
+                @{
+                    var fyFilterModel = new FinancialYearFilterViewModel
+                    {
+                        FinancialYearOptions = Model.FinancialYearOptions,
+                        SelectedFinancialYear = Model.SelectedFinancialYear,
+                        CustomStartDate = Model.CustomStartDate,
+                        CustomEndDate = Model.CustomEndDate,
+                        HiddenFields = new Dictionary<string, string>
+                        {
+                            ["SelectedDepartmentID"] = Model.SelectedDepartmentID.ToString(),
+                            ["SelectedStatusTab"] = Model.SelectedStatusTab ?? "",
+                            ["SelectedBAMainStatusTab"] = Model.SelectedBAMainStatusTab ?? "",
+                            ["SelectedBudgetAmendmentMainID"] = Model.SelectedBudgetAmendmentMainID?.ToString() ?? ""
+                        }
+                    };
+                }
+                <partial name="_FinancialYearFilter" model="fyFilterModel" />
             </div>
 
 
 
             <!-- Budget Amendments Section -->
             <div class="mb-4">
-                <ul class="nav nav-tabs justify-content-center mb-3">
-                    @{
-                        var baMainTabs = new[] { (Label: "Pending", Value: "Pending"), (Label: "Approved", Value: "Approved"), (Label: "Rejected", Value: "Rejected"), (Label: "All", Value: "") };
-                        var baMainCounts = new Dictionary<string, int>
+                @{
+                    var tabBarModel = new BAMainTabBarViewModel
+                    {
+                        SelectedBAMainStatusTab = Model.SelectedBAMainStatusTab,
+                        SelectedFinancialYear = Model.SelectedFinancialYear,
+                        CustomStartDate = Model.CustomStartDate,
+                        CustomEndDate = Model.CustomEndDate,
+                        TabCounts = new Dictionary<string, int>
                         {
                             [""] = Model.BudgetAmendmentsMainAll.Count,
                             ["Pending"] = Model.BudgetAmendmentsMainAll.Count(bam =>
@@ -72,22 +61,11 @@
                             ["Rejected"] = Model.BudgetAmendmentsMainAll.Count(bam => {
                                 var rel = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
                                 return rel.Any() && rel.All(ba => ba.Status == AmendmentStatus.Rejected);
-                            }),
-                        };
-                    }
-                    @foreach (var tab in baMainTabs)
-                    {
-                        var isTabActive = (string.IsNullOrEmpty(tab.Value) && string.IsNullOrEmpty(Model.SelectedBAMainStatusTab)) || tab.Value == Model.SelectedBAMainStatusTab ? "active" : "";
-                        var tabCount = baMainCounts[tab.Value];
-                        var isAllTab = string.IsNullOrEmpty(tab.Value);
-                        var liClass = isAllTab ? "nav-item tab-all-separator" : "nav-item";
-                        var badgeClass = isAllTab ? "badge badge-ghost" : "badge bg-secondary ms-1";
-                        <li class="@liClass">
-                            <a class="nav-link @isTabActive"
-                               href="?SelectedBAMainStatusTab=@tab.Value&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")">@tab.Label@if (tabCount > 0) { <span class="@badgeClass">@tabCount</span> }</a>
-                        </li>
-                    }
-                </ul>
+                            })
+                        }
+                    };
+                }
+                <partial name="_BAMainTabBar" model="tabBarModel" />
 
             @if (!Model.BudgetAmendmentsMain.Any())
             {
@@ -133,51 +111,7 @@
                                             aria-expanded="@(isFirstLoadDefault ? "true" : "false")"
                                             aria-controls="collapseBA@(amendmentIndex)">
                                         <div class="d-flex justify-content-between w-100 align-items-center">
-                                            <div class="ba-acc-left">
-                                                <span class="ba-acc-title">@amendmentmain.Name</span>
-                                                <div class="ba-acc-divider"></div>
-                                                <div class="ba-acc-dates">
-                                                    <div class="ba-acc-date-block">
-                                                        <span class="ba-acc-date-lbl">Start date</span>
-                                                        <span class="ba-acc-date-val">
-                                                            @amendmentmain.StartDate.ToString("MM/dd/yyyy")
-                                                        </span>
-                                                    </div>
-                                                    <div class="ba-acc-date-block">
-                                                        <span class="ba-acc-date-lbl">End date</span>
-                                                        <span class="ba-acc-date-val">
-                                                            @amendmentmain.EndDate.ToString("MM/dd/yyyy")
-                                                        </span>
-                                                    </div>
-                                                    @if (amendmentmain.ExtendedDeadline.Date != amendmentmain.EndDate.Date)
-                                                    {
-                                                        <div class="ba-acc-date-block">
-                                                            <span class="ba-acc-date-lbl">Extended until</span>
-                                                            <span class="ba-acc-date-val ba-extended-date-val">
-                                                                @amendmentmain.ExtendedDeadline.ToString("MM/dd/yyyy")
-                                                            </span>
-                                                        </div>
-                                                    }
-                                                </div>
-                                                @{
-                                                    var daysRemaining = (int)(amendmentmain.ExtendedDeadline.Date - DateTime.Today).TotalDays;
-                                                    var isOverdue = daysRemaining < 0;
-                                                    var isPendingOrRejected = baMainStatus == "Pending" || baMainStatus == "Rejected";
-
-                                                    var dayPillClass = daysRemaining > 14                 ? "ba-days-ok"
-                                                                     : daysRemaining > 7                  ? "ba-days-warn"
-                                                                     : daysRemaining > 0                  ? "ba-days-urgent"
-                                                                     : daysRemaining == 0                 ? "ba-days-today"
-                                                                     : (isOverdue && isPendingOrRejected) ? "ba-days-overdue"
-                                                                     : "ba-days-passed";
-                                                    var dayPillText = daysRemaining > 0                   ? $"{daysRemaining}d left"
-                                                                    : daysRemaining == 0                  ? "Due today"
-                                                                    : (isOverdue && isPendingOrRejected)  ? $"{Math.Abs(daysRemaining)}d overdue"
-                                                                    : "Deadline passed";
-                                                }
-                                                <div class="ba-acc-divider"></div>
-                                                <span class="ba-days-pill @dayPillClass">@dayPillText</span>
-                                            </div>
+                                            <partial name="_BAMainHeader" model="new BAMainHeaderViewModel { Record = amendmentmain, Status = baMainStatus }" />
 
                                             @{
                                                 var relatedAmendments = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID).ToList();
@@ -1257,11 +1191,6 @@
         });
     });
 
-    function toggleDateRange(selectedValue) {
-        const isCustom = selectedValue === "Custom";
-        document.getElementById("customDateRange").classList.toggle("d-none", !isCustom);
-        document.getElementById("customDateRangeTo").classList.toggle("d-none", !isCustom);
-    }
 
     document.addEventListener("DOMContentLoaded", function () {
         toggleDateRange(document.getElementById("financialYear").value);

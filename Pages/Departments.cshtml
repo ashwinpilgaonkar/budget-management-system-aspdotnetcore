@@ -1,4 +1,4 @@
-﻿@page "/departments"
+@page "/departments"
 @model DepartmentsModel
 @{
     ViewData["Title"] = "Departments";
@@ -6,6 +6,8 @@
 
 <div class="container">
 
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
     <!-- Department List Card -->
     <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
         <div class="card-body">
@@ -37,6 +39,9 @@
                                     <input type="hidden" name="table" value="Department" />
                                     <input type="hidden" name="column" value="DepartmentName" />
                                     <input type="hidden" name="order" value="@Model.SortOrderForColumn("DepartmentName")" />
+                                    <input type="hidden" name="departmentPageNumber" value="@Model.DepartmentCurrentPage" />
+                                    <input type="hidden" name="departmentResultsPerPage" value="@Model.DepartmentResultsPerPage" />
+                                    <input type="hidden" name="DepartmentSearchTerm" value="@Model.DepartmentSearchTerm" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("DepartmentName")"></i>
                                     </button>
@@ -87,23 +92,13 @@
                                         <form method="post" asp-page-handler="SaveDepartment" asp-route-id="@dept.DepartmentID">
                                         <td><input asp-for="NewDepartment.DepartmentID" value="@dept.DepartmentID" class="form-control" readonly /></td>
                                         <td><input asp-for="NewDepartment.DepartmentName" value="@dept.DepartmentName" class="form-control" /></td>
-                                        @*                                         <td>
-                                            <select asp-for="SelectedSpeedTypeIds" name="SelectedSpeedTypeIds" class="selectpicker w-100" multiple data-live-search="true">
-                                                @foreach (var speedtype in Model.SpeedTypes)
-                                                {
-                                                    var isSelected = Model.SelectedSpeedTypeIds.Contains(speedtype.SpeedTypeId) ? "selected" : "";
-                                                    <option value="@speedtype.SpeedTypeId" isSelected data-tokens="@speedtype.Code">
-                                                            @speedtype.Code
-                                                    </option>
-                                                }
-                                            </select>
-                                        </td> *@
                                         <td>
-                                            <select asp-for="SelectedSpeedTypeIds" class="form-control w-100" multiple data-live-search="true">
+                                            <select asp-for="SelectedSpeedTypeIds" class="selectpicker w-100" multiple data-live-search="true" title="Select speed types">
                                                 @foreach (var speedtype in Model.SpeedTypes)
                                                 {
-                                                    var isSelected = Model.SelectedSpeedTypeIds.Contains(speedtype.SpeedTypeId) ? "selected" : "";
-                                                    <option value="@speedtype.SpeedTypeId" isSelected data-tokens="@speedtype.Code">
+                                                    <option value="@speedtype.SpeedTypeId"
+                                                            selected="@(Model.SelectedSpeedTypeIds.Contains(speedtype.SpeedTypeId) ? "selected" : null)"
+                                                            data-tokens="@speedtype.Code">
                                                         @speedtype.Code
                                                     </option>
                                                 }
@@ -112,7 +107,7 @@
                                         <td>
                                             @foreach (var deptSpeedType in dept.DepartmentSpeedTypes)
                                             {
-                                                <p>@deptSpeedType.SpeedType.Budget</p>
+                                                <p>$@deptSpeedType.SpeedType.Budget.ToString("N2")</p>
                                             }
                                         </td>
                                         <td>
@@ -140,15 +135,16 @@
                                         <td>
                                             @foreach (var deptSpeedType in dept.DepartmentSpeedTypes)
                                             {
-                                                <p>@deptSpeedType.SpeedType.Budget</p>
+                                                <p>$@deptSpeedType.SpeedType.Budget.ToString("N2")</p>
                                             }
                                         </td>
                                         <td>
-                                            <div class="d-flex justify-content-evenly">
+                                            <div class="d-flex justify-content-evenly gap-3">
                                                 <form method="post" asp-page-handler="EditDepartment" asp-route-id="@dept.DepartmentID">
                                                     <button type="submit" class="btn btn-outline-secondary">Edit</button>
                                                 </form>
-                                                <form method="post" asp-page-handler="DeleteDepartment" asp-route-id="@dept.DepartmentID">
+                                                <form method="post" asp-page-handler="DeleteDepartment" asp-route-id="@dept.DepartmentID"
+                                                      onsubmit="return confirm('Delete department \'@dept.DepartmentName\'? This cannot be undone.')">
                                                     <button type="submit" class="btn btn-outline-danger">Delete</button>
                                                 </form>
                                             </div>
@@ -162,7 +158,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="23" class="text-center py-5">
+                                <td colspan="6" class="text-center py-5">
                                     <div class="py-5">
                                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                                         <p class="text-muted mb-0">No records found</p>
@@ -219,6 +215,9 @@
         </div>
     </div>
 
+        </div>
+    </div>
+
     <!-- Add Department Modal -->
     <div class="modal fade" id="addDepartmentModal" tabindex="-1" aria-labelledby="addDepartmentModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -236,11 +235,10 @@
                         </div>
                         <div class="mb-3 d-flex flex-column">
                             <label asp-for="SelectedSpeedTypeIds" class="form-label">SpeedTypes</label>
-                            <select asp-for="SelectedSpeedTypeIds" class="selectpicker w-100" multiple data-live-search="true">
+                            <select asp-for="SelectedSpeedTypeIds" class="selectpicker w-100" multiple data-live-search="true" title="Select speed types">
                                 @foreach (var speedtype in Model.SpeedTypes)
                                 {
-                                    var isSelected = Model.SelectedSpeedTypeIds.Contains(speedtype.SpeedTypeId) ? "selected" : "";
-                                    <option value="@speedtype.SpeedTypeId" isSelected data-tokens="@speedtype.Code">
+                                    <option value="@speedtype.SpeedTypeId" data-tokens="@speedtype.Code">
                                         @speedtype.Code
                                     </option>
                                 }

@@ -4,7 +4,6 @@ using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
@@ -19,9 +18,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         private readonly IAuthenticationService _authService = authService;
 
         public string userRole { get; set; } = "";
-        public string ActiveSortTable { get; set; } = "Employee";
+        public string ActiveSortTable { get; set; } = "SpeedType";
 
-        public string SortColumn { get; set; } = "EmployeeID";
+        public string SortColumn { get; set; } = "Code";
         public string SortOrder { get; set; } = "asc";
         public List<int> PageSizes { get; set; } = new List<int> { 10, 20, 30 };
         #endregion
@@ -48,15 +47,11 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public int TotalSpeedTypes { get; set; }
 
-        public int SpeedTypeEmployees { get; set; }
-        public List<int> SelectedSpeedTypeIds { get; set; } = new List<int>();
-
         [BindProperty(SupportsGet = true)]
         public decimal? SpeedTypeMinBudget { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public decimal? SpeedTypeMaxBudget { get; set; }
-
         #endregion
 
 
@@ -68,9 +63,6 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             userRole = _authService.GetUserRole(HttpContext);
 
-            // ==============================================
-            //                 SPEEDTYPE DATA
-            // ==============================================
             var speedTypeQuery = _context.SpeedTypes.AsQueryable();
 
             if (!string.IsNullOrEmpty(SpeedTypeSearchTerm))
@@ -96,7 +88,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                 speedTypeQuery = speedTypeQuery.Where(s => s.Budget <= SpeedTypeMaxBudget.Value);
             }
 
-
             TotalSpeedTypes = await speedTypeQuery.CountAsync();
             SpeedTypeTotalPages = (int)Math.Ceiling(TotalSpeedTypes / (double)SpeedTypeResultsPerPage);
 
@@ -108,10 +99,10 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnGetAsync(
             int speedTypePageNumber = 1,
-            int speedTypeResultsPerPage = 10)
+            int speedTypesPerPage = 10)
         {
             SpeedTypeCurrentPage = speedTypePageNumber;
-            SpeedTypeResultsPerPage = speedTypeResultsPerPage;
+            SpeedTypeResultsPerPage = speedTypesPerPage;
 
             if (!_authService.IsAuthenticated(HttpContext))
             {
@@ -122,8 +113,11 @@ namespace budget_management_system_aspdotnetcore.Pages
             return Page();
         }
 
-        public async Task OnGetSortColumn(string table, string column, string order)
+        public async Task OnGetSortColumn(string table, string column, string order,
+            int speedTypePageNumber = 1, int speedTypesPerPage = 10)
         {
+            SpeedTypeCurrentPage = speedTypePageNumber;
+            SpeedTypeResultsPerPage = speedTypesPerPage;
             ActiveSortTable = table;
             SortColumn = column;
             SortOrder = order;
@@ -152,23 +146,26 @@ namespace budget_management_system_aspdotnetcore.Pages
         #region SPEEDTYPE METHODS
         public async Task<IActionResult> OnPostAddSpeedTypeAsync()
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             if (!ModelState.IsValid)
             {
-                /*                Employees = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
-                                Departments = await _context.Departments.ToListAsync();
-                                SpeedTypes = await _context.SpeedTypes.ToListAsync();  // Re-fetch speedtypes to display on the page
-                                BudgetAmendments = await _context.BudgetAmendments.ToListAsync();
-                                return Page();*/
+                await LoadFormDataAsync();
+                return Page();
             }
 
             _context.SpeedTypes.Add(NewSpeedType);
             await _context.SaveChangesAsync();
-            await LoadFormDataAsync();
+            TempData["SuccessMessage"] = $"Speed type \"{NewSpeedType.Code}\" added successfully.";
             return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostEditSpeedTypeAsync(int id)
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             EditingSpeedTypeID = id;
             await LoadFormDataAsync();
             return Page();
@@ -176,6 +173,9 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostCancelEditSpeedTypeAsync(int id)
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             EditingSpeedTypeID = 0;
             await LoadFormDataAsync();
             return Page();
@@ -183,18 +183,19 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostSaveSpeedTypeAsync()
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             if (!ModelState.IsValid)
             {
-                /* Employees = await _context.Employees.ToListAsync();
-                   SpeedTypes = await _context.SpeedTypes.ToListAsync();
-                   return Page(); */
+                await LoadFormDataAsync();
+                return Page();
             }
 
             var speedType = await _context.SpeedTypes.FindAsync(NewSpeedType.SpeedTypeId);
 
             if (speedType != null)
             {
-                speedType.SpeedTypeId = NewSpeedType.SpeedTypeId;
                 speedType.Code = NewSpeedType.Code;
                 speedType.Budget = NewSpeedType.Budget;
                 speedType.FundCode = NewSpeedType.FundCode;
@@ -202,14 +203,17 @@ namespace budget_management_system_aspdotnetcore.Pages
                 speedType.ClassCode = NewSpeedType.ClassCode;
 
                 await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"Speed type \"{speedType.Code}\" updated successfully.";
             }
 
-            await LoadFormDataAsync();
             return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostDeleteSpeedTypeAsync(int id)
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             var speedType = await _context.SpeedTypes.FindAsync(id);
 
             if (speedType == null)
@@ -217,9 +221,9 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return NotFound();
             }
 
+            TempData["SuccessMessage"] = $"Speed type \"{speedType.Code}\" deleted.";
             _context.SpeedTypes.Remove(speedType);
             await _context.SaveChangesAsync();
-            await LoadFormDataAsync();
             return RedirectToPage();
         }
 

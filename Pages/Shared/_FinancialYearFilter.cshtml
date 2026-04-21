@@ -1,0 +1,27 @@
+@model budget_management_system_aspdotnetcore.ViewModels.FinancialYearFilterViewModel
+<form method="get" class="d-flex align-items-end gap-3 flex-wrap">
+    @foreach (var field in Model.HiddenFields)
+    {
+        <input type="hidden" name="@field.Key" value="@field.Value" />
+    }
+    <div>
+        <label for="financialYear" class="form-label mb-1">Financial year:</label>
+        <select class="form-select form-select-sm" id="financialYear" name="SelectedFinancialYear" onchange="toggleDateRange(this.value)">
+            @foreach (var fy in Model.FinancialYearOptions)
+            {
+                <option value="@fy" selected="@(fy == Model.SelectedFinancialYear ? "selected" : null)">@fy</option>
+            }
+        </select>
+    </div>
+    <div class="d-none" id="customDateRange">
+        <label class="form-label mb-1">From</label>
+        <input type="date" name="CustomStartDate" class="form-control form-control-sm" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="d-none" id="customDateRangeTo">
+        <label class="form-label mb-1">To</label>
+        <input type="date" name="CustomEndDate" class="form-control form-control-sm" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div>
+        <button type="submit" class="btn btn-sm btn-outline-primary">Apply</button>
+    </div>
+</form>

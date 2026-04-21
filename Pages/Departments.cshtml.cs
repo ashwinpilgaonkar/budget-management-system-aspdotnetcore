@@ -4,7 +4,6 @@ using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
@@ -19,9 +18,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         private readonly IAuthenticationService _authService = authService;
 
         public string userRole { get; set; } = "";
-        public string ActiveSortTable { get; set; } = "Employee";
+        public string ActiveSortTable { get; set; } = "Department";
 
-        public string SortColumn { get; set; } = "EmployeeID";
+        public string SortColumn { get; set; } = "DepartmentName";
         public string SortOrder { get; set; } = "asc";
         public List<int> PageSizes { get; set; } = new List<int> { 10, 20, 30 };
         #endregion
@@ -54,8 +53,6 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public int TotalDepartments { get; set; }
 
-        public int DepartmentEmployees { get; set; }
-
         [BindProperty(SupportsGet = true)]
         public decimal? DepartmentMinBudget { get; set; }
 
@@ -72,9 +69,6 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             userRole = _authService.GetUserRole(HttpContext);
 
-            // ==============================================
-            //                DEPARTMENT DATA
-            // ==============================================
             var departmentQuery = _context.Departments.AsQueryable();
 
             if (!string.IsNullOrEmpty(DepartmentSearchTerm))
@@ -113,20 +107,13 @@ namespace budget_management_system_aspdotnetcore.Pages
                 .Take(DepartmentResultsPerPage)
                 .ToListAsync();
 
-            Debug.WriteLine("=========HERE2===========");
-            Debug.WriteLine(DepartmentResultsPerPage);
-            Debug.WriteLine(DepartmentCurrentPage);
-
-            var speedTypeQuery = _context.SpeedTypes.AsQueryable();
-            SpeedTypes = await speedTypeQuery.ToListAsync();
-
+            SpeedTypes = await _context.SpeedTypes.ToListAsync();
         }
 
         public async Task<IActionResult> OnGetAsync(
             int departmentPageNumber = 1,
             int departmentResultsPerPage = 10)
         {
-
             DepartmentCurrentPage = departmentPageNumber;
             DepartmentResultsPerPage = departmentResultsPerPage;
 
@@ -139,8 +126,11 @@ namespace budget_management_system_aspdotnetcore.Pages
             return Page();
         }
 
-        public async Task OnGetSortColumn(string table, string column, string order)
+        public async Task OnGetSortColumn(string table, string column, string order,
+            int departmentPageNumber = 1, int departmentResultsPerPage = 10)
         {
+            DepartmentCurrentPage = departmentPageNumber;
+            DepartmentResultsPerPage = departmentResultsPerPage;
             ActiveSortTable = table;
             SortColumn = column;
             SortOrder = order;
@@ -169,24 +159,13 @@ namespace budget_management_system_aspdotnetcore.Pages
         #region DEPARTMENT METHODS
         public async Task<IActionResult> OnPostAddDepartmentAsync()
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             if (!ModelState.IsValid)
             {
-
-                /*                Debug.WriteLine("======== INVALID ===========");
-
-                                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                                {
-                                    Debug.WriteLine(error.ErrorMessage);
-                                }
-
-
-                                Debug.WriteLine("========  ===========");
-
-                                Employees = await _context.Employees.ToListAsync(); // Re-fetch employees to display on the page
-                                Departments = await _context.Departments.ToListAsync();  // Re-fetch departments to display on the page
-                                SpeedTypes = await _context.SpeedTypes.ToListAsync();
-                                BudgetAmendments = await _context.BudgetAmendments.ToListAsync();
-                                return Page();*/
+                await LoadFormDataAsync();
+                return Page();
             }
 
             _context.Departments.Add(NewDepartment);
@@ -194,22 +173,23 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             foreach (var speedTypeId in SelectedSpeedTypeIds)
             {
-                var departmentSpeedType = new DepartmentSpeedType
+                _context.DepartmentSpeedTypes.Add(new DepartmentSpeedType
                 {
                     DepartmentId = NewDepartment.DepartmentID,
                     SpeedTypeId = speedTypeId
-                };
-
-                _context.DepartmentSpeedTypes.Add(departmentSpeedType);
+                });
             }
 
             await _context.SaveChangesAsync();
-            await LoadFormDataAsync();
+            TempData["SuccessMessage"] = $"Department \"{NewDepartment.DepartmentName}\" added successfully.";
             return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostEditDepartmentAsync(int id)
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             EditingDepartmentID = id;
 
             var department = await _context.Departments
@@ -223,14 +203,17 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
 
             NewDepartment = department;
-
             SelectedSpeedTypeIds = department.DepartmentSpeedTypes.Select(ds => ds.SpeedTypeId).ToList();
+
             await LoadFormDataAsync();
             return Page();
         }
 
         public async Task<IActionResult> OnPostCancelEditDepartmentAsync(int id)
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             EditingDepartmentID = 0;
             await LoadFormDataAsync();
             return Page();
@@ -238,11 +221,13 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostSaveDepartmentAsync()
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             if (!ModelState.IsValid)
             {
-                /*                Employees = await _context.Employees.ToListAsync();
-                                Departments = await _context.Departments.ToListAsync();
-                                return Page();*/
+                await LoadFormDataAsync();
+                return Page();
             }
 
             var department = await _context.Departments
@@ -251,50 +236,30 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             if (department != null)
             {
-                department.DepartmentID = NewDepartment.DepartmentID;
                 department.DepartmentName = NewDepartment.DepartmentName;
-                department.DepartmentSpeedTypes.Clear();
 
+                department.DepartmentSpeedTypes.Clear();
                 foreach (var speedTypeId in SelectedSpeedTypeIds)
                 {
-                    var existingSpeedType = department.DepartmentSpeedTypes
-                        .Any(dst => dst.SpeedTypeId == speedTypeId);
-
-                    if (!existingSpeedType)
+                    department.DepartmentSpeedTypes.Add(new DepartmentSpeedType
                     {
-                        department.DepartmentSpeedTypes.Add(new DepartmentSpeedType
-                        {
-                            DepartmentId = department.DepartmentID,
-                            SpeedTypeId = speedTypeId
-                        });
-                    }
-                    else
-                    {
-                        // TODO Optionally log or handle the case where the SpeedType already exists
-                        // e.g., Debug.WriteLine($"SpeedTypeId {speedTypeId} already exists for department.");
-                    }
+                        DepartmentId = department.DepartmentID,
+                        SpeedTypeId = speedTypeId
+                    });
                 }
 
-                Debug.WriteLine("========HERE in ONPOSTSAVFE || NOT NULL=========");
-
-                Debug.WriteLine(department);
-                Debug.WriteLine(department.DepartmentID);
-                Debug.WriteLine(department.DepartmentName);
-                Debug.WriteLine(department.DepartmentSpeedTypes.Count);
-                Debug.WriteLine(SelectedSpeedTypeIds.Count);
-
                 await _context.SaveChangesAsync();
-            } else
-            {
-                Debug.WriteLine("========HERE in ONPOSTSAVFE || NULL=========");
+                TempData["SuccessMessage"] = $"Department \"{department.DepartmentName}\" updated successfully.";
             }
 
-                await LoadFormDataAsync();
             return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostDeleteDepartmentAsync(int id)
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             var department = await _context.Departments.FindAsync(id);
 
             if (department == null)
@@ -302,9 +267,9 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return NotFound();
             }
 
+            TempData["SuccessMessage"] = $"Department \"{department.DepartmentName}\" deleted.";
             _context.Departments.Remove(department);
             await _context.SaveChangesAsync();
-            await LoadFormDataAsync();
             return RedirectToPage();
         }
 
@@ -330,8 +295,8 @@ namespace budget_management_system_aspdotnetcore.Pages
                 {
                     worksheet.Cell(row, 1).Value = dept.DepartmentID;
                     worksheet.Cell(row, 2).Value = dept.DepartmentName;
-                    worksheet.Cell(row, 3).Value = departmentSpeedType.SpeedType?.Code; // Assuming SpeedType has Code
-                    worksheet.Cell(row, 4).Value = departmentSpeedType.SpeedType?.Budget; // Assuming SpeedType has Budget
+                    worksheet.Cell(row, 3).Value = departmentSpeedType.SpeedType?.Code;
+                    worksheet.Cell(row, 4).Value = departmentSpeedType.SpeedType?.Budget;
                     row++;
                 }
             }

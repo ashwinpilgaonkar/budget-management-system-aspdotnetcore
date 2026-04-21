@@ -20,7 +20,7 @@
     }
 
     <!-- Budget Amendment History Card -->
-    <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
+    <div class="card mb-4 shadow-sm" style="border-radius: 10px; max-width: 960px; margin-left: auto; margin-right: auto;">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
                 <h3 class="page-title">Budget Amendments</h3>
@@ -31,6 +31,41 @@
                         Create New +
                     </button>
                 }
+            </div>
+
+            @{
+                var fyFilterModel = new FinancialYearFilterViewModel
+                {
+                    FinancialYearOptions = Model.FinancialYearOptions,
+                    SelectedFinancialYear = Model.SelectedFinancialYear,
+                    CustomStartDate = Model.CustomStartDate,
+                    CustomEndDate = Model.CustomEndDate
+                };
+                var tabBarModel = new BAMainTabBarViewModel
+                {
+                    SelectedBAMainStatusTab = Model.SelectedBAMainStatusTab,
+                    SelectedFinancialYear = Model.SelectedFinancialYear,
+                    CustomStartDate = Model.CustomStartDate,
+                    CustomEndDate = Model.CustomEndDate,
+                    TabCounts = new Dictionary<string, int>
+                    {
+                        [""] = Model.BudgetAmendmentsMainAll.Count,
+                        ["Pending"] = Model.BudgetAmendmentsMainAll.Count(bam =>
+                            Model.BudgetAmendmentsAll.Any(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID && ba.Status == AmendmentStatus.Pending)),
+                        ["Approved"] = Model.BudgetAmendmentsMainAll.Count(bam => {
+                            var rel = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
+                            return rel.Any() && rel.All(ba => ba.Status == AmendmentStatus.Approved);
+                        }),
+                        ["Rejected"] = Model.BudgetAmendmentsMainAll.Count(bam => {
+                            var rel = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
+                            return rel.Any() && rel.All(ba => ba.Status == AmendmentStatus.Rejected);
+                        })
+                    }
+                };
+            }
+            <partial name="_FinancialYearFilter" model="fyFilterModel" />
+            <div class="mt-3">
+                <partial name="_BAMainTabBar" model="tabBarModel" />
             </div>
 
             @if (!Model.BudgetAmendmentsMain.Any())
@@ -50,25 +85,17 @@
                 @foreach (var amendmentmain in Model.BudgetAmendmentsMain)
                 {
                     var extCount = Model.DeptExtensionCounts.GetValueOrDefault(amendmentmain.BudgetAmendmentMainID, 0);
-                    <div class="d-flex justify-content-between align-items-center px-4 py-4 mb-2" style="border: 1px solid #dee2e6; border-radius: 8px;">
-                        <div class="ba-acc-left">
-                            <span class="ba-acc-title">@amendmentmain.Name</span>
-                            <div class="ba-acc-divider"></div>
-                            <div class="ba-acc-dates">
-                                <div class="ba-acc-date-block">
-                                    <span class="ba-acc-date-lbl">Start date</span>
-                                    <span class="ba-acc-date-val">@amendmentmain.StartDate.ToString("MM/dd/yyyy")</span>
-                                </div>
-                                <div class="ba-acc-date-block">
-                                    <span class="ba-acc-date-lbl">End date</span>
-                                    <span class="ba-acc-date-val">@amendmentmain.ExtendedDeadline.ToString("MM/dd/yyyy")</span>
-                                </div>
-                            </div>
-                            @if (extCount > 0)
-                            {
-                                <span class="badge bg-secondary ms-3">@extCount dept override@(extCount == 1 ? "" : "s")</span>
-                            }
-                        </div>
+                    var baRelated = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID).ToList();
+                    var baMainStatus = baRelated.Any(ba => ba.Status == AmendmentStatus.Pending) ? "Pending"
+                        : (baRelated.Any() && baRelated.All(ba => ba.Status == AmendmentStatus.Approved)) ? "Approved"
+                        : (baRelated.Any() && baRelated.All(ba => ba.Status == AmendmentStatus.Rejected)) ? "Rejected"
+                        : "None";
+                    <div class="d-flex justify-content-between align-items-center px-4 py-4 mb-2" style="border: 1px solid #dee2e6; border-radius: 8px; background-color: #f1f3f5;">
+                        <partial name="_BAMainHeader" model="new BAMainHeaderViewModel { Record = amendmentmain, Status = baMainStatus }" />
+                        @if (extCount > 0)
+                        {
+                            <span class="badge bg-secondary ms-3">@extCount dept override@(extCount == 1 ? "" : "s")</span>
+                        }
                         @if (!String.Equals(userRole, "5"))
                         {
                             <button class="btn btn-outline-secondary me-3"
@@ -194,6 +221,8 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+
+            toggleDateRange(document.getElementById("financialYear").value);
 
             document.getElementById('addBudgetAmendmentForm').addEventListener('submit', function (e) {
                 const startDate = new Date(document.getElementById('startDate').value);

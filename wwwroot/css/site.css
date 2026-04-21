@@ -255,3 +255,14 @@ th form button {
 .accordion-button:not(.collapsed) .inner-chevron {
     transform: rotate(180deg);
 }
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.btn-link {
+    text-decoration: none;
+}
+.btn-link:hover {
+    text-decoration: underline;
+}

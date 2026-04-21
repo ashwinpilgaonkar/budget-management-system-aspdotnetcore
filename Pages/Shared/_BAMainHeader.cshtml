@@ -1,0 +1,44 @@
+@model budget_management_system_aspdotnetcore.ViewModels.BAMainHeaderViewModel
+@using budget_management_system_aspdotnetcore.Entities
+@{
+    var record = Model.Record;
+    var status = Model.Status;
+
+    var daysRemaining = (int)(record.ExtendedDeadline.Date - DateTime.Today).TotalDays;
+    var isOverdue = daysRemaining < 0;
+    var isPendingOrRejected = status == "Pending" || status == "Rejected";
+
+    var dayPillClass = daysRemaining > 14                 ? "ba-days-ok"
+                     : daysRemaining > 7                  ? "ba-days-warn"
+                     : daysRemaining > 0                  ? "ba-days-urgent"
+                     : daysRemaining == 0                 ? "ba-days-today"
+                     : (isOverdue && isPendingOrRejected) ? "ba-days-overdue"
+                     : "ba-days-passed";
+    var dayPillText = daysRemaining > 0                   ? $"{daysRemaining}d left"
+                    : daysRemaining == 0                  ? "Due today"
+                    : (isOverdue && isPendingOrRejected)  ? $"{Math.Abs(daysRemaining)}d overdue"
+                    : "Deadline passed";
+}
+<div class="ba-acc-left">
+    <span class="ba-acc-title">@record.Name</span>
+    <div class="ba-acc-divider"></div>
+    <div class="ba-acc-dates">
+        <div class="ba-acc-date-block">
+            <span class="ba-acc-date-lbl">Start date</span>
+            <span class="ba-acc-date-val">@record.StartDate.ToString("MM/dd/yyyy")</span>
+        </div>
+        <div class="ba-acc-date-block">
+            <span class="ba-acc-date-lbl">End date</span>
+            <span class="ba-acc-date-val">@record.EndDate.ToString("MM/dd/yyyy")</span>
+        </div>
+        @if (record.ExtendedDeadline.Date != record.EndDate.Date)
+        {
+            <div class="ba-acc-date-block">
+                <span class="ba-acc-date-lbl">Extended until</span>
+                <span class="ba-acc-date-val ba-extended-date-val">@record.ExtendedDeadline.ToString("MM/dd/yyyy")</span>
+            </div>
+        }
+    </div>
+    <div class="ba-acc-divider"></div>
+    <span class="ba-days-pill @dayPillClass">@dayPillText</span>
+</div>

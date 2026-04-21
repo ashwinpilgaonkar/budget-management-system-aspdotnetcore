@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using budget_management_system_aspdotnetcore.Services;
+using budget_management_system_aspdotnetcore.Helpers;
 using Department = budget_management_system_aspdotnetcore.Entities.Department;
 
 namespace budget_management_system_aspdotnetcore.Pages
@@ -25,6 +26,8 @@ namespace budget_management_system_aspdotnetcore.Pages
         public string userRole { get; set; } = "";
 
         public List<BudgetAmendmentMain> BudgetAmendmentsMain { get; set; }
+        public List<BudgetAmendmentMain> BudgetAmendmentsMainAll { get; set; }
+        public List<BudgetAmendment> BudgetAmendmentsAll { get; set; }
 
         [BindProperty]
         public BudgetAmendmentMain NewBudgetAmendmentMain { get; set; }
@@ -43,6 +46,20 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public Dictionary<int, int> DeptExtensionCounts { get; set; }
 
+        [BindProperty(SupportsGet = true)]
+        public string? SelectedBAMainStatusTab { get; set; } = "Pending";
+
+        [BindProperty(SupportsGet = true)]
+        public string SelectedFinancialYear { get; set; } = "";
+
+        [BindProperty(SupportsGet = true)]
+        public DateTime? CustomStartDate { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public DateTime? CustomEndDate { get; set; }
+
+        public List<string> FinancialYearOptions => FinancialYearHelper.GetOptions();
+
         public BAEditModel(CasdbtestContext context, SpeedTypeService speedTypeService, UserService userService, IAuthenticationService authService)
         {
             _context = context;
@@ -56,9 +73,39 @@ namespace budget_management_system_aspdotnetcore.Pages
             userRole = _authService.GetUserRole(HttpContext);
             userID = _authService.GetAuthenticatedUserID(HttpContext);
 
+            if (string.IsNullOrEmpty(SelectedFinancialYear) && FinancialYearOptions.Any())
+                SelectedFinancialYear = FinancialYearOptions.First();
+
+            var today = DateTime.Today;
+            int fyStartYear = today.Month >= 7 ? today.Year : today.Year - 1;
+            if (!CustomStartDate.HasValue) CustomStartDate = new DateTime(fyStartYear, 7, 1);
+            if (!CustomEndDate.HasValue) CustomEndDate = new DateTime(fyStartYear + 1, 6, 30);
+
+            var (startDate, endDate) = FinancialYearHelper.GetDateRange(SelectedFinancialYear, CustomStartDate, CustomEndDate);
+
+            BudgetAmendmentsAll = await _context.BudgetAmendments.ToListAsync();
+
             BudgetAmendmentsMain = await _context.BudgetAmendmentMain
-            .OrderByDescending(ba => ba.CreatedAt)
-            .ToListAsync();
+                .Where(ba => ba.ExtendedDeadline >= startDate && ba.ExtendedDeadline <= endDate)
+                .OrderByDescending(ba => ba.CreatedAt)
+                .ToListAsync();
+
+            BudgetAmendmentsMainAll = BudgetAmendmentsMain.ToList();
+
+            if (!string.IsNullOrEmpty(SelectedBAMainStatusTab))
+            {
+                BudgetAmendmentsMain = BudgetAmendmentsMain.Where(bam =>
+                {
+                    var related = BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
+                    return SelectedBAMainStatusTab switch
+                    {
+                        "Pending"  => related.Any(ba => ba.Status == AmendmentStatus.Pending),
+                        "Approved" => related.Any() && related.All(ba => ba.Status == AmendmentStatus.Approved),
+                        "Rejected" => related.Any() && related.All(ba => ba.Status == AmendmentStatus.Rejected),
+                        _          => true
+                    };
+                }).ToList();
+            }
 
             Departments = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
 

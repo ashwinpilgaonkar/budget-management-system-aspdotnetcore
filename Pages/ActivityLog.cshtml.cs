@@ -2,10 +2,7 @@ using budget_management_system_aspdotnetcore.Entities;
 using budget_management_system_aspdotnetcore.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
@@ -23,11 +20,8 @@ namespace budget_management_system_aspdotnetcore.Pages
             _authService = authService;
         }
 
-        public async Task<IActionResult> OnGetAsync(int amendmentPageNumber = 1, int amendmentResultsPerPage = 10)
+        public async Task<IActionResult> OnGetAsync()
         {
-/*            BudgetAmendmentCurrentPage = amendmentPageNumber;
-            BudgetAmendmentResultsPerPage = amendmentResultsPerPage;*/
-
             if (!_authService.IsAuthenticated(HttpContext))
             {
                 return RedirectToPage("/Login");

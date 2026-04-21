@@ -1,10 +1,12 @@
-﻿@page "/roles"
+@page "/roles"
 @model RolesModel
 @{
     ViewData["Title"] = "Roles";
 }
 
 <div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
     <!-- Roles List Card -->
     <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
         <div class="card-body">
@@ -29,7 +31,6 @@
                         </tr>
                     </thead>
                     <tbody>
-
                         @if (Model.Roles != null)
                         {
                             int index = 1;
@@ -42,11 +43,10 @@
                                 index++;
                             }
                         }
-
                         else
                         {
                             <tr>
-                                <td colspan="23" class="text-center py-5">
+                                <td colspan="2" class="text-center py-5">
                                     <div class="py-5">
                                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                                         <p class="text-muted mb-0">No records found</p>
@@ -91,21 +91,6 @@
             }
         </div>
     </div>
+        </div>
+    </div>
 </div>
-
-@section Scripts {
-    <script>
-        function selectRole(roleID) {
-            const url = new URL(window.location.href);
-            url.searchParams.set("roleID", roleID);
-            window.location.href = url.toString();
-        }
-    </script>
-}
-
-<style>
-    .role-btn.active {
-        background-color: #0d6efd;
-        color: white;
-    }
-</style>

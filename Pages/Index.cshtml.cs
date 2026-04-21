@@ -14,6 +14,7 @@ using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Vml;
 using Department = budget_management_system_aspdotnetcore.Entities.Department;
 using System.Security.Claims;
+using budget_management_system_aspdotnetcore.Helpers;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
@@ -166,28 +167,17 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public DateTime OverviewLastActivityTime { get; set; }
 
-        public List<string> FinancialYearOptions
-        {
-            get
-            {
-                var now = DateTime.Now;
-                int currentFYStartYear = now.Month >= 7 ? now.Year : now.Year - 1;
+        public List<string> FinancialYearOptions => FinancialYearHelper.GetOptions();
 
-                string currentFY = $"FY {currentFYStartYear}-{currentFYStartYear + 1}";
-                string previousFY = $"FY {currentFYStartYear - 1}-{currentFYStartYear}";
-
-                return new List<string> { currentFY, previousFY, "Custom" };
-            }
-        }
-        public void SetDefaultFinancialYearRange()
+        private void SetDefaultFinancialYearRange()
         {
             var today = DateTime.Today;
             int startYear = today.Month >= 7 ? today.Year : today.Year - 1;
 
-            if(!CustomStartDate.HasValue)
+            if (!CustomStartDate.HasValue)
                 CustomStartDate = new DateTime(startYear, 7, 1);
 
-            if(!CustomEndDate.HasValue)
+            if (!CustomEndDate.HasValue)
                 CustomEndDate = new DateTime(startYear + 1, 6, 30);
         }
 
@@ -203,23 +193,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 SelectedFinancialYear = FinancialYearOptions.First();
             }
 
-            if (SelectedFinancialYear == "Custom" && CustomStartDate.HasValue && CustomEndDate.HasValue)
-            {
-                startDate = CustomStartDate.Value;
-                endDate = CustomEndDate.Value;
-            }
-            else if (SelectedFinancialYear?.StartsWith("FY") == true)
-            {
-                var parts = SelectedFinancialYear.Substring(3).Split('-');
-                startDate = new DateTime(int.Parse(parts[0]), 7, 1);
-                endDate = new DateTime(int.Parse(parts[1]), 6, 30);
-            }
-            else
-            {
-                // Default fallback
-                startDate = DateTime.MinValue;
-                endDate = DateTime.Today.AddDays(1).AddTicks(-1);
-            }
+            (startDate, endDate) = FinancialYearHelper.GetDateRange(SelectedFinancialYear, CustomStartDate, CustomEndDate);
 
             var amendmentOverviewQuery = _context.BudgetAmendments
                 .Where(a => a.CreatedAt >= startDate && a.CreatedAt <= endDate);
@@ -282,29 +256,10 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             SpeedTypes = await _speedTypeService.GetSpeedTypesAsync();
 
-            DateTime startDate, endDate;
-
             if (string.IsNullOrEmpty(SelectedFinancialYear) && FinancialYearOptions.Any())
-            {
                 SelectedFinancialYear = FinancialYearOptions.First();
-            }
 
-            if (SelectedFinancialYear == "Custom" && CustomStartDate.HasValue && CustomEndDate.HasValue)
-            {
-                startDate = CustomStartDate.Value;
-                endDate = CustomEndDate.Value;
-            }
-            else if (SelectedFinancialYear?.StartsWith("FY") == true)
-            {
-                var parts = SelectedFinancialYear.Substring(3).Split('-');
-                startDate = new DateTime(int.Parse(parts[0]), 7, 1);
-                endDate = new DateTime(int.Parse(parts[1]), 6, 30);
-            }
-            else
-            {
-                startDate = DateTime.MinValue;
-                endDate = DateTime.Today.AddDays(1).AddTicks(-1);
-            }
+            var (startDate, endDate) = FinancialYearHelper.GetDateRange(SelectedFinancialYear, CustomStartDate, CustomEndDate);
 
             BudgetAmendmentsMain = await _context.BudgetAmendmentMain
             .Where(ba => ba.ExtendedDeadline >= startDate && ba.ExtendedDeadline <= endDate)

@@ -1,113 +1,108 @@
-﻿@using budget_management_system_aspdotnetcore.Services
+@using budget_management_system_aspdotnetcore.Services
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject IAuthenticationService AuthService
 <!DOCTYPE html>
-    <html lang="en">
-        <head>
-            <meta charset="utf-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>@ViewData["Title"] - Budget Management</title>
-            <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-            <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-        </head>
-        <body>
-            <header>
-                <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-                    <div class="container-fluid">
-                        <a class="navbar-brand" asp-area="" asp-page="/Index">CAS Budget Management</a>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                                aria-expanded="false" aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                            @if (HttpContextAccessor.HttpContext.Session.GetString("Email") != null)
-                            {
-                                var userRole = AuthService.GetUserRole(HttpContextAccessor.HttpContext);
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>@ViewData["Title"] - Budget Management</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    </head>
+    <body>
+        <header>
+            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+                <div class="container-fluid">
+                    <a class="navbar-brand" asp-area="" asp-page="/Index">CAS Budget Management</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                        @if (HttpContextAccessor.HttpContext.Session.GetString("Email") != null)
+                        {
+                            var userRole = AuthService.GetUserRole(HttpContextAccessor.HttpContext);
 
-                                <ul class="navbar-nav flex-grow-1 justify-content-center">
+                            <ul class="navbar-nav flex-grow-1 justify-content-center">
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Dashboard">Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Index">View Budget Amendments</a>
+                                </li>
+                                @if (!String.Equals(userRole, "5"))
+                                {
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Dashboard">Dashboard</a>
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/BAEdit">Modify Budget Amendments</a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Index">View Budget Amendments</a>
-                                    </li>
-                                    @if (!String.Equals(userRole, "5"))
-                                    {
-                                        <li class="nav-item">
-                                            <a class="nav-link text-dark" asp-area="" asp-page="/BAEdit">Modify Budget Amendments</a>
-                                        </li>
-                                    }
-                                    <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Activitylog">Activity Log</a>
-                                    </li>
+                                }
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Activitylog">Activity Log</a>
+                                </li>
 
-                                    @if(!String.Equals(userRole, "5")) 
-                                    {
-                                        <li class="nav-item">
-                                            <a class="nav-link text-dark" asp-area="" asp-page="/Users">Users</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link text-dark" asp-area="" asp-page="/Departments">Departments</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link text-dark" asp-area="" asp-page="/Speedtypes">SpeedTypes</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link text-dark" asp-area="" asp-page="/Roles">Roles</a>
-                                        </li>
-                                    }
-
+                                @if (!String.Equals(userRole, "5"))
+                                {
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Logout">Logout</a>
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/Users">Users</a>
                                     </li>
-                                </ul>
-                                <p>
-                                    Welcome @HttpContextAccessor.HttpContext.Session.GetString("FirstName")
-                                    @HttpContextAccessor.HttpContext.Session.GetString("LastName")
-                                    (@HttpContextAccessor.HttpContext.Session.GetString("RoleName"))
-                                </p>
-                            }
-                        </div>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/Departments">Departments</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/Speedtypes">SpeedTypes</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-page="/Roles">Roles</a>
+                                    </li>
+                                }
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-page="/Logout">Logout</a>
+                                </li>
+                            </ul>
+                            <p>
+                                Welcome @HttpContextAccessor.HttpContext.Session.GetString("FirstName")
+                                @HttpContextAccessor.HttpContext.Session.GetString("LastName")
+                                (@HttpContextAccessor.HttpContext.Session.GetString("RoleName"))
+                            </p>
+                        }
                     </div>
-                </nav>
-            </header>
-            <div class="container-fluid">
-                <main role="main" class="pb-3">
-                    @RenderBody()
-                </main>
-            </div>
-
-            <footer class="border-top footer text-muted">
-                <div class="container text-center">
-                    &copy; 2026 - CAS Budget Management
                 </div>
-            </footer>
+            </nav>
+        </header>
+        <div class="container-fluid">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
 
-            <script src="~/lib/jquery/dist/jquery.min.js"></script>
-            <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-            <script src="~/js/site.js" asp-append-version="true"></script>
+        <footer class="border-top footer text-muted">
+            <div class="container text-center">
+                &copy; 2026 - CAS Budget Management
+            </div>
+        </footer>
 
-            @await RenderSectionAsync("Scripts", required: false)
-        </body>
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
 
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-        <!-- Bootstrap 4 CSS and JS -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
-
-        <!-- Latest compiled and minified CSS -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
-
-        <!-- Latest compiled and minified JavaScript -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
-
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+        @await RenderSectionAsync("Scripts", required: false)
 
         <script>
             $(document).ready(function () {
                 $('.selectpicker').selectpicker();
             });
         </script>
-
+    </body>
 </html>
