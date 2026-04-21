@@ -26,16 +26,7 @@
                 </div>
             </form>
             <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover text-center" style="table-layout: fixed;">
-                    <colgroup>
-                        <col style="width: 8%">
-                        <col style="width: 16%">
-                        <col style="width: 14%">
-                        <col style="width: 13%">
-                        <col style="width: 14%">
-                        <col style="width: 13%">
-                        <col style="width: 22%">
-                    </colgroup>
+                <table class="table table-bordered table-striped table-hover text-center">
                     <thead>
                         <tr>
                             <th>
@@ -160,7 +151,7 @@
                                 {
                                     <tr>
                                         <form method="post" asp-page-handler="SaveSpeedType" asp-route-id="@speedType.SpeedTypeId">
-                                        <td><input asp-for="NewSpeedType.SpeedTypeId" value="@speedType.SpeedTypeId" class="form-control" readonly /></td>
+                                        <td>@index</td>
                                         <td><input asp-for="NewSpeedType.Code" value="@speedType.Code" class="form-control" /></td>
                                         <td><input asp-for="NewSpeedType.Budget" value="@speedType.Budget" class="form-control" /></td>
                                         <td><input asp-for="NewSpeedType.FundCode" value="@speedType.FundCode" class="form-control" /></td>

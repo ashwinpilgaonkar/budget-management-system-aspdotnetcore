@@ -90,7 +90,7 @@
                                 {
                                     <tr>
                                         <form method="post" asp-page-handler="SaveDepartment" asp-route-id="@dept.DepartmentID">
-                                        <td><input asp-for="NewDepartment.DepartmentID" value="@dept.DepartmentID" class="form-control" readonly /></td>
+                                        <td>@index</td>
                                         <td><input asp-for="NewDepartment.DepartmentName" value="@dept.DepartmentName" class="form-control" /></td>
                                         <td>
                                             <select asp-for="SelectedSpeedTypeIds" class="selectpicker w-100" multiple data-live-search="true" title="Select speed types">
