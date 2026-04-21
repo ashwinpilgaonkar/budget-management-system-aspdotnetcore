@@ -171,7 +171,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             get
             {
                 var now = DateTime.Now;
-                int currentFYStartYear = now.Month >= 10 ? now.Year : now.Year - 1;
+                int currentFYStartYear = now.Month >= 7 ? now.Year : now.Year - 1;
 
                 string currentFY = $"FY {currentFYStartYear}-{currentFYStartYear + 1}";
                 string previousFY = $"FY {currentFYStartYear - 1}-{currentFYStartYear}";
@@ -182,13 +182,13 @@ namespace budget_management_system_aspdotnetcore.Pages
         public void SetDefaultFinancialYearRange()
         {
             var today = DateTime.Today;
-            int startYear = today.Month >= 10 ? today.Year : today.Year - 1;
+            int startYear = today.Month >= 7 ? today.Year : today.Year - 1;
 
             if(!CustomStartDate.HasValue)
-                CustomStartDate = new DateTime(startYear, 10, 1);
+                CustomStartDate = new DateTime(startYear, 7, 1);
 
             if(!CustomEndDate.HasValue)
-                CustomEndDate = new DateTime(startYear + 1, 9, 30);
+                CustomEndDate = new DateTime(startYear + 1, 6, 30);
         }
 
         public void SetOverviewCardData()
