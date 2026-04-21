@@ -282,7 +282,32 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             SpeedTypes = await _speedTypeService.GetSpeedTypesAsync();
 
+            DateTime startDate, endDate;
+
+            if (string.IsNullOrEmpty(SelectedFinancialYear) && FinancialYearOptions.Any())
+            {
+                SelectedFinancialYear = FinancialYearOptions.First();
+            }
+
+            if (SelectedFinancialYear == "Custom" && CustomStartDate.HasValue && CustomEndDate.HasValue)
+            {
+                startDate = CustomStartDate.Value;
+                endDate = CustomEndDate.Value;
+            }
+            else if (SelectedFinancialYear?.StartsWith("FY") == true)
+            {
+                var parts = SelectedFinancialYear.Substring(3).Split('-');
+                startDate = new DateTime(int.Parse(parts[0]), 7, 1);
+                endDate = new DateTime(int.Parse(parts[1]), 6, 30);
+            }
+            else
+            {
+                startDate = DateTime.MinValue;
+                endDate = DateTime.Today.AddDays(1).AddTicks(-1);
+            }
+
             BudgetAmendmentsMain = await _context.BudgetAmendmentMain
+            .Where(ba => ba.ExtendedDeadline >= startDate && ba.ExtendedDeadline <= endDate)
             .OrderByDescending(ba => ba.CreatedAt)
             .ToListAsync();
 
@@ -391,45 +416,20 @@ namespace budget_management_system_aspdotnetcore.Pages
                     Text = u.Email
                 }).ToListAsync();
 
-            DateTime startDate, endDate;
-
-            if (string.IsNullOrEmpty(SelectedFinancialYear) && FinancialYearOptions.Any())
-            {
-                SelectedFinancialYear = FinancialYearOptions.First();
-            }
-
-            if (SelectedFinancialYear == "Custom" && CustomStartDate.HasValue && CustomEndDate.HasValue)
-            {
-                startDate = CustomStartDate.Value;
-                endDate = CustomEndDate.Value;
-            }
-            else if (SelectedFinancialYear?.StartsWith("FY") == true)
-            {
-                var parts = SelectedFinancialYear.Substring(3).Split('-');
-                startDate = new DateTime(int.Parse(parts[0]), 7, 1);
-                endDate = new DateTime(int.Parse(parts[1]), 6, 30);
-            }
-            else
-            {
-                // Default fallback
-                startDate = DateTime.MinValue;
-                endDate = DateTime.Today.AddDays(1).AddTicks(-1);
-            }
-
             if (!CreatedFromDate.HasValue)
-                CreatedFromDate = startDate;
+                CreatedFromDate = DateTime.MinValue;
 
             if (!CreatedToDate.HasValue)
-                CreatedToDate = endDate;
+                CreatedToDate = DateTime.Today.AddDays(1).AddTicks(-1);
 
             if (!EditedFromDate.HasValue)
-                EditedFromDate = CreatedFromDate;
+                EditedFromDate = DateTime.MinValue;
 
             if (!EditedToDate.HasValue)
                 EditedToDate = DateTime.Today.AddDays(1).AddTicks(-1);
 
             if (!UpdatedFromDate.HasValue)
-                UpdatedFromDate = CreatedFromDate;
+                UpdatedFromDate = DateTime.MinValue;
 
             if (!UpdatedToDate.HasValue)
                 UpdatedToDate = DateTime.Today.AddDays(1).AddTicks(-1);
