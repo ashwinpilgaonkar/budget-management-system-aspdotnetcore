@@ -146,10 +146,37 @@
                                                     <div class="ba-acc-date-block">
                                                         <span class="ba-acc-date-lbl">End date</span>
                                                         <span class="ba-acc-date-val">
-                                                            @amendmentmain.ExtendedDeadline.ToString("MM/dd/yyyy")
+                                                            @amendmentmain.EndDate.ToString("MM/dd/yyyy")
                                                         </span>
                                                     </div>
+                                                    @if (amendmentmain.ExtendedDeadline.Date != amendmentmain.EndDate.Date)
+                                                    {
+                                                        <div class="ba-acc-date-block">
+                                                            <span class="ba-acc-date-lbl">Extended until</span>
+                                                            <span class="ba-acc-date-val ba-extended-date-val">
+                                                                @amendmentmain.ExtendedDeadline.ToString("MM/dd/yyyy")
+                                                            </span>
+                                                        </div>
+                                                    }
                                                 </div>
+                                                @{
+                                                    var daysRemaining = (int)(amendmentmain.ExtendedDeadline.Date - DateTime.Today).TotalDays;
+                                                    var isOverdue = daysRemaining < 0;
+                                                    var isPendingOrRejected = baMainStatus == "Pending" || baMainStatus == "Rejected";
+
+                                                    var dayPillClass = daysRemaining > 14                 ? "ba-days-ok"
+                                                                     : daysRemaining > 7                  ? "ba-days-warn"
+                                                                     : daysRemaining > 0                  ? "ba-days-urgent"
+                                                                     : daysRemaining == 0                 ? "ba-days-today"
+                                                                     : (isOverdue && isPendingOrRejected) ? "ba-days-overdue"
+                                                                     : "ba-days-passed";
+                                                    var dayPillText = daysRemaining > 0                   ? $"{daysRemaining}d left"
+                                                                    : daysRemaining == 0                  ? "Due today"
+                                                                    : (isOverdue && isPendingOrRejected)  ? $"{Math.Abs(daysRemaining)}d overdue"
+                                                                    : "Deadline passed";
+                                                }
+                                                <div class="ba-acc-divider"></div>
+                                                <span class="ba-days-pill @dayPillClass">@dayPillText</span>
                                             </div>
 
                                             @{
