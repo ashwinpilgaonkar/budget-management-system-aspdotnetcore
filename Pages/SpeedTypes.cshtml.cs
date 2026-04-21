@@ -149,12 +149,6 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!_authService.IsAuthenticated(HttpContext))
                 return RedirectToPage("/Login");
 
-            if (!ModelState.IsValid)
-            {
-                await LoadFormDataAsync();
-                return Page();
-            }
-
             _context.SpeedTypes.Add(NewSpeedType);
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = $"Speed type \"{NewSpeedType.Code}\" added successfully.";
@@ -168,6 +162,8 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             EditingSpeedTypeID = id;
             await LoadFormDataAsync();
+            NewSpeedType = SpeedTypes?.FirstOrDefault(s => s.SpeedTypeId == id)
+                           ?? await _context.SpeedTypes.FindAsync(id);
             return Page();
         }
 
@@ -181,18 +177,12 @@ namespace budget_management_system_aspdotnetcore.Pages
             return Page();
         }
 
-        public async Task<IActionResult> OnPostSaveSpeedTypeAsync()
+        public async Task<IActionResult> OnPostSaveSpeedTypeAsync(int id)
         {
             if (!_authService.IsAuthenticated(HttpContext))
                 return RedirectToPage("/Login");
 
-            if (!ModelState.IsValid)
-            {
-                await LoadFormDataAsync();
-                return Page();
-            }
-
-            var speedType = await _context.SpeedTypes.FindAsync(NewSpeedType.SpeedTypeId);
+            var speedType = await _context.SpeedTypes.FindAsync(id);
 
             if (speedType != null)
             {
