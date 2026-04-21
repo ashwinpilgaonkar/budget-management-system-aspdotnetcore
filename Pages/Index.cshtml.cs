@@ -49,6 +49,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         public int? SelectedBudgetAmendmentMainID { get; set; }
 
         public List<BudgetAmendmentMain> BudgetAmendmentsMain { get; set; }
+        public List<BudgetAmendmentMain> BudgetAmendmentsMainAll { get; set; }
 
         [BindProperty]
         public BudgetAmendmentMain NewBudgetAmendmentMain { get; set; }
@@ -99,7 +100,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         public string SelectedStatusTab { get; set; } = AmendmentStatus.Pending.ToString();
 
         [BindProperty(SupportsGet = true)]
-        public string? SelectedBAMainStatusTab { get; set; }
+        public string? SelectedBAMainStatusTab { get; set; } = "Pending";
 
         [BindProperty(SupportsGet = true)]
         public List<string> SelectedStatus { get; set; }
@@ -287,6 +288,8 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             //Fetch BudgetAmendment Data
             BudgetAmendmentsAll = _context.BudgetAmendments.ToList();
+
+            BudgetAmendmentsMainAll = BudgetAmendmentsMain;
 
             if (!string.IsNullOrEmpty(SelectedBAMainStatusTab))
             {
