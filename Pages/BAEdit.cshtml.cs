@@ -1,19 +1,9 @@
 using budget_management_system_aspdotnetcore.Entities;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
-using ClosedXML.Excel;
-using Microsoft.Data.SqlClient;
 using budget_management_system_aspdotnetcore.Services;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Vml;
 using Department = budget_management_system_aspdotnetcore.Entities.Department;
-using System.Security.Claims;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
@@ -34,16 +24,10 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public string userRole { get; set; } = "";
 
-        [BindProperty(SupportsGet = true)]
-        public int? SelectedBudgetAmendmentMainID { get; set; }
-
         public List<BudgetAmendmentMain> BudgetAmendmentsMain { get; set; }
 
         [BindProperty]
         public BudgetAmendmentMain NewBudgetAmendmentMain { get; set; }
-
-        public DateTime BudgetAmendmentMainStartDate { get; set; }
-        public DateTime BudgetAmendmentMainEndDate { get; set; }
 
         [BindProperty]
         public List<Department> Departments { get; set; }
@@ -57,22 +41,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         [BindProperty]
         public List<string> SelectedDepartments { get; set; }
 
-        [BindProperty(SupportsGet = true)]
-        public int? selectedBA { get; set; }
-
-        public List<string> FinancialYearOptions
-        {
-            get
-            {
-                var now = DateTime.Now;
-                int currentFYStartYear = now.Month >= 10 ? now.Year : now.Year - 1;
-
-                string currentFY = $"FY {currentFYStartYear}-{currentFYStartYear + 1}";
-                string previousFY = $"FY {currentFYStartYear - 1}-{currentFYStartYear}";
-
-                return new List<string> { currentFY, previousFY, "Custom" };
-            }
-        }
+        public Dictionary<int, int> DeptExtensionCounts { get; set; }
 
         public BAEditModel(CasdbtestContext context, SpeedTypeService speedTypeService, UserService userService, IAuthenticationService authService)
         {
@@ -92,10 +61,14 @@ namespace budget_management_system_aspdotnetcore.Pages
             .ToListAsync();
 
             Departments = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
+
+            DeptExtensionCounts = await _context.BADepartmentExtensions
+                .GroupBy(e => e.BudgetAmendmentMainID)
+                .ToDictionaryAsync(g => g.Key, g => g.Count());
         }
 
 
-        public async Task<IActionResult> OnGetAsync(int amendmentPageNumber = 1, int amendmentResultsPerPage = 10)
+        public async Task<IActionResult> OnGetAsync()
         {
             if (!_authService.IsAuthenticated(HttpContext))
             {
@@ -108,9 +81,13 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostAddAmendmentMainAsync()
         {
+            if (_authService.GetUserRole(HttpContext) == "5")
+                return Forbid();
+
             if (!ModelState.IsValid)
             {
-                /*                return Page();*/
+                await LoadFormDataAsync();
+                return Page();
             }
 
             NewBudgetAmendmentMain.CreatedAt = DateTime.Now;
@@ -121,12 +98,17 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             _context.BudgetAmendmentMain.Add(NewBudgetAmendmentMain);
             await _context.SaveChangesAsync();
+            await UpdateUserActivityLogAsync(NewBudgetAmendmentMain.Name, ActivityType.Edited);
+            TempData["SuccessMessage"] = $"Budget amendment \"{NewBudgetAmendmentMain.Name}\" created successfully.";
 
             return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostExtendDeadlineAsync(int BudgetAmendmentMainID, DateTime ExtendDeadlineTo)
         {
+            if (_authService.GetUserRole(HttpContext) == "5")
+                return Forbid();
+
             var amendment = await _context.BudgetAmendmentMain.FindAsync(BudgetAmendmentMainID);
 
             if (amendment == null)
@@ -135,9 +117,11 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (ExtendDeadlineTo <= amendment.EndDate)
             {
                 ModelState.AddModelError("", "Extended deadline must be after the current end date.");
+                await LoadFormDataAsync();
                 return Page();
             }
 
+            SelectedDepartments ??= new List<string>();
             bool applyToAll = SelectedDepartments.Contains("ALL");
 
             if (applyToAll)
@@ -179,6 +163,8 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
 
             await _context.SaveChangesAsync();
+            await UpdateUserActivityLogAsync(amendment.Name, ActivityType.Edited);
+            TempData["SuccessMessage"] = $"Deadline for \"{amendment.Name}\" updated successfully.";
 
             return RedirectToPage();
         }

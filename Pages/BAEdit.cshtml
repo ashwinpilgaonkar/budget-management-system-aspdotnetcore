@@ -11,6 +11,14 @@
         var userRole = Model.userRole;
     }
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <!-- Budget Amendment History Card -->
     <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
         <div class="card-body">
@@ -19,7 +27,6 @@
 
                 @if (!String.Equals(userRole, "5"))
                 {
-                    <!-- Add New Amendment Main Button -->
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAmendmentMainModal">
                         Create New +
                     </button>
@@ -28,90 +35,55 @@
 
             @if (!Model.BudgetAmendmentsMain.Any())
             {
-                <tr>
-                    <td colspan="23" class="text-center py-5">
-                        <div class="d-flex justify-content-center align-items-center">
-                            <div class="card" style="background-color: #e9ecef; border: 1px solid #dee2e6; padding: 3rem; width: 100%;">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted mb-0">No records found</p>
-                                    <small class="text-muted">Click the Create New + button to create a new budget amendment</small>
-                                </div>
-                            </div>
+                <div class="d-flex justify-content-center align-items-center">
+                    <div class="card" style="background-color: #e9ecef; border: 1px solid #dee2e6; padding: 3rem; width: 100%;">
+                        <div class="card-body text-center">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No records found</p>
+                            <small class="text-muted">Click the Create New + button to create a new budget amendment</small>
                         </div>
-                    </td>
-                </tr>
-            }
-
-            else
-            {
-                <!-- Budget Amendments Section -->
-                <div class="mb-4">
-                    <div class="accordion" id="budgetAmendmentsAccordion">
-
-                        @{
-                            var baIndex = 0;
-                        }
-                        @foreach (var amendmentmain in Model.BudgetAmendmentsMain)
-                        {
-                            var amendmentIndex = baIndex;
-                            baIndex++;
-
-                            <div class="accordion-item mb-3">
-                                <h2 class="accordion-header" id="headingBA@(amendmentIndex)">
-                                    <button class="accordion-button collapsed py-4" type="button"
-                                            data-bs-toggle="collapse"
-                                            data-bs-target="#collapseBA@(amendmentIndex)"
-                                            aria-expanded="false"
-                                            aria-controls="collapseBA@(amendmentIndex)">
-                                        <div class="d-flex justify-content-between w-100 align-items-center">
-                                            <div class="ba-acc-left">
-                                                <span class="ba-acc-title">@amendmentmain.Name</span>
-                                                <div class="ba-acc-divider"></div>
-                                                <div class="ba-acc-dates">
-                                                    <div class="ba-acc-date-block">
-                                                        <span class="ba-acc-date-lbl">Start date</span>
-                                                        <span class="ba-acc-date-val">
-                                                            @amendmentmain.StartDate.ToString("MM/dd/yyyy")
-                                                        </span>
-                                                    </div>
-                                                    <div class="ba-acc-date-block">
-                                                        <span class="ba-acc-date-lbl">End date</span>
-                                                        <span class="ba-acc-date-val">
-                                                            @amendmentmain.ExtendedDeadline.ToString("MM/dd/yyyy")
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </button>
-                                </h2>
-                                <div id="collapseBA@(amendmentIndex)" class="accordion-collapse collapse"
-                                     aria-labelledby="headingBA@(amendmentIndex)"
-                                     data-bs-parent="#budgetAmendmentsAccordion"
-                                     data-ba-id="@amendmentmain.BudgetAmendmentMainID">
-
-                                    <div class="accordion-body">
-
-                                        <div class="d-flex justify-content-start align-items-start mb-3">
-                                            <button class="btn btn-outline-secondary "
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#editBudgetAmendmentModal"
-                                                    data-ba-id="@amendmentmain.BudgetAmendmentMainID"
-                                                    data-ba-name="@amendmentmain.Name"
-                                                    data-ba-start="@amendmentmain.StartDate.ToString("yyyy-MM-ddTHH:mm")"
-                                                    data-ba-end="@amendmentmain.EndDate.ToString("yyyy-MM-ddTHH:mm")"
-                                                    data-ba-extend="@amendmentmain.ExtendedDeadline.ToString("yyyy-MM-ddTHH:mm")">
-                                                Edit
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-
                     </div>
                 </div>
+            }
+            else
+            {
+                @foreach (var amendmentmain in Model.BudgetAmendmentsMain)
+                {
+                    var extCount = Model.DeptExtensionCounts.GetValueOrDefault(amendmentmain.BudgetAmendmentMainID, 0);
+                    <div class="d-flex justify-content-between align-items-center px-4 py-4 mb-2" style="border: 1px solid #dee2e6; border-radius: 8px;">
+                        <div class="ba-acc-left">
+                            <span class="ba-acc-title">@amendmentmain.Name</span>
+                            <div class="ba-acc-divider"></div>
+                            <div class="ba-acc-dates">
+                                <div class="ba-acc-date-block">
+                                    <span class="ba-acc-date-lbl">Start date</span>
+                                    <span class="ba-acc-date-val">@amendmentmain.StartDate.ToString("MM/dd/yyyy")</span>
+                                </div>
+                                <div class="ba-acc-date-block">
+                                    <span class="ba-acc-date-lbl">End date</span>
+                                    <span class="ba-acc-date-val">@amendmentmain.ExtendedDeadline.ToString("MM/dd/yyyy")</span>
+                                </div>
+                            </div>
+                            @if (extCount > 0)
+                            {
+                                <span class="badge bg-secondary ms-3">@extCount dept override@(extCount == 1 ? "" : "s")</span>
+                            }
+                        </div>
+                        @if (!String.Equals(userRole, "5"))
+                        {
+                            <button class="btn btn-outline-secondary me-3"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editBudgetAmendmentModal"
+                                    data-ba-id="@amendmentmain.BudgetAmendmentMainID"
+                                    data-ba-name="@amendmentmain.Name"
+                                    data-ba-start="@amendmentmain.StartDate.ToString("yyyy-MM-ddTHH:mm")"
+                                    data-ba-end="@amendmentmain.EndDate.ToString("yyyy-MM-ddTHH:mm")"
+                                    data-ba-extend="@amendmentmain.ExtendedDeadline.ToString("yyyy-MM-ddTHH:mm")">
+                                Edit
+                            </button>
+                        }
+                    </div>
+                }
             }
 
         </div>
@@ -220,126 +192,88 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-}
-
     <script>
-
-        document.getElementById('addBudgetAmendmentForm').addEventListener('submit', function (e) {
-            const startDate = new Date(document.getElementById('startDate').value);
-            const endDate = new Date(document.getElementById('endDate').value);
-            const dateError = document.getElementById('dateError');
-            const endDateInput = document.getElementById('endDate');
-
-            if (startDate >= endDate) {
-                e.preventDefault();
-                endDateInput.classList.add('is-invalid');
-                dateError.style.display = 'block';
-            } else {
-                endDateInput.classList.remove('is-invalid');
-                dateError.style.display = 'none';
-            }
-        });
-
-        // Clear error on input change
-        document.getElementById('endDate').addEventListener('change', function () {
-            this.classList.remove('is-invalid');
-            document.getElementById('dateError').style.display = 'none';
-        });
-        document.getElementById('startDate').addEventListener('change', function () {
-            document.getElementById('endDate').classList.remove('is-invalid');
-            document.getElementById('dateError').style.display = 'none';
-        });
-
         document.addEventListener('DOMContentLoaded', function () {
-            const modal = document.getElementById('extendDeadlineModal');
-            modal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const category = button.getAttribute('data-category');
-            const categoryInput = modal.querySelector('#modalCategory');
-            categoryInput.value = category;
-        });
 
-        });
+            document.getElementById('addBudgetAmendmentForm').addEventListener('submit', function (e) {
+                const startDate = new Date(document.getElementById('startDate').value);
+                const endDate = new Date(document.getElementById('endDate').value);
+                const dateError = document.getElementById('dateError');
+                const endDateInput = document.getElementById('endDate');
 
-    document.addEventListener('DOMContentLoaded', function () {
+                if (startDate >= endDate) {
+                    e.preventDefault();
+                    endDateInput.classList.add('is-invalid');
+                    dateError.style.display = 'block';
+                } else {
+                    endDateInput.classList.remove('is-invalid');
+                    dateError.style.display = 'none';
+                }
+            });
 
-        const editModal = document.getElementById('editBudgetAmendmentModal');
+            document.getElementById('endDate').addEventListener('change', function () {
+                this.classList.remove('is-invalid');
+                document.getElementById('dateError').style.display = 'none';
+            });
+            document.getElementById('startDate').addEventListener('change', function () {
+                document.getElementById('endDate').classList.remove('is-invalid');
+                document.getElementById('dateError').style.display = 'none';
+            });
 
-        editModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-
-            const id = button.getAttribute('data-ba-id');
-            const name = button.getAttribute('data-ba-name');
-            const start = button.getAttribute('data-ba-start');
-            const end = button.getAttribute('data-ba-end');
-            const extend = button.getAttribute('data-ba-extend');
-
-            // Fill modal fields
-            document.getElementById('editBAId').value = id;
-            document.getElementById('editBAName').value = name;
-            document.getElementById('editBAStart').value = start;
-            document.getElementById('editBAEnd').value = end;
-            document.getElementById('editBAExtendDeadline').value = extend;
-
-            const extendInput = document.getElementById("editBAExtendDeadline");
-            const endInput = document.getElementById("editBAEnd");
+            // Edit modal — all listeners attached once, not per modal open
+            const editModal = document.getElementById('editBudgetAmendmentModal');
+            const extendInput = document.getElementById('editBAExtendDeadline');
+            const endInput = document.getElementById('editBAEnd');
             const saveButton = document.querySelector("#editBudgetAmendmentModal button[type='submit']");
 
-            function validate() {
-                const extendVal = new Date(extendInput.value);
-                const endVal = new Date(endInput.value);
-
+            function validateExtend() {
                 if (!extendInput.value || !endInput.value) {
                     saveButton.disabled = true;
                     return;
                 }
-
-                // extended deadline must be AFTER end date
+                const extendVal = new Date(extendInput.value);
+                const endVal = new Date(endInput.value);
                 if (extendVal <= endVal) {
                     saveButton.disabled = true;
-                    extendInput.classList.add("is-invalid");
+                    extendInput.classList.add('is-invalid');
                 } else {
                     saveButton.disabled = false;
-                    extendInput.classList.remove("is-invalid");
+                    extendInput.classList.remove('is-invalid');
                 }
             }
 
-            $('#editBADeptSelect').selectpicker('refresh');
+            extendInput.addEventListener('change', validateExtend);
+            editModal.addEventListener('shown.bs.modal', validateExtend);
 
-            extendInput.addEventListener("change", validate);
+            editModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
 
-            // Also validate immediately when modal shows
-            document.getElementById("editBudgetAmendmentModal")
-                .addEventListener("shown.bs.modal", validate);
-
-        });
-
-
-            const deptSelect = document.getElementById("editBADeptSelect");
-
-            deptSelect.addEventListener("change", function () {
-                const selected = Array.from(this.selectedOptions).map(o => o.value);
-
-                if (selected.includes("ALL")) {
-                    // Deselect all except ALL
-                    Array.from(this.options).forEach(o => {
-                        if (o.value !== "ALL") o.selected = false;
-                    });
-                } else {
-                    // If user selects any department, unselect ALL
-                    this.querySelector('option[value="ALL"]').selected = false;
-                }
+                document.getElementById('editBAId').value = button.getAttribute('data-ba-id');
+                document.getElementById('editBAName').value = button.getAttribute('data-ba-name');
+                document.getElementById('editBAStart').value = button.getAttribute('data-ba-start');
+                endInput.value = button.getAttribute('data-ba-end');
+                extendInput.value = button.getAttribute('data-ba-extend');
+                $('#editBADeptSelect').selectpicker('refresh');
             });
 
             $('#editBADeptSelect').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
-                var selected = $(this).val();
-                if (selected && selected.includes('ALL')) {
-                    $(this).val(['ALL']).selectpicker('refresh');
-                } else {
-                    $(this).find('option[value="ALL"]').prop('selected', false);
+                var current = $(this).val() || [];
+                var previous = previousValue || [];
+                var allNowSelected = current.includes('ALL');
+                var hasOtherSelections = current.some(function (v) { return v !== 'ALL'; });
+
+                if (allNowSelected && hasOtherSelections) {
+                    if (previous.includes('ALL')) {
+                        // ALL was already selected; user added a specific dept — remove ALL
+                        $(this).find('option[value="ALL"]').prop('selected', false);
+                    } else {
+                        // User just selected ALL — clear specific selections
+                        $(this).val(['ALL']);
+                    }
                     $(this).selectpicker('refresh');
                 }
             });
-    });
 
+        });
     </script>
+}
