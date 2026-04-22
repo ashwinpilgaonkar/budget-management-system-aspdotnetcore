@@ -279,3 +279,71 @@ th form button {
 .btn-link:hover {
     text-decoration: underline;
 }
+
+/* Tighter navbar to prevent overflow on ~1366px laptop screens */
+.navbar-brand {
+    font-size: 0.95rem;
+}
+
+.navbar .navbar-nav .nav-link {
+    padding: 0.4rem 0.55rem;
+    font-size: 0.875rem;
+}
+
+.navbar .navbar-text {
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+/* Navbar user info separator and role badge */
+.navbar-vr {
+    width: 2px;
+    height: 14px;
+    background-color: #dee2e6;
+    border-radius: 1px;
+    flex-shrink: 0;
+}
+
+/* Role badge in navbar */
+.navbar-role-badge {
+    background-color: #e8f0fb;
+    color: #185FA5;
+    border: 1px solid #c5d8f5;
+    font-weight: 500;
+    font-size: 0.72rem;
+}
+
+/* Destructive logout button */
+.btn-logout {
+    color: #991b1b;
+    border-color: #991b1b;
+    background-color: transparent;
+    white-space: nowrap;
+    font-size: 0.8rem;
+}
+.btn-logout:hover {
+    color: #fff;
+    background-color: #991b1b;
+    border-color: #991b1b;
+}
+
+/* Restore comfortable sizes on large monitors and constrain width so navbar doesn't spread edge-to-edge */
+@media (min-width: 1600px) {
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    .navbar .navbar-nav .nav-link {
+        padding: 0.5rem 0.85rem;
+        font-size: 0.95rem;
+    }
+    .navbar .navbar-text {
+        font-size: 0.875rem;
+    }
+    .btn-logout {
+        font-size: 0.875rem;
+    }
+    .navbar .container-fluid {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}

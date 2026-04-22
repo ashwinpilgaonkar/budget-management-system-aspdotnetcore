@@ -14,7 +14,7 @@
     </head>
     <body>
         <header>
-            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-light border-bottom box-shadow mb-3">
                 <div class="container-fluid">
                     <a class="navbar-brand" asp-area="" asp-page="/Index">CAS Budget Management</a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -25,49 +25,52 @@
                         @if (HttpContextAccessor.HttpContext.Session.GetString("Email") != null)
                         {
                             var userRole = AuthService.GetUserRole(HttpContextAccessor.HttpContext);
+                            var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
 
                             <ul class="navbar-nav flex-grow-1 justify-content-center">
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Dashboard">Dashboard</a>
+                                    <a class="nav-link text-dark @(currentPage.EndsWith("Dashboard", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Dashboard">Dashboard</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Index">View Budget Amendments</a>
+                                    <a class="nav-link text-dark @(currentPage.EndsWith("Index", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Index">View Amendments</a>
                                 </li>
                                 @if (!String.Equals(userRole, "5"))
                                 {
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/BAEdit">Modify Budget Amendments</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("BAEdit", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/BAEdit">Edit Amendments</a>
                                     </li>
                                 }
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Activitylog">Activity Log</a>
+                                    <a class="nav-link text-dark @(currentPage.EndsWith("Activitylog", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Activitylog">Audit Log</a>
                                 </li>
 
                                 @if (!String.Equals(userRole, "5"))
                                 {
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Users">Users</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("Users", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Users">Users</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Departments">Departments</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("Departments", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Departments">Departments</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Speedtypes">SpeedTypes</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("Speedtypes", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Speedtypes">Speed Types</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark" asp-area="" asp-page="/Roles">Roles</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("Roles", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Roles">Roles</a>
                                     </li>
                                 }
-
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/Logout">Logout</a>
-                                </li>
                             </ul>
-                            <p>
-                                Welcome @HttpContextAccessor.HttpContext.Session.GetString("FirstName")
-                                @HttpContextAccessor.HttpContext.Session.GetString("LastName")
-                                (@HttpContextAccessor.HttpContext.Session.GetString("RoleName"))
-                            </p>
+                            <div class="d-flex align-items-center ms-3">
+                                <div class="d-flex align-items-center gap-2 me-4">
+                                    <span class="navbar-text text-muted">
+                                        @HttpContextAccessor.HttpContext.Session.GetString("FirstName")
+                                        @HttpContextAccessor.HttpContext.Session.GetString("LastName")
+                                    </span>
+                                    <span class="navbar-vr"></span>
+                                    <span class="badge navbar-role-badge">@HttpContextAccessor.HttpContext.Session.GetString("RoleName")</span>
+                                </div>
+                                <a class="btn btn-sm btn-logout" asp-area="" asp-page="/Logout" onclick="return confirm('Are you sure you want to log out?')">Log Out</a>
+                            </div>
                         }
                     </div>
                 </div>
