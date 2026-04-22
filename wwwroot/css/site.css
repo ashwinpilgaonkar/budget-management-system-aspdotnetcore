@@ -2,6 +2,10 @@ html {
   font-size: 14px;
 }
 
+body {
+  background-color: #f5f5f7;
+}
+
 @media (min-width: 768px) {
   html {
     font-size: 16px;
@@ -281,10 +285,29 @@ th form button {
     text-decoration: underline;
 }
 
-/* Sticky navbar shadow — layered like macOS window shadows */
+/* macOS-style card shadow — layered ambient + tight edge shadow */
+.card-macos.card-macos-login {
+    box-shadow:
+        8px -3px 13px rgba(0, 0, 0, 0.064),
+        0 2px 7px rgba(0, 0, 0, 0.058),
+        0 7px 25px rgba(0, 0, 0, 0.075),
+        0 20px 53px rgba(0, 0, 0, 0.051);
+}
+.card-macos {
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.053),
+        0 6px 23px rgba(0, 0, 0, 0.068),
+        0 18px 48px rgba(0, 0, 0, 0.046);
+}
+
+/* Sticky navbar shadow — lighter at top, full shadow when scrolled */
 header.sticky-top {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.10), 0 8px 40px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.085), 0 7px 34px rgba(0, 0, 0, 0.153);
+    transition: box-shadow 0.2s ease;
     z-index: 1020;
+}
+header.sticky-top.scrolled {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.10), 0 8px 40px rgba(0, 0, 0, 0.18);
 }
 
 /* Search bar — darker border for visual distinction; right border of input = divider, stays original */

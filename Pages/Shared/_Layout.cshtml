@@ -115,6 +115,12 @@
                 setTimeout(function () {
                     $('.alert').alert('close');
                 }, 8000);
+
+                function updateHeaderShadow() {
+                    $('header.sticky-top').toggleClass('scrolled', window.scrollY > 0);
+                }
+                $(window).on('scroll', updateHeaderShadow);
+                updateHeaderShadow();
             });
         </script>
     </body>
