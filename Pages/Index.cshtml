@@ -948,41 +948,22 @@
                                                                 </table>
                                                             </div>
 
-                                                            <!-- Pagination Controls -->
-                                                            <nav class="d-flex justify-content-between align-items-center my-3" aria-label="Budget Amendment Page navigation">
-                                                                <!-- Results per page dropdown on the left -->
-                                                                <div class="d-flex align-items-center">
-                                                                    <label for="resultsPerPage" class="me-2">Results per page:</label>
-                                                                    <select id="resultsPerPage" class="form-select me-3" style="width: auto;"
-                                                                            onchange="window.location.href = '?amendmentPageNumber=1&amendmentsPerPage=' + this.value + '&SelectedDepartmentID=@Model.SelectedDepartmentID&SelectedStatusTab=@Model.SelectedStatusTab&SelectedBAMainStatusTab=@Model.SelectedBAMainStatusTab&SelectedBudgetAmendmentMainID=@Model.SelectedBudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")'">
-                                                                        @foreach (var size in Model.PageSizes)
-                                                                        {
-                                                                            <option value="@size" selected="@(Model.BudgetAmendmentResultsPerPage == size ? "selected" : null)">@size</option>
-                                                                        }
-                                                                    </select>
-                                                                </div>
-                                                                @{
-                                                                    int amendmentRecordsShown = Math.Min(Model.BudgetAmendmentResultsPerPage, Model.TotalBudgetAmendments - ((Model.BudgetAmendmentCurrentPage - 1) * Model.BudgetAmendmentResultsPerPage));
-                                                                }
-                                                                <span>Records: @amendmentRecordsShown of @Model.TotalBudgetAmendments</span>
-                                                                <ul class="pagination mb-0">
-                                                                    <li class="page-item @(Model.BudgetAmendmentCurrentPage <= 1 ? "disabled" : "")">
-                                                                        <a class="page-link" href="?amendmentPageNumber=@(Model.BudgetAmendmentCurrentPage - 1)&amendmentsPerPage=@Model.BudgetAmendmentResultsPerPage&SelectedDepartmentID=@Model.SelectedDepartmentID&SelectedStatusTab=@Model.SelectedStatusTab&SelectedBAMainStatusTab=@Model.SelectedBAMainStatusTab&SelectedBudgetAmendmentMainID=@Model.SelectedBudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")"
-                                                                           aria-label="Previous">
-                                                                            <span aria-hidden="true">&laquo;</span>
-                                                                        </a>
-                                                                    </li>
-                                                                    <li class="page-item active">
-                                                                        <span class="page-link">@Model.BudgetAmendmentCurrentPage</span>
-                                                                    </li>
-                                                                    <li class="page-item @(Model.BudgetAmendmentCurrentPage >= Model.BudgetAmendmentTotalPages ? "disabled" : "")">
-                                                                        <a class="page-link" href="?amendmentPageNumber=@(Model.BudgetAmendmentCurrentPage + 1)&amendmentsPerPage=@Model.BudgetAmendmentResultsPerPage&SelectedDepartmentID=@Model.SelectedDepartmentID&SelectedStatusTab=@Model.SelectedStatusTab&SelectedBAMainStatusTab=@Model.SelectedBAMainStatusTab&SelectedBudgetAmendmentMainID=@Model.SelectedBudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")"
-                                                                           aria-label="Next">
-                                                                            <span aria-hidden="true">&raquo;</span>
-                                                                        </a>
-                                                                    </li>
-                                                                </ul>
-                                                            </nav>
+                                                            @{
+                                                                var amendmentFilters = $"&SelectedDepartmentID={Model.SelectedDepartmentID}&SelectedStatusTab={Model.SelectedStatusTab}&SelectedBAMainStatusTab={Model.SelectedBAMainStatusTab}&SelectedBudgetAmendmentMainID={Model.SelectedBudgetAmendmentMainID}&SelectedFinancialYear={Model.SelectedFinancialYear}&CustomStartDate={Model.CustomStartDate?.ToString("yyyy-MM-dd")}&CustomEndDate={Model.CustomEndDate?.ToString("yyyy-MM-dd")}";
+                                                                var amendmentPagination = new budget_management_system_aspdotnetcore.ViewModels.PaginationViewModel
+                                                                {
+                                                                    CurrentPage = Model.BudgetAmendmentCurrentPage,
+                                                                    TotalPages = Model.BudgetAmendmentTotalPages,
+                                                                    TotalRecords = Model.TotalBudgetAmendments,
+                                                                    ResultsPerPage = Model.BudgetAmendmentResultsPerPage,
+                                                                    PageSizes = Model.PageSizes,
+                                                                    AriaLabel = "Budget amendment page navigation",
+                                                                    PrevUrl = $"?amendmentPageNumber={Model.BudgetAmendmentCurrentPage - 1}&amendmentsPerPage={Model.BudgetAmendmentResultsPerPage}{amendmentFilters}",
+                                                                    NextUrl = $"?amendmentPageNumber={Model.BudgetAmendmentCurrentPage + 1}&amendmentsPerPage={Model.BudgetAmendmentResultsPerPage}{amendmentFilters}",
+                                                                    SizeChangeUrlTemplate = $"?amendmentPageNumber=1&amendmentsPerPage=__SIZE__{amendmentFilters}"
+                                                                };
+                                                                await Html.RenderPartialAsync("_Pagination", amendmentPagination);
+                                                            }
 
                                                         </div>
                                                     </div>

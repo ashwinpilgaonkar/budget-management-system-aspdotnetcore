@@ -1,4 +1,5 @@
 using budget_management_system_aspdotnetcore.Entities;
+using budget_management_system_aspdotnetcore.ViewModels;
 using budget_management_system_aspdotnetcore.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -12,7 +13,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         private readonly IAuthenticationService _authService = authService;
 
         public string userRole { get; set; } = "";
-        public List<int> PageSizes { get; set; } = new List<int> { 10, 20, 30 };
+        public List<int> PageSizes { get; set; } = PaginationViewModel.DefaultPageSizes;
 
         public IEnumerable<Role> Roles { get; set; }
 

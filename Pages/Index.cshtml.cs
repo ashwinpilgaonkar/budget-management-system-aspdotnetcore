@@ -1,4 +1,5 @@
 using budget_management_system_aspdotnetcore.Entities;
+using budget_management_system_aspdotnetcore.ViewModels;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -42,7 +43,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         public string SortColumn { get; set; } = "DepartmentID";
         public string SortOrder { get; set; } = "asc";
 
-        public List<int> PageSizes { get; set; } = new List<int> { 10, 20, 30 };
+        public List<int> PageSizes { get; set; } = PaginationViewModel.DefaultPageSizes;
 
         public IEnumerable<SpeedType> SpeedTypes { get; set; }
 

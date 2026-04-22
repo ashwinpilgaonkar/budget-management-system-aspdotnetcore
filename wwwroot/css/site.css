@@ -328,6 +328,23 @@ th form button {
 }
 
 /* Restore comfortable sizes on large monitors and constrain width so navbar doesn't spread edge-to-edge */
+/* Page-size button group in pagination controls */
+.btn-page-size {
+    color: #6c757d;
+    border-color: #dee2e6;
+    background-color: transparent;
+}
+.btn-page-size.active {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    color: #495057;
+}
+.btn-page-size:hover:not(.active) {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+    color: #495057;
+}
+
 @media (min-width: 1600px) {
     .navbar-brand {
         font-size: 1rem;

@@ -1,4 +1,5 @@
 using budget_management_system_aspdotnetcore.Entities;
+using budget_management_system_aspdotnetcore.ViewModels;
 using budget_management_system_aspdotnetcore.Services;
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public string SortColumn { get; set; } = "Code";
         public string SortOrder { get; set; } = "asc";
-        public List<int> PageSizes { get; set; } = new List<int> { 10, 20, 30 };
+        public List<int> PageSizes { get; set; } = PaginationViewModel.DefaultPageSizes;
         #endregion
 
         // ==============================================
