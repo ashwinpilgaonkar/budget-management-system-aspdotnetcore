@@ -77,6 +77,19 @@ body {
   margin-bottom: 60px;
 }
 
+.login-center {
+  min-height: calc(100vh - 200px);
+}
+
+@media (max-height: 800px) {
+  body {
+    margin-bottom: 40px;
+  }
+  .login-center {
+    min-height: calc(100vh - 158px);
+  }
+}
+
 th form {
     display: inline-block;
     margin-left: 5px;
