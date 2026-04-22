@@ -512,9 +512,23 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostAddAmendmentAsync()
         {
-            if (!ModelState.IsValid)
+            if (string.IsNullOrWhiteSpace(NewBudgetAmendment.CategoryName)
+                || string.IsNullOrWhiteSpace(NewBudgetAmendment.AdjustmentDetail)
+                || string.IsNullOrWhiteSpace(NewBudgetAmendment.AcctDescription)
+                || string.IsNullOrWhiteSpace(NewBudgetAmendment.BudgetCode)
+                || string.IsNullOrWhiteSpace(NewBudgetAmendment.PositionNumber)
+                || TransferAmount <= 0)
             {
-                /*return Page();*/
+                TempData["ErrorMessage"] = "All fields are required to create a Budget Amendment entry.";
+                return RedirectToPage(new
+                {
+                    SelectedDepartmentID,
+                    SelectedBudgetAmendmentMainID,
+                    SelectedStatusTab,
+                    SelectedFinancialYear,
+                    CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
+                    CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
+                });
             }
 
             var transactionId = Guid.NewGuid();

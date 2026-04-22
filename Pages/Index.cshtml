@@ -239,9 +239,9 @@
                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                     <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                    <div class="input-group">
+                                                                    <div class="input-group search-group">
                                                                         <input type="text" name="BudgetAmendmentSearchTerm" class="form-control" placeholder="Search..." value="@Model.BudgetAmendmentSearchTerm" />
-                                                                        <button type="submit" class="btn btn-outline-secondary border-start-0" style="border-color: #ced4da; color: #6c757d;">
+                                                                        <button type="submit" class="btn btn-outline-secondary border-start-0" style="color: #6c757d;">
                                                                             <i class="fas fa-search"></i>
                                                                         </button>
                                                                     </div>
@@ -1037,15 +1037,15 @@
                     <form method="post" asp-page-handler="AddAmendment">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewBudgetAmendment.CategoryName" class="form-label">Category Name</label>
-                                <input asp-for="NewBudgetAmendment.CategoryName" class="form-control" />
+                                <label asp-for="NewBudgetAmendment.CategoryName" class="form-label">Category Name: <span class="text-danger ms-1">*</span></label>
+                                <input asp-for="NewBudgetAmendment.CategoryName" class="form-control" required />
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewBudgetAmendment.AdjustmentDetail" class="form-label">Adjustment Detail</label>
-                                <input asp-for="NewBudgetAmendment.AdjustmentDetail" class="form-control" />
+                                <label asp-for="NewBudgetAmendment.AdjustmentDetail" class="form-label">Adjustment Detail: <span class="text-danger ms-1">*</span></label>
+                                <input asp-for="NewBudgetAmendment.AdjustmentDetail" class="form-control" required />
                             </div>
                             <div class="col-md-6 mb-3 d-flex flex-column">
-                                <label asp-for="SourceSpeedtype" class="form-label">Source SpeedType</label>
+                                <label asp-for="SourceSpeedtype" class="form-label">Source SpeedType: <span class="text-danger ms-1">*</span></label>
                                 <select asp-for="SourceSpeedtype" class="selectpicker w-100" data-live-search="true" id="sourceSpeedtype">
                                     @foreach (var speedtype in Model.SpeedTypes)
                                     {
@@ -1056,7 +1056,7 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3 d-flex flex-column">
-                                <label asp-for="DestinationSpeedtype" class="form-label">Destination SpeedType</label>
+                                <label asp-for="DestinationSpeedtype" class="form-label">Destination SpeedType: <span class="text-danger ms-1">*</span></label>
                                 <select asp-for="DestinationSpeedtype" class="selectpicker w-100" data-live-search="true">
                                     @foreach (var speedtype in Model.SpeedTypes)
                                     {
@@ -1068,36 +1068,36 @@
                                 <div class="invalid-feedback" id="speedtypeError">Destination SpeedType must be different from Source SpeedType.</div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewBudgetAmendment.FundCode" class="form-label">Fund Code</label>
+                                <label asp-for="NewBudgetAmendment.FundCode" class="form-label">Fund Code:</label>
                                 <input asp-for="NewBudgetAmendment.FundCode" class="form-control" id="fundCode" />
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewBudgetAmendment.DepartmentID" class="form-label">Department ID</label>
+                                <label asp-for="NewBudgetAmendment.DepartmentID" class="form-label">Department ID:</label>
                                 <input asp-for="NewBudgetAmendment.DepartmentID" class="form-control" value="@Model.SelectedDepartmentID" readonly />
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewBudgetAmendment.ProgramCode" class="form-label">Program Code</label>
+                                <label asp-for="NewBudgetAmendment.ProgramCode" class="form-label">Program Code:</label>
                                 <input asp-for="NewBudgetAmendment.ProgramCode" class="form-control" id="programCode" />
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewBudgetAmendment.ClassCode" class="form-label">Class Code</label>
+                                <label asp-for="NewBudgetAmendment.ClassCode" class="form-label">Class Code:</label>
                                 <input asp-for="NewBudgetAmendment.ClassCode" class="form-control" id="classCode" />
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewBudgetAmendment.AcctDescription" class="form-label">Account Description</label>
-                                <input asp-for="NewBudgetAmendment.AcctDescription" class="form-control" />
+                                <label asp-for="NewBudgetAmendment.AcctDescription" class="form-label">Account Description: <span class="text-danger ms-1">*</span></label>
+                                <input asp-for="NewBudgetAmendment.AcctDescription" class="form-control" required />
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewBudgetAmendment.BudgetCode" class="form-label">Budget Code</label>
-                                <input asp-for="NewBudgetAmendment.BudgetCode" class="form-control" />
+                                <label asp-for="NewBudgetAmendment.BudgetCode" class="form-label">Budget Code: <span class="text-danger ms-1">*</span></label>
+                                <input asp-for="NewBudgetAmendment.BudgetCode" class="form-control" required />
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewBudgetAmendment.PositionNumber" class="form-label">Position Number</label>
-                                <input asp-for="NewBudgetAmendment.PositionNumber" class="form-control" />
+                                <label asp-for="NewBudgetAmendment.PositionNumber" class="form-label">Position Number: <span class="text-danger ms-1">*</span></label>
+                                <input asp-for="NewBudgetAmendment.PositionNumber" class="form-control" required />
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="TransferAmount" class="form-label">Amount</label>
-                                <input asp-for="TransferAmount" class="form-control" type="number" step="0.01" />
+                                <label asp-for="TransferAmount" class="form-label">Amount: <span class="text-danger ms-1">*</span></label>
+                                <input asp-for="TransferAmount" class="form-control" type="number" step="0.01" min="0.01" required />
                             </div>
                             <div class="col-md-6 mb-3">
                                 <input asp-for="NewBudgetAmendment.BudgetAmendmentMainID" type="hidden" class="form-control" value="@Model.SelectedBudgetAmendmentMainID" readonly />

@@ -150,6 +150,12 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!_authService.IsAuthenticated(HttpContext))
                 return RedirectToPage("/Login");
 
+            if (string.IsNullOrWhiteSpace(NewSpeedType.Code))
+            {
+                TempData["ErrorMessage"] = "SpeedType Code is required.";
+                return RedirectToPage();
+            }
+
             _context.SpeedTypes.Add(NewSpeedType);
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = $"Speed type \"{NewSpeedType.Code}\" added successfully.";

@@ -287,6 +287,18 @@ header.sticky-top {
     z-index: 1020;
 }
 
+/* Search bar — darker border for visual distinction; right border of input = divider, stays original */
+.search-group .form-control {
+    border-top-color: #c4c9ce;
+    border-bottom-color: #c4c9ce;
+    border-left-color: #c4c9ce;
+}
+.search-group .btn-outline-secondary {
+    border-top-color: #c4c9ce;
+    border-right-color: #c4c9ce;
+    border-bottom-color: #c4c9ce;
+}
+
 /* Tighter navbar to prevent overflow on ~1366px laptop screens */
 .navbar-brand {
     font-size: 0.95rem;

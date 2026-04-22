@@ -129,15 +129,15 @@
                 <div class="modal-body">
                     <form method="post" asp-page-handler="AddAmendmentMain" id="addBudgetAmendmentForm">
                         <div class="mb-3">
-                            <label asp-for="NewBudgetAmendmentMain.Name" class="form-label">Budget Amendment Name: </label>
+                            <label asp-for="NewBudgetAmendmentMain.Name" class="form-label">Budget Amendment Name: <span class="text-danger ms-1">*</span></label>
                             <input asp-for="NewBudgetAmendmentMain.Name" class="form-control" placeholder="e.g. BA#4" required />
                         </div>
                         <div class="mb-3">
-                            <label asp-for="NewBudgetAmendmentMain.StartDate" class="form-label">Start Date: </label>
+                            <label asp-for="NewBudgetAmendmentMain.StartDate" class="form-label">Start Date: <span class="text-danger ms-1">*</span></label>
                             <input asp-for="NewBudgetAmendmentMain.StartDate" type="datetime-local" class="form-control" id="startDate" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" required />
                         </div>
                         <div class="mb-3">
-                            <label asp-for="NewBudgetAmendmentMain.EndDate" class="form-label">End Date: </label>
+                            <label asp-for="NewBudgetAmendmentMain.EndDate" class="form-label">End Date: <span class="text-danger ms-1">*</span></label>
                             <input asp-for="NewBudgetAmendmentMain.EndDate" type="datetime-local" class="form-control" id="endDate" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" required />
                             <div class="invalid-feedback" id="dateError">End date must be after start date.</div>
                         </div>

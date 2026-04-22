@@ -14,9 +14,9 @@
             <h3 class="page-title">Users</h3>
             <div class="d-flex gap-2 mb-3 align-items-center">
                 <form method="get" class="flex-grow-1">
-                    <div class="input-group">
+                    <div class="input-group search-group">
                         <input type="text" name="UserSearchTerm" class="form-control" placeholder="Search..." value="@Model.UserSearchTerm" />
-                        <button type="submit" class="btn btn-outline-secondary border-start-0" style="border-color: #ced4da; color: #6c757d;">
+                        <button type="submit" class="btn btn-outline-secondary border-start-0" style="color: #6c757d;">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
@@ -274,14 +274,14 @@
                     <form method="post" asp-page-handler="AddUser">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewUser.Email" class="form-label">Email</label>
-                                <input asp-for="NewUser.Email" class="form-control" />
+                                <label asp-for="NewUser.Email" class="form-label">Email: <span class="text-danger ms-1">*</span></label>
+                                <input asp-for="NewUser.Email" class="form-control" type="email" required />
                                 <span asp-validation-for="NewUser.Email" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewUser.Password" class="form-label">Password</label>
+                                <label asp-for="NewUser.Password" class="form-label">Password: <span class="text-danger ms-1">*</span></label>
                                 <div class="input-group">
-                                    <input asp-for="NewUser.Password" type="password" class="form-control" id="passwordInput" />
+                                    <input asp-for="NewUser.Password" type="password" class="form-control" id="passwordInput" required minlength="6" />
                                     <button class="btn" type="button" id="togglePasswordBtn" tabindex="-1"
                                             style="border-color: #ced4da; border-left: none; background: white; color: #6c757d;">
                                         <i class="fas fa-eye" id="togglePasswordIcon"></i>
@@ -290,7 +290,7 @@
                                 <span asp-validation-for="NewUser.Password" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewUser.Status" class="form-label">Status</label>
+                                <label asp-for="NewUser.Status" class="form-label">Status: <span class="text-danger ms-1">*</span></label>
                                 <select asp-for="NewUser.Status" class="form-control">
                                     <option value="active">active</option>
                                     <option value="inactive">inactive</option>
@@ -298,29 +298,30 @@
                                 <span asp-validation-for="NewUser.Status" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewUser.RoleID" class="form-label">Role</label>
+                                <label asp-for="NewUser.RoleID" class="form-label">Role: <span class="text-danger ms-1">*</span></label>
                                 <select asp-for="NewUser.RoleID" class="form-control" asp-items="Model.UserRoleOptions">
                                 </select>
                                 <span asp-validation-for="NewUser.RoleID" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewUser.FirstName" class="form-label">First Name</label>
-                                <input asp-for="NewUser.FirstName" class="form-control" />
+                                <label asp-for="NewUser.FirstName" class="form-label">First Name: <span class="text-danger ms-1">*</span></label>
+                                <input asp-for="NewUser.FirstName" class="form-control" required />
                                 <span asp-validation-for="NewUser.FirstName" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="NewUser.LastName" class="form-label">Last Name</label>
-                                <input asp-for="NewUser.LastName" class="form-control" />
+                                <label asp-for="NewUser.LastName" class="form-label">Last Name: <span class="text-danger ms-1">*</span></label>
+                                <input asp-for="NewUser.LastName" class="form-control" required />
                                 <span asp-validation-for="NewUser.LastName" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="SelectedDepartmentIds" class="form-label">Departments Responsible For</label>
+                                <label asp-for="SelectedDepartmentIds" class="form-label">Departments Responsible For: <span class="text-danger ms-1">*</span></label>
 
                                 <select asp-for="SelectedDepartmentIds"
                                         class="selectpicker w-100"
                                         multiple
                                         data-live-search="true"
-                                        title="Select departments">
+                                        title="Select departments"
+                                        id="addUserDepartments">
                                     @foreach (var department in Model.DepartmentOptions)
                                     {
                                         <option value="@department.Value" data-tokens="@department.Text">
@@ -328,6 +329,7 @@
                                         </option>
                                     }
                                 </select>
+                                <span class="text-danger" id="addUserDepartmentsError" style="display:none;">At least one department is required.</span>
                                 <span asp-validation-for="SelectedDepartmentIds" class="text-danger"></span>
                             </div>
                         </div>
@@ -354,6 +356,17 @@
             } else {
                 input.type = 'password';
                 icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+
+        document.querySelector('#addUserModal form').addEventListener('submit', function (e) {
+            const selected = document.getElementById('addUserDepartments').selectedOptions;
+            const error = document.getElementById('addUserDepartmentsError');
+            if (selected.length === 0) {
+                e.preventDefault();
+                error.style.display = 'block';
+            } else {
+                error.style.display = 'none';
             }
         });
 

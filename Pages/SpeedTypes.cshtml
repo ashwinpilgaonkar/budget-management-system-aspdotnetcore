@@ -14,9 +14,9 @@
             <h3 class="page-title">SpeedTypes</h3>
             <div class="d-flex gap-2 mb-3 align-items-center">
                 <form method="get" class="flex-grow-1">
-                    <div class="input-group">
+                    <div class="input-group search-group">
                         <input type="text" name="SpeedTypeSearchTerm" class="form-control" placeholder="Search..." value="@Model.SpeedTypeSearchTerm" />
-                        <button type="submit" class="btn btn-outline-secondary border-start-0" style="border-color: #ced4da; color: #6c757d;">
+                        <button type="submit" class="btn btn-outline-secondary border-start-0" style="color: #6c757d;">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
@@ -267,28 +267,28 @@
                 <div class="modal-body">
                     <form method="post" asp-page-handler="AddSpeedType">
                         <div class="mb-3">
-                            <label asp-for="NewSpeedType.Code" class="form-label">SpeedType Code:</label>
-                            <input asp-for="NewSpeedType.Code" class="form-control" />
+                            <label asp-for="NewSpeedType.Code" class="form-label">SpeedType Code: <span class="text-danger ms-1">*</span></label>
+                            <input asp-for="NewSpeedType.Code" class="form-control" required />
                             <span asp-validation-for="NewSpeedType.Code" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="NewSpeedType.Budget" class="form-label">Budget (in US$):</label>
-                            <input asp-for="NewSpeedType.Budget" class="form-control" />
+                            <label asp-for="NewSpeedType.Budget" class="form-label">Budget (in US$): <span class="text-danger ms-1">*</span></label>
+                            <input asp-for="NewSpeedType.Budget" class="form-control" type="number" min="0" step="0.01" required />
                             <span asp-validation-for="NewSpeedType.Budget" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="NewSpeedType.FundCode" class="form-label">Fund Code: </label>
-                            <input asp-for="NewSpeedType.FundCode" class="form-control" />
+                            <label asp-for="NewSpeedType.FundCode" class="form-label">Fund Code: <span class="text-danger ms-1">*</span></label>
+                            <input asp-for="NewSpeedType.FundCode" class="form-control" type="number" min="0" required />
                             <span asp-validation-for="NewSpeedType.FundCode" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="NewSpeedType.ProgramCode" class="form-label">Program Code: </label>
-                            <input asp-for="NewSpeedType.ProgramCode" class="form-control" />
+                            <label asp-for="NewSpeedType.ProgramCode" class="form-label">Program Code: <span class="text-danger ms-1">*</span></label>
+                            <input asp-for="NewSpeedType.ProgramCode" class="form-control" type="number" min="0" required />
                             <span asp-validation-for="NewSpeedType.ProgramCode" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="NewSpeedType.ClassCode" class="form-label">Class Code: </label>
-                            <input asp-for="NewSpeedType.ClassCode" class="form-control" />
+                            <label asp-for="NewSpeedType.ClassCode" class="form-label">Class Code: <span class="text-danger ms-1">*</span></label>
+                            <input asp-for="NewSpeedType.ClassCode" class="form-control" type="number" min="0" required />
                             <span asp-validation-for="NewSpeedType.ClassCode" class="text-danger"></span>
                         </div>
                         <div class="modal-footer">

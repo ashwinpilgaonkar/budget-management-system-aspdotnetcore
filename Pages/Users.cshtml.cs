@@ -181,6 +181,14 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!_authService.IsAuthenticated(HttpContext))
                 return RedirectToPage("/Login");
 
+            if (string.IsNullOrWhiteSpace(NewUser.Email) || string.IsNullOrWhiteSpace(NewUser.Password)
+                || string.IsNullOrWhiteSpace(NewUser.FirstName) || string.IsNullOrWhiteSpace(NewUser.LastName)
+                || !SelectedDepartmentIds.Any())
+            {
+                TempData["ErrorMessage"] = "All user fields are required.";
+                return RedirectToPage();
+            }
+
             NewUser.Password = BCrypt.Net.BCrypt.HashPassword(NewUser.Password);
 
             NewUser.DepartmentsResponsibleFor = await _context.Departments

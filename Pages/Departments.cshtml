@@ -14,9 +14,9 @@
             <h3 class="page-title">Departments</h3>
             <div class="d-flex gap-2 mb-3 align-items-center">
                 <form method="get" class="flex-grow-1">
-                    <div class="input-group">
+                    <div class="input-group search-group">
                         <input type="text" name="DepartmentSearchTerm" class="form-control" placeholder="Search..." value="@Model.DepartmentSearchTerm" />
-                        <button type="submit" class="btn btn-outline-secondary border-start-0" style="border-color: #ced4da; color: #6c757d;">
+                        <button type="submit" class="btn btn-outline-secondary border-start-0" style="color: #6c757d;">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
@@ -228,13 +228,13 @@
                 <div class="modal-body">
                     <form method="post" asp-page-handler="AddDepartment">
                         <div class="mb-3">
-                            <label asp-for="NewDepartment.DepartmentName" class="form-label">Department Name</label>
-                            <input asp-for="NewDepartment.DepartmentName" class="form-control" />
+                            <label asp-for="NewDepartment.DepartmentName" class="form-label">Department Name: <span class="text-danger ms-1">*</span></label>
+                            <input asp-for="NewDepartment.DepartmentName" class="form-control" required />
                             <span asp-validation-for="NewDepartment.DepartmentName" class="text-danger"></span>
                         </div>
                         <div class="mb-3 d-flex flex-column">
-                            <label asp-for="SelectedSpeedTypeIds" class="form-label">SpeedTypes</label>
-                            <select asp-for="SelectedSpeedTypeIds" class="selectpicker w-100" multiple data-live-search="true" title="Select speed types">
+                            <label asp-for="SelectedSpeedTypeIds" class="form-label">SpeedTypes: <span class="text-danger ms-1">*</span></label>
+                            <select asp-for="SelectedSpeedTypeIds" class="selectpicker w-100" multiple data-live-search="true" title="Select speed types" id="addDeptSpeedTypes">
                                 @foreach (var speedtype in Model.SpeedTypes)
                                 {
                                     <option value="@speedtype.SpeedTypeId" data-tokens="@speedtype.Code">
@@ -242,6 +242,7 @@
                                     </option>
                                 }
                             </select>
+                            <span class="text-danger" id="addDeptSpeedTypesError" style="display:none;">At least one SpeedType is required.</span>
                             <span asp-validation-for="SelectedSpeedTypeIds" class="text-danger"></span>
                         </div>
                         <div class="modal-footer">
@@ -288,6 +289,21 @@
                     e.stopPropagation(); // Prevents the dropdown from closing on click inside
                 });
         }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const addDeptForm = document.querySelector('#addDepartmentModal form');
+        const speedTypesError = document.getElementById('addDeptSpeedTypesError');
+
+        addDeptForm.addEventListener('submit', function (e) {
+            const selected = document.getElementById('addDeptSpeedTypes').selectedOptions;
+            if (selected.length === 0) {
+                e.preventDefault();
+                speedTypesError.style.display = 'block';
+            } else {
+                speedTypesError.style.display = 'none';
+            }
+        });
     });
 </script>
 
