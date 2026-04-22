@@ -328,30 +328,27 @@ th form button {
     border-color: #991b1b;
 }
 
-/* Restore comfortable sizes on large monitors and constrain width so navbar doesn't spread edge-to-edge */
-/* Page-size button group in pagination controls */
-.btn-page-size {
-    color: #9ca3af;
-    border-color: #e9ecef;
-    background-color: transparent;
+/* Show (page-size) buttons: dark gray when enabled, light gray when disabled, muted when selected */
+.pagination-show .page-link {
+    color: #6c757d;
 }
-.btn-group .btn-page-size:not(:first-child) {
-    border-left: none;
-}
-.btn-page-size.active {
-    background-color: #f1f3f5;
-    color: #212529;
-    font-weight: 600;
-}
-.btn-page-size.disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-}
-.btn-page-size:hover:not(.active):not(.disabled) {
-    background-color: #f8f9fa;
-    border-color: #ced4da;
+.pagination-show .page-link:hover {
     color: #495057;
 }
+.pagination-show .page-item.active .page-link {
+    color: var(--bs-pagination-disabled-color);
+    background-color: var(--bs-pagination-disabled-bg);
+    border-color: var(--bs-pagination-disabled-border-color);
+    font-weight: 600;
+}
+.pagination-show .page-item.disabled .page-link {
+    color: #adb5bd;
+    background-color: var(--bs-pagination-bg);
+    border-color: var(--bs-pagination-border-color);
+    opacity: 1;
+}
+
+/* Restore comfortable sizes on large monitors and constrain width so navbar doesn't spread edge-to-edge */
 
 @media (min-width: 1600px) {
     .navbar-brand {
@@ -470,4 +467,12 @@ th form button {
     background-color: #dee2e6;
     pointer-events: none;
     z-index: 10;
+}
+
+/* Constrain dept controls bar and status tabs to BA main width — table-responsive is excluded by the direct-child combinator */
+[id^="departmentsBA"] > .accordion-item > .accordion-collapse > .accordion-body > .d-flex,
+[id^="departmentsBA"] > .accordion-item > .accordion-collapse > .accordion-body > .nav-tabs {
+    max-width: 925px;
+    margin-left: auto;
+    margin-right: auto;
 }

@@ -11,45 +11,44 @@
     <!-- Department List Card -->
     <div class="card mb-4 shadow-sm" style="border-radius: 10px;">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
-                <h3 class="page-title">Departments</h3>
-                <div class="d-flex gap-2">
-                    <form method="post" asp-page-handler="ExportToExcelDepartments" id="deptsExportForm">
-                        <input type="hidden" name="DepartmentSearchTerm" value="@Model.DepartmentSearchTerm" />
-                        <input type="hidden" name="DepartmentMinBudget" value="@Model.DepartmentMinBudget" />
-                        <input type="hidden" name="DepartmentMaxBudget" value="@Model.DepartmentMaxBudget" />
-                        <input type="hidden" name="ExportAll" value="false" id="deptsExportAllFlag" />
-                        <div class="btn-group">
-                            <button type="submit" class="btn btn-outline-success" id="deptsExportBtn"
-                                    onclick="triggerExport('deptsExportForm', 'deptsExportBtn', 'deptsExportAllFlag', false)">
-                                <i class="fas fa-file-excel me-1"></i> Export
-                            </button>
-                            <button type="button" class="btn btn-outline-success dropdown-toggle dropdown-toggle-split"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="visually-hidden">Toggle Dropdown</span>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="#"
-                                       onclick="triggerExport('deptsExportForm', 'deptsExportBtn', 'deptsExportAllFlag', true); return false;">
-                                        <i class="fas fa-table me-2"></i>Export All
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </form>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDepartmentModal">
-                        Add New +
-                    </button>
-                </div>
+            <h3 class="page-title">Departments</h3>
+            <div class="d-flex gap-2 mb-3 align-items-center">
+                <form method="get" class="flex-grow-1">
+                    <div class="input-group">
+                        <input type="text" name="DepartmentSearchTerm" class="form-control" placeholder="Search..." value="@Model.DepartmentSearchTerm" />
+                        <button type="submit" class="btn btn-outline-secondary border-start-0" style="border-color: #ced4da; color: #6c757d;">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+                <form method="post" asp-page-handler="ExportToExcelDepartments" id="deptsExportForm">
+                    <input type="hidden" name="DepartmentSearchTerm" value="@Model.DepartmentSearchTerm" />
+                    <input type="hidden" name="DepartmentMinBudget" value="@Model.DepartmentMinBudget" />
+                    <input type="hidden" name="DepartmentMaxBudget" value="@Model.DepartmentMaxBudget" />
+                    <input type="hidden" name="ExportAll" value="false" id="deptsExportAllFlag" />
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-outline-success" id="deptsExportBtn"
+                                onclick="triggerExport('deptsExportForm', 'deptsExportBtn', 'deptsExportAllFlag', false)">
+                            <i class="fas fa-file-excel me-1"></i> Export
+                        </button>
+                        <button type="button" class="btn btn-outline-success dropdown-toggle dropdown-toggle-split"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#"
+                                   onclick="triggerExport('deptsExportForm', 'deptsExportBtn', 'deptsExportAllFlag', true); return false;">
+                                    <i class="fas fa-table me-2"></i>Export All
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDepartmentModal">
+                    Add New +
+                </button>
             </div>
-            <!-- Search Bar -->
-            <form method="get">
-                <div class="input-group mb-3">
-                    <input type="text" name="DepartmentSearchTerm" class="form-control" placeholder="Search..." value="@Model.DepartmentSearchTerm" />
-                    <button type="submit" class="btn btn-outline-secondary">Search</button>
-                </div>
-            </form>
             <div class="table-responsive">
                 <table class="table table-bordered table-striped table-hover text-center">
                     <thead>

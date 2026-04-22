@@ -7,16 +7,18 @@
 <nav class="d-flex justify-content-between align-items-center my-3" aria-label="@Model.AriaLabel">
     <div class="d-flex align-items-center gap-2">
         <span class="text-muted small">Show:</span>
-        <div class="btn-group btn-group-sm" role="group" aria-label="Results per page">
+        <ul class="pagination pagination-sm mb-0 pagination-show" aria-label="Results per page">
             @foreach (var size in Model.PageSizes)
             {
                 var sizeUrl = Model.SizeChangeUrlTemplate.Replace("__SIZE__", size.ToString());
-                var isDisabled = Model.TotalRecords < size;
-                <a href="@(isDisabled ? "#" : sizeUrl)"
-                   class="btn btn-page-size @(Model.ResultsPerPage == size ? "active" : "") @(isDisabled ? "disabled" : "")"
-                   @(isDisabled ? "aria-disabled=\"true\" tabindex=\"-1\"" : "")>@size</a>
+                var isDisabled = Model.TotalRecords < size && Model.ResultsPerPage != size;
+                <li class="page-item @(Model.ResultsPerPage == size ? "active" : "") @(isDisabled ? "disabled" : "")">
+                    <a href="@(isDisabled ? "#" : sizeUrl)"
+                       class="page-link"
+                       @(isDisabled ? "aria-disabled=\"true\" tabindex=\"-1\"" : "")>@size</a>
+                </li>
             }
-        </div>
+        </ul>
     </div>
     <span class="text-muted small">Showing @start&ndash;@end of @Model.TotalRecords</span>
     <ul class="pagination mb-0">
