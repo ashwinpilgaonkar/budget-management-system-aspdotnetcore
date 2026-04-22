@@ -330,16 +330,23 @@ th form button {
 /* Restore comfortable sizes on large monitors and constrain width so navbar doesn't spread edge-to-edge */
 /* Page-size button group in pagination controls */
 .btn-page-size {
-    color: #6c757d;
-    border-color: #dee2e6;
+    color: #9ca3af;
+    border-color: #e9ecef;
     background-color: transparent;
 }
-.btn-page-size.active {
-    background-color: #e9ecef;
-    border-color: #ced4da;
-    color: #495057;
+.btn-group .btn-page-size:not(:first-child) {
+    border-left: none;
 }
-.btn-page-size:hover:not(.active) {
+.btn-page-size.active {
+    background-color: #f1f3f5;
+    color: #212529;
+    font-weight: 600;
+}
+.btn-page-size.disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+.btn-page-size:hover:not(.active):not(.disabled) {
     background-color: #f8f9fa;
     border-color: #ced4da;
     color: #495057;

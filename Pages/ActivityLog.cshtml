@@ -1,4 +1,4 @@
-﻿@page "/activitylog"
+@page "/activitylog"
 @model ActivityLogModel
 @{
     ViewData["Title"] = "Activity Log";
@@ -24,7 +24,7 @@
                     <tbody>
                         @if (Model.UserActivityLogs != null && Model.UserActivityLogs.Any())
                         {
-                            int index = 1;
+                            int index = (Model.CurrentPage - 1) * Model.ResultsPerPage + 1;
                             foreach (var log in Model.UserActivityLogs)
                             {
                                 <tr>
@@ -53,6 +53,7 @@
                     </tbody>
                 </table>
             </div>
+            <partial name="_Pagination" model="Model.GetActivityLogPagination()" />
         </div>
     </div>
         </div>

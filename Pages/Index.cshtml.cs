@@ -72,6 +72,11 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public int TotalBudgetAmendments { get; set; }
 
+        public int BAMainCurrentPage { get; set; } = 1;
+        public int BAMainResultsPerPage { get; set; } = 10;
+        public int BAMainTotalPages { get; set; }
+        public int TotalBAMains { get; set; }
+
         [BindProperty(SupportsGet = true)]
         public string BudgetAmendmentSearchTerm { get; set; }
 
@@ -287,6 +292,13 @@ namespace budget_management_system_aspdotnetcore.Pages
                 }).ToList();
             }
 
+            TotalBAMains = BudgetAmendmentsMain.Count;
+            BAMainTotalPages = (int)Math.Ceiling(TotalBAMains / (double)BAMainResultsPerPage);
+            BudgetAmendmentsMain = BudgetAmendmentsMain
+                .Skip((BAMainCurrentPage - 1) * BAMainResultsPerPage)
+                .Take(BAMainResultsPerPage)
+                .ToList();
+
             var amendmentQuery = _context.BudgetAmendments.AsQueryable();
 
             if (!string.IsNullOrEmpty(BudgetAmendmentSearchTerm))
@@ -428,10 +440,16 @@ namespace budget_management_system_aspdotnetcore.Pages
         }
 
 
-        public async Task<IActionResult> OnGetAsync(int amendmentPageNumber = 1, int amendmentResultsPerPage = 10)
+        public async Task<IActionResult> OnGetAsync(
+            int amendmentPageNumber = 1,
+            int amendmentResultsPerPage = 10,
+            int baMainPageNumber = 1,
+            int baMainResultsPerPage = 10)
         {
             BudgetAmendmentCurrentPage = amendmentPageNumber;
             BudgetAmendmentResultsPerPage = amendmentResultsPerPage;
+            BAMainCurrentPage = baMainPageNumber;
+            BAMainResultsPerPage = baMainResultsPerPage;
 
             if (!_authService.IsAuthenticated(HttpContext))
             {
@@ -463,6 +481,33 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return SortOrder == "asc" ? "fa-arrow-up" : "fa-arrow-down";
             }
             return "fa-sort";
+        }
+
+        public PaginationViewModel GetBAMainPagination()
+        {
+            var filters =
+                $"&SelectedBAMainStatusTab={SelectedBAMainStatusTab}" +
+                $"&SelectedFinancialYear={SelectedFinancialYear}" +
+                $"&CustomStartDate={CustomStartDate?.ToString("yyyy-MM-dd")}" +
+                $"&CustomEndDate={CustomEndDate?.ToString("yyyy-MM-dd")}" +
+                $"&SelectedDepartmentID={SelectedDepartmentID}" +
+                $"&SelectedStatusTab={SelectedStatusTab}" +
+                $"&SelectedBudgetAmendmentMainID={SelectedBudgetAmendmentMainID}" +
+                $"&amendmentPageNumber={BudgetAmendmentCurrentPage}" +
+                $"&amendmentResultsPerPage={BudgetAmendmentResultsPerPage}";
+
+            return new PaginationViewModel
+            {
+                CurrentPage = BAMainCurrentPage,
+                TotalPages = BAMainTotalPages,
+                TotalRecords = TotalBAMains,
+                ResultsPerPage = BAMainResultsPerPage,
+                PageSizes = PageSizes,
+                AriaLabel = "Budget amendment main page navigation",
+                PrevUrl = $"?baMainPageNumber={BAMainCurrentPage - 1}&baMainResultsPerPage={BAMainResultsPerPage}{filters}",
+                NextUrl = $"?baMainPageNumber={BAMainCurrentPage + 1}&baMainResultsPerPage={BAMainResultsPerPage}{filters}",
+                SizeChangeUrlTemplate = $"?baMainPageNumber=1&baMainResultsPerPage=__SIZE__{filters}"
+            };
         }
 
         public async Task<IActionResult> OnPostAddAmendmentAsync()

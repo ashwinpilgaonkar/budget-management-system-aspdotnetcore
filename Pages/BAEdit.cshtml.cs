@@ -1,4 +1,5 @@
 using budget_management_system_aspdotnetcore.Entities;
+using budget_management_system_aspdotnetcore.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,13 @@ namespace budget_management_system_aspdotnetcore.Pages
         public List<string> SelectedDepartments { get; set; }
 
         public Dictionary<int, int> DeptExtensionCounts { get; set; }
+
+        public List<int> PageSizes { get; set; } = PaginationViewModel.DefaultPageSizes;
+
+        public int BAMainCurrentPage { get; set; } = 1;
+        public int BAMainResultsPerPage { get; set; } = 10;
+        public int BAMainTotalPages { get; set; }
+        public int TotalBAMains { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public string? SelectedBAMainStatusTab { get; set; } = "Pending";
@@ -107,6 +115,13 @@ namespace budget_management_system_aspdotnetcore.Pages
                 }).ToList();
             }
 
+            TotalBAMains = BudgetAmendmentsMain.Count;
+            BAMainTotalPages = (int)Math.Ceiling(TotalBAMains / (double)BAMainResultsPerPage);
+            BudgetAmendmentsMain = BudgetAmendmentsMain
+                .Skip((BAMainCurrentPage - 1) * BAMainResultsPerPage)
+                .Take(BAMainResultsPerPage)
+                .ToList();
+
             Departments = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
 
             DeptExtensionCounts = await _context.BADepartmentExtensions
@@ -115,8 +130,11 @@ namespace budget_management_system_aspdotnetcore.Pages
         }
 
 
-        public async Task<IActionResult> OnGetAsync()
+        public async Task<IActionResult> OnGetAsync(int baMainPageNumber = 1, int baMainResultsPerPage = 10)
         {
+            BAMainCurrentPage = baMainPageNumber;
+            BAMainResultsPerPage = baMainResultsPerPage;
+
             if (!_authService.IsAuthenticated(HttpContext))
             {
                 return RedirectToPage("/Login");
@@ -214,6 +232,28 @@ namespace budget_management_system_aspdotnetcore.Pages
             TempData["SuccessMessage"] = $"Deadline for \"{amendment.Name}\" updated successfully.";
 
             return RedirectToPage();
+        }
+
+        public PaginationViewModel GetBAMainPagination()
+        {
+            var filters =
+                $"&SelectedBAMainStatusTab={SelectedBAMainStatusTab}" +
+                $"&SelectedFinancialYear={SelectedFinancialYear}" +
+                $"&CustomStartDate={CustomStartDate?.ToString("yyyy-MM-dd")}" +
+                $"&CustomEndDate={CustomEndDate?.ToString("yyyy-MM-dd")}";
+
+            return new PaginationViewModel
+            {
+                CurrentPage = BAMainCurrentPage,
+                TotalPages = BAMainTotalPages,
+                TotalRecords = TotalBAMains,
+                ResultsPerPage = BAMainResultsPerPage,
+                PageSizes = PageSizes,
+                AriaLabel = "Budget amendment page navigation",
+                PrevUrl = $"?baMainPageNumber={BAMainCurrentPage - 1}&baMainResultsPerPage={BAMainResultsPerPage}{filters}",
+                NextUrl = $"?baMainPageNumber={BAMainCurrentPage + 1}&baMainResultsPerPage={BAMainResultsPerPage}{filters}",
+                SizeChangeUrlTemplate = $"?baMainPageNumber=1&baMainResultsPerPage=__SIZE__{filters}"
+            };
         }
 
         public async Task UpdateUserActivityLogAsync(string category, ActivityType action)

@@ -979,6 +979,8 @@
                     </div>
                 </div>
 
+                <partial name="_Pagination" model="Model.GetBAMainPagination()" />
+
                 <form method="post" asp-page-handler="ExportToExcelBudgetAmendments">
                     <button type="submit" class="btn btn-success">
                         Export to XLS

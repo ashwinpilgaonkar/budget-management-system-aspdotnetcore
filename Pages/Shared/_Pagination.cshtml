@@ -11,7 +11,10 @@
             @foreach (var size in Model.PageSizes)
             {
                 var sizeUrl = Model.SizeChangeUrlTemplate.Replace("__SIZE__", size.ToString());
-                <a href="@sizeUrl" class="btn btn-page-size @(Model.ResultsPerPage == size ? "active" : "")">@size</a>
+                var isDisabled = Model.TotalRecords < size;
+                <a href="@(isDisabled ? "#" : sizeUrl)"
+                   class="btn btn-page-size @(Model.ResultsPerPage == size ? "active" : "") @(isDisabled ? "disabled" : "")"
+                   @(isDisabled ? "aria-disabled=\"true\" tabindex=\"-1\"" : "")>@size</a>
             }
         </div>
     </div>
