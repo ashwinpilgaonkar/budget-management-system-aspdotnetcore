@@ -76,7 +76,7 @@
 
 
             <!-- Budget Amendments Section -->
-            <div class="mb-4">
+            <div class="mb-4 tab-shadow">
                 @{
                     var tabBarModel = new BAMainTabBarViewModel
                     {
@@ -229,7 +229,7 @@
                                                         <div class="accordion-body">
 
                                                             <!-- Search Bar -->
-                                                            <div class="d-flex gap-2 mb-3">
+                                                            <div class="d-flex gap-2 mb-3 ba-controls-bar">
                                                                 <form method="get" class="flex-grow-1">
                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
@@ -357,7 +357,7 @@
                                                             </div>
 
                                                             <!-- Status Tabs for this department -->                                                            <!-- Status Tabs for this department -->
-                                                            <ul class="nav nav-tabs justify-content-center mb-3">
+                                                            <ul class="nav nav-tabs justify-content-center mb-3 tab-accent">
                                                                 @{
                                                                     var statuses = Enum.GetValues<budget_management_system_aspdotnetcore.Entities.AmendmentStatus>();
                                                                 }

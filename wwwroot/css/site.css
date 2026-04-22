@@ -32,6 +32,23 @@ body {
     font-weight: 600;
 }
 
+/* Index top tab bar: shadow only */
+.tab-shadow .nav-tabs .nav-link.active {
+    box-shadow:
+        -2px -4px 6px rgba(0, 0, 0, 0.10),
+        8px 0 6px rgba(0, 0, 0, 0.07);
+    border-color: #d3d7db #d3d7db #fff;
+}
+
+/* BAEdit / Index bottom: VS Code-style top accent stripe */
+.tab-accent .nav-tabs .nav-link.active,
+.nav-tabs.tab-accent .nav-link.active {
+    border-top: 3px solid #0d6efd;
+    padding-top: calc(0.5rem - 3px);
+    border-left-color: #d3d7db;
+    border-right-color: #d3d7db;
+}
+
 .nav-tabs .nav-link:not(.active) .badge:not(.badge-ghost) {
     opacity: 0.45;
 }
@@ -357,16 +374,16 @@ header.sticky-top.scrolled {
 
 /* Destructive logout button */
 .btn-logout {
-    color: #991b1b;
+    color: #fff;
     border-color: #991b1b;
-    background-color: transparent;
+    background-color: #991b1b;
     white-space: nowrap;
     font-size: 0.8rem;
 }
 .btn-logout:hover {
     color: #fff;
-    background-color: #991b1b;
-    border-color: #991b1b;
+    background-color: #7f1d1d;
+    border-color: #7f1d1d;
 }
 
 /* Show (page-size) buttons: dark gray when enabled, light gray when disabled, muted when selected */
@@ -510,8 +527,8 @@ header.sticky-top.scrolled {
     z-index: 10;
 }
 
-/* Constrain dept controls bar and status tabs to BA main width — table-responsive is excluded by the direct-child combinator */
-[id^="departmentsBA"] > .accordion-item > .accordion-collapse > .accordion-body > .d-flex,
+/* Constrain dept controls bar and status tabs to BA main width — table-responsive and pagination are excluded */
+[id^="departmentsBA"] > .accordion-item > .accordion-collapse > .accordion-body > .ba-controls-bar,
 [id^="departmentsBA"] > .accordion-item > .accordion-collapse > .accordion-body > .nav-tabs {
     max-width: 925px;
     margin-left: auto;

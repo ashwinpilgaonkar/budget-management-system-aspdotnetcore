@@ -29,34 +29,34 @@
 
                             <ul class="navbar-nav flex-grow-1 justify-content-center">
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark @(currentPage.EndsWith("Dashboard", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Dashboard"><i class="fas fa-chart-line me-1"></i>Dashboard</a>
+                                    <a class="nav-link text-dark @(currentPage.EndsWith("Dashboard", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Dashboard">📊 Dashboard</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark @(currentPage.EndsWith("Index", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Index"><i class="fas fa-file-alt me-1"></i>View Amendments</a>
+                                    <a class="nav-link text-dark @(currentPage.EndsWith("Index", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Index">🗂️ View Amendments</a>
                                 </li>
                                 @if (!String.Equals(userRole, "5"))
                                 {
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark @(currentPage.EndsWith("BAEdit", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/BAEdit"><i class="fas fa-edit me-1"></i>Edit Amendments</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("BAEdit", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/BAEdit">✏️ Edit Amendments</a>
                                     </li>
                                 }
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark @(currentPage.EndsWith("Activitylog", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Activitylog"><i class="fas fa-history me-1"></i>Audit Log</a>
+                                    <a class="nav-link text-dark @(currentPage.EndsWith("Activitylog", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Activitylog">📋 Audit Log</a>
                                 </li>
 
                                 @if (!String.Equals(userRole, "5"))
                                 {
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark @(currentPage.EndsWith("Users", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Users"><i class="fas fa-users me-1"></i>Users</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("Users", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Users">👥 Users</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark @(currentPage.EndsWith("Departments", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Departments"><i class="fas fa-building me-1"></i>Departments</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("Departments", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Departments">🏢 Departments</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark @(currentPage.EndsWith("Speedtypes", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Speedtypes"><i class="fas fa-tags me-1"></i>Speed Types</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("Speedtypes", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Speedtypes">🏷️ Speed Types</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark @(currentPage.EndsWith("Roles", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Roles"><i class="fas fa-user-shield me-1"></i>Roles</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("Roles", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Roles">🔐 Roles</a>
                                     </li>
                                 }
                             </ul>
@@ -76,6 +76,7 @@
                 </div>
             </nav>
         </header>
+
         <div class="container-fluid">
             @if (TempData["SuccessMessage"] != null)
             {
