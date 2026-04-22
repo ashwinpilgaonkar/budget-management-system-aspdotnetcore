@@ -1028,78 +1028,162 @@ namespace budget_management_system_aspdotnetcore.Pages
             });
         }
 
-        public async Task<IActionResult> OnPostExportToExcelBudgetAmendmentsAsync()
+        public async Task<IActionResult> OnPostExportToExcelBudgetAmendmentsAsync(string exportType = "current")
         {
-            var budgetAmendments = await _context.BudgetAmendments
-                .Include(ba => ba.SpeedType) // Include related SpeedType information
-                .Include(cb => cb.CreatedByUser)
-                .ToListAsync();
+            var departments = await _context.Departments
+                .ToDictionaryAsync(d => d.DepartmentID, d => d.DepartmentName);
 
-            Debug.WriteLine(budgetAmendments[0].CreatedByUser?.Email);
+            var query = _context.BudgetAmendments
+                .Include(ba => ba.BudgetAmendmentMain)
+                .Include(ba => ba.SpeedType)
+                .Include(ba => ba.CreatedByUser)
+                .AsQueryable();
 
-
-            using var workbook = new XLWorkbook();
-            var worksheet = workbook.Worksheets.Add("Budget Amendments");
-
-            // Define headers
-            worksheet.Cell(1, 1).Value = "Budget Amendment ID";
-            worksheet.Cell(1, 2).Value = "Category Name";
-            worksheet.Cell(1, 3).Value = "Adjustment Detail";
-            worksheet.Cell(1, 4).Value = "SpeedType ID";
-            worksheet.Cell(1, 5).Value = "SpeedType Code";
-            worksheet.Cell(1, 6).Value = "Fund Code";
-            worksheet.Cell(1, 7).Value = "Department ID";
-            worksheet.Cell(1, 8).Value = "Program Code";
-            worksheet.Cell(1, 9).Value = "Class Code";
-            worksheet.Cell(1, 10).Value = "Acct Description";
-            worksheet.Cell(1, 11).Value = "Budget Code";
-            worksheet.Cell(1, 12).Value = "Position Number";
-            worksheet.Cell(1, 13).Value = "Amount Increase";
-            worksheet.Cell(1, 14).Value = "Amount Decrease";
-            worksheet.Cell(1, 15).Value = "Transaction ID";
-            worksheet.Cell(1, 16).Value = "Status";
-            worksheet.Cell(1, 17).Value = "Created At";
-            worksheet.Cell(1, 18).Value = "Updated At";
-            worksheet.Cell(1, 19).Value = "Edited At";
-            worksheet.Cell(1, 20).Value = "Created By";
-            worksheet.Cell(1, 21).Value = "Edited By";
-            worksheet.Cell(1, 22).Value = "Updated By";
-
-            // Populate data
-            int row = 2;
-            foreach (var amendment in budgetAmendments)
+            if (exportType == "current")
             {
-                worksheet.Cell(row, 1).Value = amendment.BudgetAmendmentID;
-                worksheet.Cell(row, 2).Value = amendment.CategoryName;
-                worksheet.Cell(row, 3).Value = amendment.AdjustmentDetail;
-                worksheet.Cell(row, 4).Value = amendment.SpeedTypeId;
-                worksheet.Cell(row, 5).Value = amendment.SpeedType?.Code;
-                worksheet.Cell(row, 6).Value = amendment.FundCode;
-                worksheet.Cell(row, 7).Value = amendment.DepartmentID;
-                worksheet.Cell(row, 8).Value = amendment.ProgramCode;
-                worksheet.Cell(row, 9).Value = amendment.ClassCode;
-                worksheet.Cell(row, 10).Value = amendment.AcctDescription;
-                worksheet.Cell(row, 11).Value = amendment.BudgetCode;
-                worksheet.Cell(row, 12).Value = amendment.PositionNumber;
-                worksheet.Cell(row, 13).Value = amendment.AmountIncrease;
-                worksheet.Cell(row, 14).Value = amendment.AmountDecrease;
-                worksheet.Cell(row, 15).Value = amendment.TransactionId.ToString();
-                worksheet.Cell(row, 16).Value = amendment.Status.ToString();
-                worksheet.Cell(row, 17).Value = amendment.CreatedAt?.ToString("MM/dd/yyyy");
-                worksheet.Cell(row, 18).Value = amendment.UpdatedAt?.ToString("MM/dd/yyyy");
-                worksheet.Cell(row, 19).Value = amendment.EditedAt?.ToString("MM/dd/yyyy");
-                worksheet.Cell(row, 20).Value = amendment.CreatedByUser?.Email;
-                worksheet.Cell(row, 21).Value = amendment.EditedByUser?.Email;
-                worksheet.Cell(row, 22).Value = amendment.UpdatedByUser?.Email;
-                row++;
+                SetDefaultFinancialYearRange();
+                var (startDate, endDate) = FinancialYearHelper.GetDateRange(SelectedFinancialYear, CustomStartDate, CustomEndDate);
+                query = query.Where(ba => ba.BudgetAmendmentMain.ExtendedDeadline >= startDate && ba.BudgetAmendmentMain.ExtendedDeadline <= endDate);
+
+                if (!string.IsNullOrEmpty(SelectedStatusTab) && Enum.TryParse<AmendmentStatus>(SelectedStatusTab, out var parsedStatus))
+                    query = query.Where(b => b.Status == parsedStatus);
+
+                if (SelectedDepartmentID != 0)
+                    query = query.Where(b => b.DepartmentID == SelectedDepartmentID);
+
+                if (SelectedBudgetAmendmentMainID.HasValue)
+                    query = query.Where(b => b.BudgetAmendmentMainID == SelectedBudgetAmendmentMainID.Value);
+
+                if (!string.IsNullOrEmpty(BudgetAmendmentSearchTerm))
+                    query = query.Where(s => s.CategoryName.Contains(BudgetAmendmentSearchTerm)
+                        || s.AdjustmentDetail.Contains(BudgetAmendmentSearchTerm)
+                        || s.SpeedType.Code.Contains(BudgetAmendmentSearchTerm));
             }
 
-            // Save the workbook to a memory stream
-            using var stream = new MemoryStream();
-            workbook.SaveAs(stream);
-            stream.Position = 0;
+            var amendments = await query.ToListAsync();
 
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "BudgetAmendments.xlsx");
+            using var workbook = new XLWorkbook();
+            var date = DateTime.Now.ToString("yyyy-MM-dd");
+
+            if (exportType == "summary")
+            {
+                var worksheet = workbook.Worksheets.Add("Summary");
+
+                worksheet.Cell(1, 1).Value = "#";
+                worksheet.Cell(1, 2).Value = "Amendment Name";
+                worksheet.Cell(1, 3).Value = "Period";
+                worksheet.Cell(1, 4).Value = "Department";
+                worksheet.Cell(1, 5).Value = "Total Increase";
+                worksheet.Cell(1, 6).Value = "Total Decrease";
+                worksheet.Cell(1, 7).Value = "Net Change";
+                worksheet.Cell(1, 8).Value = "Status";
+
+                var headerRange = worksheet.Range(1, 1, 1, 8);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Font.FontColor = XLColor.Black;
+                headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#DCE6F1");
+                headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                worksheet.SheetView.FreezeRows(1);
+
+                var groups = amendments
+                    .GroupBy(ba => new { ba.BudgetAmendmentMainID, ba.DepartmentID })
+                    .OrderBy(g => g.Key.BudgetAmendmentMainID)
+                    .ThenBy(g => g.Key.DepartmentID);
+
+                int row = 2;
+                int serialNo = 1;
+                foreach (var group in groups)
+                {
+                    var first = group.First();
+                    var deptName = departments.TryGetValue(group.Key.DepartmentID, out var dn) ? dn : group.Key.DepartmentID.ToString();
+                    var period = $"{first.BudgetAmendmentMain.StartDate:MMM d, yyyy} – {first.BudgetAmendmentMain.ExtendedDeadline:MMM d, yyyy}";
+                    var totalIncrease = group.Sum(ba => ba.AmountIncrease);
+                    var totalDecrease = group.Sum(ba => ba.AmountDecrease);
+                    var overallStatus = group.Any(ba => ba.Status == AmendmentStatus.Pending) ? "Pending"
+                        : group.All(ba => ba.Status == AmendmentStatus.Approved) ? "Approved"
+                        : group.Any(ba => ba.Status == AmendmentStatus.Rejected) ? "Rejected"
+                        : "Draft";
+
+                    worksheet.Cell(row, 1).Value = serialNo++;
+                    worksheet.Cell(row, 2).Value = first.BudgetAmendmentMain.Name;
+                    worksheet.Cell(row, 3).Value = period;
+                    worksheet.Cell(row, 4).Value = deptName;
+                    worksheet.Cell(row, 5).Value = totalIncrease;
+                    worksheet.Cell(row, 5).Style.NumberFormat.Format = "$#,##0.00";
+                    worksheet.Cell(row, 6).Value = totalDecrease;
+                    worksheet.Cell(row, 6).Style.NumberFormat.Format = "$#,##0.00";
+                    worksheet.Cell(row, 7).Value = totalIncrease - totalDecrease;
+                    worksheet.Cell(row, 7).Style.NumberFormat.Format = "$#,##0.00";
+                    worksheet.Cell(row, 8).Value = overallStatus;
+                    row++;
+                }
+
+                worksheet.Columns().AdjustToContents();
+
+                using var stream = new MemoryStream();
+                workbook.SaveAs(stream);
+                stream.Position = 0;
+                return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"BudgetAmendments_Summary_{date}.xlsx");
+            }
+            else
+            {
+                var worksheet = workbook.Worksheets.Add("Budget Amendments");
+
+                worksheet.Cell(1, 1).Value = "#";
+                worksheet.Cell(1, 2).Value = "Amendment Name";
+                worksheet.Cell(1, 3).Value = "Period";
+                worksheet.Cell(1, 4).Value = "Department";
+                worksheet.Cell(1, 5).Value = "Category";
+                worksheet.Cell(1, 6).Value = "SpeedType Code";
+                worksheet.Cell(1, 7).Value = "Adjustment Detail";
+                worksheet.Cell(1, 8).Value = "Amount Increase";
+                worksheet.Cell(1, 9).Value = "Amount Decrease";
+                worksheet.Cell(1, 10).Value = "Net Change";
+                worksheet.Cell(1, 11).Value = "Status";
+                worksheet.Cell(1, 12).Value = "Created At";
+                worksheet.Cell(1, 13).Value = "Created By";
+
+                var headerRange = worksheet.Range(1, 1, 1, 13);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Font.FontColor = XLColor.Black;
+                headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#DCE6F1");
+                headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                worksheet.SheetView.FreezeRows(1);
+
+                int row = 2;
+                int serialNo = 1;
+                foreach (var amendment in amendments)
+                {
+                    var deptName = departments.TryGetValue(amendment.DepartmentID, out var dn) ? dn : amendment.DepartmentID.ToString();
+                    var period = $"{amendment.BudgetAmendmentMain.StartDate:MMM d, yyyy} – {amendment.BudgetAmendmentMain.ExtendedDeadline:MMM d, yyyy}";
+
+                    worksheet.Cell(row, 1).Value = serialNo++;
+                    worksheet.Cell(row, 2).Value = amendment.BudgetAmendmentMain.Name;
+                    worksheet.Cell(row, 3).Value = period;
+                    worksheet.Cell(row, 4).Value = deptName;
+                    worksheet.Cell(row, 5).Value = amendment.CategoryName;
+                    worksheet.Cell(row, 6).Value = amendment.SpeedType?.Code;
+                    worksheet.Cell(row, 7).Value = amendment.AdjustmentDetail;
+                    worksheet.Cell(row, 8).Value = amendment.AmountIncrease;
+                    worksheet.Cell(row, 8).Style.NumberFormat.Format = "$#,##0.00";
+                    worksheet.Cell(row, 9).Value = amendment.AmountDecrease;
+                    worksheet.Cell(row, 9).Style.NumberFormat.Format = "$#,##0.00";
+                    worksheet.Cell(row, 10).Value = amendment.AmountIncrease - amendment.AmountDecrease;
+                    worksheet.Cell(row, 10).Style.NumberFormat.Format = "$#,##0.00";
+                    worksheet.Cell(row, 11).Value = amendment.Status.ToString();
+                    worksheet.Cell(row, 12).Value = amendment.CreatedAt?.ToString("MMM d, yyyy");
+                    worksheet.Cell(row, 13).Value = amendment.CreatedByUser?.Email;
+                    row++;
+                }
+
+                worksheet.Columns().AdjustToContents();
+
+                using var stream = new MemoryStream();
+                workbook.SaveAs(stream);
+                stream.Position = 0;
+                var label = exportType == "detail" ? "Detail" : "CurrentView";
+                return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"BudgetAmendments_{label}_{date}.xlsx");
+            }
         }
         public async Task UpdateUserActivityLogAsync(string category, ActivityType action)
         {

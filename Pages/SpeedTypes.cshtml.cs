@@ -218,37 +218,68 @@ namespace budget_management_system_aspdotnetcore.Pages
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostExportToExcelSpeedTypesAsync()
+        public async Task<IActionResult> OnPostExportToExcelSpeedTypesAsync(bool exportAll = false)
         {
-            var speedTypes = await _context.SpeedTypes
-                .Include(st => st.DepartmentSpeedTypes)
-                .ThenInclude(dst => dst.Department)
-                .ToListAsync();
+            var speedTypeQuery = _context.SpeedTypes.AsQueryable();
+
+            if (!exportAll)
+            {
+                if (!string.IsNullOrEmpty(SpeedTypeSearchTerm))
+                {
+                    speedTypeQuery = speedTypeQuery.Where(s => s.Code.Contains(SpeedTypeSearchTerm)
+                        || s.Budget.ToString().Contains(SpeedTypeSearchTerm));
+                }
+                if (SpeedTypeMinBudget.HasValue)
+                {
+                    speedTypeQuery = speedTypeQuery.Where(s => s.Budget >= SpeedTypeMinBudget.Value);
+                }
+                if (SpeedTypeMaxBudget.HasValue)
+                {
+                    speedTypeQuery = speedTypeQuery.Where(s => s.Budget <= SpeedTypeMaxBudget.Value);
+                }
+            }
+
+            var speedTypes = await speedTypeQuery.ToListAsync();
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("SpeedTypes");
 
-            worksheet.Cell(1, 1).Value = "SpeedType ID";
+            worksheet.Cell(1, 1).Value = "#";
             worksheet.Cell(1, 2).Value = "Code";
             worksheet.Cell(1, 3).Value = "Budget";
+            worksheet.Cell(1, 4).Value = "Fund Code";
+            worksheet.Cell(1, 5).Value = "Program Code";
+            worksheet.Cell(1, 6).Value = "Class Code";
+
+            var headerRange = worksheet.Range(1, 1, 1, 6);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Font.FontColor = XLColor.Black;
+            headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#DCE6F1");
+            headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.SheetView.FreezeRows(1);
 
             int row = 2;
+            int serialNo = 1;
             foreach (var speedType in speedTypes)
             {
-                foreach (var departmentSpeedType in speedType.DepartmentSpeedTypes)
-                {
-                    worksheet.Cell(row, 1).Value = speedType.SpeedTypeId;
-                    worksheet.Cell(row, 2).Value = speedType.Code;
-                    worksheet.Cell(row, 3).Value = speedType.Budget;
-                    row++;
-                }
+                worksheet.Cell(row, 1).Value = serialNo++;
+                worksheet.Cell(row, 2).Value = speedType.Code;
+                worksheet.Cell(row, 3).Value = speedType.Budget;
+                worksheet.Cell(row, 3).Style.NumberFormat.Format = "$#,##0.00";
+                worksheet.Cell(row, 4).Value = speedType.FundCode;
+                worksheet.Cell(row, 5).Value = speedType.ProgramCode;
+                worksheet.Cell(row, 6).Value = speedType.ClassCode;
+                row++;
             }
+
+            worksheet.Columns().AdjustToContents();
 
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);
             stream.Position = 0;
 
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "SpeedTypes.xlsx");
+            var date = DateTime.Now.ToString("yyyy-MM-dd");
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"SpeedTypes_{date}.xlsx");
         }
         #endregion
     }

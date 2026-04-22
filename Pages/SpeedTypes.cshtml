@@ -13,10 +13,35 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
                 <h3 class="page-title">SpeedTypes</h3>
-                <!-- Add New SpeedType Button -->
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSpeedTypeModal">
-                    Add New +
-                </button>
+                <div class="d-flex gap-2">
+                    <form method="post" asp-page-handler="ExportToExcelSpeedTypes" id="speedTypesExportForm">
+                        <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
+                        <input type="hidden" name="SpeedTypeMinBudget" value="@Model.SpeedTypeMinBudget" />
+                        <input type="hidden" name="SpeedTypeMaxBudget" value="@Model.SpeedTypeMaxBudget" />
+                        <input type="hidden" name="ExportAll" value="false" id="speedTypesExportAllFlag" />
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-outline-success" id="speedTypesExportBtn"
+                                    onclick="triggerExport('speedTypesExportForm', 'speedTypesExportBtn', 'speedTypesExportAllFlag', false)">
+                                <i class="fas fa-file-excel me-1"></i> Export
+                            </button>
+                            <button type="button" class="btn btn-outline-success dropdown-toggle dropdown-toggle-split"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="#"
+                                       onclick="triggerExport('speedTypesExportForm', 'speedTypesExportBtn', 'speedTypesExportAllFlag', true); return false;">
+                                        <i class="fas fa-table me-2"></i>Export All
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </form>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSpeedTypeModal">
+                        Add New +
+                    </button>
+                </div>
             </div>
             <!-- Search Bar -->
             <form method="get">
@@ -224,11 +249,6 @@
                     SizeChangeUrlTemplate = Url.Page(null, new { speedTypePageNumber = 1, speedTypesPerPage = "__SIZE__", SpeedTypeSearchTerm = Model.SpeedTypeSearchTerm, SpeedTypeMinBudget = Model.SpeedTypeMinBudget, SpeedTypeMaxBudget = Model.SpeedTypeMaxBudget })
                 };
                 <partial name="_Pagination" model="speedTypePagination" />
-                <form method="post" asp-page-handler="ExportToExcelSpeedTypes">
-                    <button type="submit" class="btn btn-success">
-                        Export to XLS
-                    </button>
-                </form>
             }
 
         </div>
@@ -248,27 +268,27 @@
                 <div class="modal-body">
                     <form method="post" asp-page-handler="AddSpeedType">
                         <div class="mb-3">
-                            <label asp-for="NewSpeedType.Code" class="form-label">SpeedType Code</label>
+                            <label asp-for="NewSpeedType.Code" class="form-label">SpeedType Code:</label>
                             <input asp-for="NewSpeedType.Code" class="form-control" />
                             <span asp-validation-for="NewSpeedType.Code" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="NewSpeedType.Budget" class="form-label">Budget</label>
+                            <label asp-for="NewSpeedType.Budget" class="form-label">Budget (in US$):</label>
                             <input asp-for="NewSpeedType.Budget" class="form-control" />
                             <span asp-validation-for="NewSpeedType.Budget" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="NewSpeedType.FundCode" class="form-label">Fund Code</label>
+                            <label asp-for="NewSpeedType.FundCode" class="form-label">Fund Code: </label>
                             <input asp-for="NewSpeedType.FundCode" class="form-control" />
                             <span asp-validation-for="NewSpeedType.FundCode" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="NewSpeedType.ProgramCode" class="form-label">Program Code</label>
+                            <label asp-for="NewSpeedType.ProgramCode" class="form-label">Program Code: </label>
                             <input asp-for="NewSpeedType.ProgramCode" class="form-control" />
                             <span asp-validation-for="NewSpeedType.ProgramCode" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="NewSpeedType.ClassCode" class="form-label">Class Code</label>
+                            <label asp-for="NewSpeedType.ClassCode" class="form-label">Class Code: </label>
                             <input asp-for="NewSpeedType.ClassCode" class="form-control" />
                             <span asp-validation-for="NewSpeedType.ClassCode" class="text-danger"></span>
                         </div>
@@ -321,4 +341,33 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function showExportToast() {
+            const alertEl = document.createElement('div');
+            alertEl.className = 'alert alert-success alert-dismissible fade show';
+            alertEl.setAttribute('role', 'alert');
+            alertEl.style.cssText = 'width: fit-content; max-width: 600px; margin-left: auto; margin-right: auto;';
+            alertEl.innerHTML = '<i class="fas fa-check-circle me-2"></i> Your file is downloading. <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+            const container = document.querySelector('.container-fluid');
+            const main = container.querySelector('main[role="main"]');
+            container.insertBefore(alertEl, main);
+            setTimeout(function () { $(alertEl).alert('close'); }, 8000);
+        }
+
+        function triggerExport(formId, btnId, flagId, exportAll) {
+            const btn = document.getElementById(btnId);
+            const flag = document.getElementById(flagId);
+            flag.value = exportAll ? 'true' : 'false';
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Exporting...';
+            setTimeout(function () {
+                btn.innerHTML = originalHtml;
+                flag.value = 'false';
+                showExportToast();
+            }, 2000);
+            if (exportAll) {
+                document.getElementById(formId).submit();
+            }
+        }
+    </script>
 }

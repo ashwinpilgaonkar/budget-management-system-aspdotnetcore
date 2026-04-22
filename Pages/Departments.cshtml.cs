@@ -262,39 +262,73 @@ namespace budget_management_system_aspdotnetcore.Pages
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostExportToExcelDepartmentsAsync()
+        public async Task<IActionResult> OnPostExportToExcelDepartmentsAsync(bool exportAll = false)
         {
-            var departments = await _context.Departments
+            var departmentQuery = _context.Departments
                 .Include(d => d.DepartmentSpeedTypes)
                 .ThenInclude(dst => dst.SpeedType)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (!exportAll)
+            {
+                if (!string.IsNullOrEmpty(DepartmentSearchTerm))
+                {
+                    departmentQuery = departmentQuery.Where(s => s.DepartmentName.Contains(DepartmentSearchTerm)
+                        || s.DepartmentSpeedTypes.Any(ds => ds.SpeedType.Code.Contains(DepartmentSearchTerm)
+                            || ds.SpeedType.Budget.ToString().Contains(DepartmentSearchTerm)));
+                }
+                if (DepartmentMinBudget.HasValue)
+                {
+                    departmentQuery = departmentQuery
+                        .Where(d => d.DepartmentSpeedTypes.Sum(ds => ds.SpeedType.Budget) >= DepartmentMinBudget.Value);
+                }
+                if (DepartmentMaxBudget.HasValue)
+                {
+                    departmentQuery = departmentQuery
+                        .Where(d => d.DepartmentSpeedTypes.Sum(ds => ds.SpeedType.Budget) <= DepartmentMaxBudget.Value);
+                }
+            }
+
+            var departments = await departmentQuery.ToListAsync();
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Departments");
 
-            worksheet.Cell(1, 1).Value = "Department ID";
+            worksheet.Cell(1, 1).Value = "#";
             worksheet.Cell(1, 2).Value = "Department Name";
             worksheet.Cell(1, 3).Value = "SpeedType";
             worksheet.Cell(1, 4).Value = "Budget";
 
+            var headerRange = worksheet.Range(1, 1, 1, 4);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Font.FontColor = XLColor.Black;
+            headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#DCE6F1");
+            headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.SheetView.FreezeRows(1);
+
             int row = 2;
+            int serialNo = 1;
             foreach (var dept in departments)
             {
                 foreach (var departmentSpeedType in dept.DepartmentSpeedTypes)
                 {
-                    worksheet.Cell(row, 1).Value = dept.DepartmentID;
+                    worksheet.Cell(row, 1).Value = serialNo++;
                     worksheet.Cell(row, 2).Value = dept.DepartmentName;
                     worksheet.Cell(row, 3).Value = departmentSpeedType.SpeedType?.Code;
                     worksheet.Cell(row, 4).Value = departmentSpeedType.SpeedType?.Budget;
+                    worksheet.Cell(row, 4).Style.NumberFormat.Format = "$#,##0.00";
                     row++;
                 }
             }
+
+            worksheet.Columns().AdjustToContents();
 
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);
             stream.Position = 0;
 
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Departments.xlsx");
+            var date = DateTime.Now.ToString("yyyy-MM-dd");
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Departments_{date}.xlsx");
         }
         #endregion
     }

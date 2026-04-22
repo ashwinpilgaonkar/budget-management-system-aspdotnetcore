@@ -271,17 +271,26 @@ namespace budget_management_system_aspdotnetcore.Pages
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostExportToExcelUsersAsync()
+        public async Task<IActionResult> OnPostExportToExcelUsersAsync(bool exportAll = false)
         {
-            var users = await _context.Users
+            var usersQuery = _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.DepartmentsResponsibleFor)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (!exportAll && !string.IsNullOrEmpty(UserSearchTerm))
+            {
+                usersQuery = usersQuery.Where(s => s.FirstName.Contains(UserSearchTerm)
+                    || s.LastName.Contains(UserSearchTerm)
+                    || s.Email.Contains(UserSearchTerm));
+            }
+
+            var users = await usersQuery.ToListAsync();
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Users");
 
-            worksheet.Cell(1, 1).Value = "User ID";
+            worksheet.Cell(1, 1).Value = "#";
             worksheet.Cell(1, 2).Value = "Email";
             worksheet.Cell(1, 3).Value = "First Name";
             worksheet.Cell(1, 4).Value = "Last Name";
@@ -289,10 +298,18 @@ namespace budget_management_system_aspdotnetcore.Pages
             worksheet.Cell(1, 6).Value = "Role";
             worksheet.Cell(1, 7).Value = "Departments Responsible For";
 
+            var headerRange = worksheet.Range(1, 1, 1, 7);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Font.FontColor = XLColor.Black;
+            headerRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#DCE6F1");
+            headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.SheetView.FreezeRows(1);
+
             int row = 2;
+            int serialNo = 1;
             foreach (var user in users)
             {
-                worksheet.Cell(row, 1).Value = user.UserId;
+                worksheet.Cell(row, 1).Value = serialNo++;
                 worksheet.Cell(row, 2).Value = user.Email;
                 worksheet.Cell(row, 3).Value = user.FirstName;
                 worksheet.Cell(row, 4).Value = user.LastName;
@@ -302,11 +319,14 @@ namespace budget_management_system_aspdotnetcore.Pages
                 row++;
             }
 
+            worksheet.Columns().AdjustToContents();
+
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);
             stream.Position = 0;
 
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Users.xlsx");
+            var date = DateTime.Now.ToString("yyyy-MM-dd");
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Users_{date}.xlsx");
         }
         #endregion
     }

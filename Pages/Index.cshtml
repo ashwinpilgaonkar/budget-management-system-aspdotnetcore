@@ -16,6 +16,41 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
                 <h3 class="page-title">Budget Amendments</h3>
+                <form method="post" asp-page-handler="ExportToExcelBudgetAmendments" id="baExportForm">
+                    <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                    <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                    <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                    <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                    <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                    <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                    <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                    <input type="hidden" name="ExportType" value="current" id="baExportTypeInput" />
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-outline-success" id="baExportBtn"
+                                onclick="triggerExport('baExportForm', 'baExportBtn', 'baExportTypeInput', 'current')">
+                            <i class="fas fa-file-excel me-1"></i> Export Current View
+                        </button>
+                        <button type="button" class="btn btn-outline-success dropdown-toggle dropdown-toggle-split"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#"
+                                   onclick="triggerExport('baExportForm', 'baExportBtn', 'baExportTypeInput', 'summary'); return false;">
+                                    <i class="fas fa-layer-group me-2"></i>Export All (Summary)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#"
+                                   onclick="triggerExport('baExportForm', 'baExportBtn', 'baExportTypeInput', 'detail'); return false;">
+                                    <i class="fas fa-table me-2"></i>Export All (Detail)
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
             </div>
 
             <div class="d-flex align-items-end justify-content-between flex-wrap gap-3">
@@ -980,12 +1015,6 @@
                 </div>
 
                 <partial name="_Pagination" model="Model.GetBAMainPagination()" />
-
-                <form method="post" asp-page-handler="ExportToExcelBudgetAmendments">
-                    <button type="submit" class="btn btn-success">
-                        Export to XLS
-                    </button>
-                </form>
             }
 
             </div>
@@ -1093,6 +1122,35 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function showExportToast() {
+            const alertEl = document.createElement('div');
+            alertEl.className = 'alert alert-success alert-dismissible fade show';
+            alertEl.setAttribute('role', 'alert');
+            alertEl.style.cssText = 'width: fit-content; max-width: 600px; margin-left: auto; margin-right: auto;';
+            alertEl.innerHTML = '<i class="fas fa-check-circle me-2"></i> Your file is downloading. <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+            const container = document.querySelector('.container-fluid');
+            const main = container.querySelector('main[role="main"]');
+            container.insertBefore(alertEl, main);
+            setTimeout(function () { $(alertEl).alert('close'); }, 8000);
+        }
+
+        function triggerExport(formId, btnId, typeInputId, exportType) {
+            const btn = document.getElementById(btnId);
+            const typeInput = document.getElementById(typeInputId);
+            typeInput.value = exportType;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Exporting...';
+            setTimeout(function () {
+                btn.innerHTML = originalHtml;
+                typeInput.value = 'current';
+                showExportToast();
+            }, 2000);
+            if (exportType !== 'current') {
+                document.getElementById(formId).submit();
+            }
+        }
+    </script>
 }
 
 <script>
