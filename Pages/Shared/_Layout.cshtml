@@ -13,8 +13,8 @@
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     </head>
     <body>
-        <header>
-            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-light border-bottom box-shadow mb-3">
+        <header class="sticky-top">
+            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-light mb-3">
                 <div class="container-fluid">
                     <a class="navbar-brand" asp-area="" asp-page="/Index">CAS Budget Management</a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -29,34 +29,34 @@
 
                             <ul class="navbar-nav flex-grow-1 justify-content-center">
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark @(currentPage.EndsWith("Dashboard", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Dashboard">Dashboard</a>
+                                    <a class="nav-link text-dark @(currentPage.EndsWith("Dashboard", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Dashboard"><i class="fas fa-chart-line me-1"></i>Dashboard</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark @(currentPage.EndsWith("Index", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Index">View Amendments</a>
+                                    <a class="nav-link text-dark @(currentPage.EndsWith("Index", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Index"><i class="fas fa-file-alt me-1"></i>View Amendments</a>
                                 </li>
                                 @if (!String.Equals(userRole, "5"))
                                 {
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark @(currentPage.EndsWith("BAEdit", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/BAEdit">Edit Amendments</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("BAEdit", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/BAEdit"><i class="fas fa-edit me-1"></i>Edit Amendments</a>
                                     </li>
                                 }
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark @(currentPage.EndsWith("Activitylog", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Activitylog">Audit Log</a>
+                                    <a class="nav-link text-dark @(currentPage.EndsWith("Activitylog", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Activitylog"><i class="fas fa-history me-1"></i>Audit Log</a>
                                 </li>
 
                                 @if (!String.Equals(userRole, "5"))
                                 {
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark @(currentPage.EndsWith("Users", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Users">Users</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("Users", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Users"><i class="fas fa-users me-1"></i>Users</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark @(currentPage.EndsWith("Departments", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Departments">Departments</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("Departments", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Departments"><i class="fas fa-building me-1"></i>Departments</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark @(currentPage.EndsWith("Speedtypes", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Speedtypes">Speed Types</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("Speedtypes", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Speedtypes"><i class="fas fa-tags me-1"></i>Speed Types</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark @(currentPage.EndsWith("Roles", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Roles">Roles</a>
+                                        <a class="nav-link text-dark @(currentPage.EndsWith("Roles", StringComparison.OrdinalIgnoreCase) ? "active fw-semibold" : "")" asp-area="" asp-page="/Roles"><i class="fas fa-user-shield me-1"></i>Roles</a>
                                     </li>
                                 }
                             </ul>
@@ -81,6 +81,13 @@
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert" style="width: fit-content; max-width: 600px; margin-left: auto; margin-right: auto;">
                     <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="width: fit-content; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }

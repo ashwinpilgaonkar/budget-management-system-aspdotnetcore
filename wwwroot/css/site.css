@@ -281,6 +281,12 @@ th form button {
     text-decoration: underline;
 }
 
+/* Sticky navbar shadow — layered like macOS window shadows */
+header.sticky-top {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.10), 0 8px 40px rgba(0, 0, 0, 0.18);
+    z-index: 1020;
+}
+
 /* Tighter navbar to prevent overflow on ~1366px laptop screens */
 .navbar-brand {
     font-size: 0.95rem;
