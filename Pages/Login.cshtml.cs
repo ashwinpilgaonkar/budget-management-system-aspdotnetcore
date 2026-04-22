@@ -1,15 +1,12 @@
 using budget_management_system_aspdotnetcore.Entities;
 using budget_management_system_aspdotnetcore.Services;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
@@ -40,6 +37,13 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         [TempData]
         public string ErrorMessage { get; set; }
+
+        public IActionResult OnGet()
+        {
+            if (User.Identity?.IsAuthenticated == true || !string.IsNullOrEmpty(HttpContext.Session.GetString("Email")))
+                return RedirectToPage("/Index");
+            return Page();
+        }
 
         public async Task<IActionResult> OnPostAsync()
         {
@@ -74,7 +78,27 @@ namespace budget_management_system_aspdotnetcore.Pages
                 HttpContext.Session.SetString("RoleID", user.RoleID.ToString());
                 HttpContext.Session.SetString("RoleName", role.RoleName);
 
-                // Successful login, redirect to Index
+                if (RememberMe)
+                {
+                    var claims = new List<Claim>
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                        new Claim(ClaimTypes.Email,          user.Email),
+                        new Claim(ClaimTypes.GivenName,      user.FirstName),
+                        new Claim(ClaimTypes.Surname,        user.LastName),
+                        new Claim("RoleID",                  user.RoleID.ToString()),
+                        new Claim(ClaimTypes.Role,           role.RoleName)
+                    };
+                    var identity  = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var principal = new ClaimsPrincipal(identity);
+                    var authProps = new AuthenticationProperties
+                    {
+                        IsPersistent = true,
+                        ExpiresUtc   = DateTimeOffset.UtcNow.AddDays(30)
+                    };
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProps);
+                }
+
                 return RedirectToPage("/Index");
             }
 
