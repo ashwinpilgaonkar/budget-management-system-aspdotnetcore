@@ -15,14 +15,22 @@
             </div>
 
             <!-- Search Bar -->
-            <form method="get">
-                <div class="input-group mb-3 search-group">
-                    <input type="text" name="RoleSearchTerm" class="form-control" placeholder="Search roles..." value="@Model.RoleSearchTerm" />
-                    <button type="submit" class="btn btn-outline-secondary border-start-0" style="color: #6c757d;">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </form>
+            <div class="d-flex gap-2 mb-3 align-items-center">
+                <form method="get" class="flex-grow-1">
+                    <div class="input-group search-group">
+                        <input type="text" name="RoleSearchTerm" class="form-control" placeholder="Search roles..." value="@Model.RoleSearchTerm" />
+                        <button type="submit" class="btn btn-outline-secondary border-start-0" style="color: #6c757d;">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+                @if (!string.IsNullOrEmpty(Model.RoleSearchTerm))
+                {
+                    <a href="/roles" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Clear filters
+                    </a>
+                }
+            </div>
 
             <div class="table-responsive">
                 <table class="table table-bordered table-striped table-hover text-center">
@@ -33,9 +41,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model.Roles != null)
+                        @if (Model.Roles != null && Model.Roles.Any())
                         {
-                            int index = 1;
+                            int index = (Model.RoleCurrentPage - 1) * Model.RoleResultsPerPage + 1;
                             @foreach (var role in Model.Roles)
                             {
                                 <tr>
@@ -61,7 +69,7 @@
                 </table>
             </div>
 
-            @if (Model.Roles != null)
+            @if (Model.Roles != null && Model.Roles.Any())
             {
                 var rolePagination = new budget_management_system_aspdotnetcore.ViewModels.PaginationViewModel
                 {

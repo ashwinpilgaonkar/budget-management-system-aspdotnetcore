@@ -21,7 +21,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         public string userRole { get; set; } = "";
         public string ActiveSortTable { get; set; } = "SpeedType";
 
+        [BindProperty(SupportsGet = true)]
         public string SortColumn { get; set; } = "Code";
+        [BindProperty(SupportsGet = true)]
         public string SortOrder { get; set; } = "asc";
         public List<int> PageSizes { get; set; } = PaginationViewModel.DefaultPageSizes;
         #endregion
@@ -69,7 +71,10 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!string.IsNullOrEmpty(SpeedTypeSearchTerm))
             {
                 speedTypeQuery = speedTypeQuery.Where(s => s.Code.Contains(SpeedTypeSearchTerm)
-                || s.Budget.ToString().Contains(SpeedTypeSearchTerm));
+                || s.Budget.ToString().Contains(SpeedTypeSearchTerm)
+                || s.FundCode.ToString().Contains(SpeedTypeSearchTerm)
+                || s.ProgramCode.ToString().Contains(SpeedTypeSearchTerm)
+                || s.ClassCode.ToString().Contains(SpeedTypeSearchTerm));
             }
 
             if (!string.IsNullOrEmpty(SortColumn) && ActiveSortTable == "SpeedType")
@@ -233,7 +238,10 @@ namespace budget_management_system_aspdotnetcore.Pages
                 if (!string.IsNullOrEmpty(SpeedTypeSearchTerm))
                 {
                     speedTypeQuery = speedTypeQuery.Where(s => s.Code.Contains(SpeedTypeSearchTerm)
-                        || s.Budget.ToString().Contains(SpeedTypeSearchTerm));
+                        || s.Budget.ToString().Contains(SpeedTypeSearchTerm)
+                        || s.FundCode.ToString().Contains(SpeedTypeSearchTerm)
+                        || s.ProgramCode.ToString().Contains(SpeedTypeSearchTerm)
+                        || s.ClassCode.ToString().Contains(SpeedTypeSearchTerm));
                 }
                 if (SpeedTypeMinBudget.HasValue)
                 {

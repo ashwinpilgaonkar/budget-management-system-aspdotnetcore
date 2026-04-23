@@ -15,12 +15,22 @@
             <div class="d-flex gap-2 mb-3 align-items-center">
                 <form method="get" class="flex-grow-1">
                     <div class="input-group search-group">
+                        <input type="hidden" name="DepartmentMinBudget" value="@Model.DepartmentMinBudget" />
+                        <input type="hidden" name="DepartmentMaxBudget" value="@Model.DepartmentMaxBudget" />
+                        <input type="hidden" name="SortColumn" value="@Model.SortColumn" />
+                        <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
                         <input type="text" name="DepartmentSearchTerm" class="form-control" placeholder="Search..." value="@Model.DepartmentSearchTerm" />
                         <button type="submit" class="btn btn-outline-secondary border-start-0" style="color: #6c757d;">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </form>
+                @if (!string.IsNullOrEmpty(Model.DepartmentSearchTerm) || Model.DepartmentMinBudget.HasValue || Model.DepartmentMaxBudget.HasValue)
+                {
+                    <a href="/departments" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Clear filters
+                    </a>
+                }
                 <form method="post" asp-page-handler="ExportToExcelDepartments" id="deptsExportForm">
                     <input type="hidden" name="DepartmentSearchTerm" value="@Model.DepartmentSearchTerm" />
                     <input type="hidden" name="DepartmentMinBudget" value="@Model.DepartmentMinBudget" />
@@ -66,6 +76,8 @@
                                     <input type="hidden" name="departmentPageNumber" value="@Model.DepartmentCurrentPage" />
                                     <input type="hidden" name="departmentResultsPerPage" value="@Model.DepartmentResultsPerPage" />
                                     <input type="hidden" name="DepartmentSearchTerm" value="@Model.DepartmentSearchTerm" />
+                                    <input type="hidden" name="DepartmentMinBudget" value="@Model.DepartmentMinBudget" />
+                                    <input type="hidden" name="DepartmentMaxBudget" value="@Model.DepartmentMaxBudget" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("DepartmentName")"></i>
                                     </button>
@@ -74,6 +86,20 @@
                             <th>SpeedType</th>
                             <th>
                                 Budget
+                                <form method="get" class="d-inline">
+                                    <input type="hidden" name="handler" value="SortColumn" />
+                                    <input type="hidden" name="table" value="Department" />
+                                    <input type="hidden" name="column" value="Budget" />
+                                    <input type="hidden" name="order" value="@Model.SortOrderForColumn("Budget")" />
+                                    <input type="hidden" name="departmentPageNumber" value="@Model.DepartmentCurrentPage" />
+                                    <input type="hidden" name="departmentResultsPerPage" value="@Model.DepartmentResultsPerPage" />
+                                    <input type="hidden" name="DepartmentSearchTerm" value="@Model.DepartmentSearchTerm" />
+                                    <input type="hidden" name="DepartmentMinBudget" value="@Model.DepartmentMinBudget" />
+                                    <input type="hidden" name="DepartmentMaxBudget" value="@Model.DepartmentMaxBudget" />
+                                    <button type="submit" class="btn btn-link p-0">
+                                        <i class="fas @Model.GetSortIcon("Budget")"></i>
+                                    </button>
+                                </form>
                                 <div class="dropdown d-inline">
                                     <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="departmentBudgetFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fas fa-filter"></i>
@@ -81,6 +107,9 @@
 
                                     <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
                                         <form method="get" id="departmentBudgetFilterForm">
+                                            <input type="hidden" name="DepartmentSearchTerm" value="@Model.DepartmentSearchTerm" />
+                                            <input type="hidden" name="SortColumn" value="@Model.SortColumn" />
+                                            <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
                                             <div class="mb-2">
                                                 <label class="form-label">Min Budget (Total)</label>
                                                 <input type="number" step="0.01" name="DepartmentMinBudget" id="departmentMinBudgetInput" class="form-control form-control-sm"
@@ -105,9 +134,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model.Departments != null)
+                        @if (Model.Departments != null && Model.Departments.Any())
                         {
-                            int index = 1;
+                            int index = (Model.DepartmentCurrentPage - 1) * Model.DepartmentResultsPerPage + 1;
                             @foreach (var dept in Model.Departments)
                             {
                                 if (Model.EditingDepartmentID == dept.DepartmentID)
@@ -195,7 +224,7 @@
                 </table>
             </div>
 
-            @if (Model.Departments != null)
+            @if (Model.Departments != null && Model.Departments.Any())
             {
                 var deptPagination = new budget_management_system_aspdotnetcore.ViewModels.PaginationViewModel
                 {
@@ -205,9 +234,9 @@
                     ResultsPerPage = Model.DepartmentResultsPerPage,
                     PageSizes = Model.PageSizes,
                     AriaLabel = "Department page navigation",
-                    PrevUrl = Url.Page(null, new { departmentPageNumber = Model.DepartmentCurrentPage - 1, departmentResultsPerPage = Model.DepartmentResultsPerPage, departmentSearchTerm = Model.DepartmentSearchTerm, departmentMinBudget = Model.DepartmentMinBudget, departmentMaxBudget = Model.DepartmentMaxBudget }),
-                    NextUrl = Url.Page(null, new { departmentPageNumber = Model.DepartmentCurrentPage + 1, departmentResultsPerPage = Model.DepartmentResultsPerPage, departmentSearchTerm = Model.DepartmentSearchTerm, departmentMinBudget = Model.DepartmentMinBudget, departmentMaxBudget = Model.DepartmentMaxBudget }),
-                    SizeChangeUrlTemplate = Url.Page(null, new { departmentPageNumber = 1, departmentResultsPerPage = "__SIZE__", departmentSearchTerm = Model.DepartmentSearchTerm, departmentMinBudget = Model.DepartmentMinBudget, departmentMaxBudget = Model.DepartmentMaxBudget })
+                    PrevUrl = Url.Page(null, new { departmentPageNumber = Model.DepartmentCurrentPage - 1, departmentResultsPerPage = Model.DepartmentResultsPerPage, departmentSearchTerm = Model.DepartmentSearchTerm, departmentMinBudget = Model.DepartmentMinBudget, departmentMaxBudget = Model.DepartmentMaxBudget, SortColumn = Model.SortColumn, SortOrder = Model.SortOrder }),
+                    NextUrl = Url.Page(null, new { departmentPageNumber = Model.DepartmentCurrentPage + 1, departmentResultsPerPage = Model.DepartmentResultsPerPage, departmentSearchTerm = Model.DepartmentSearchTerm, departmentMinBudget = Model.DepartmentMinBudget, departmentMaxBudget = Model.DepartmentMaxBudget, SortColumn = Model.SortColumn, SortOrder = Model.SortOrder }),
+                    SizeChangeUrlTemplate = Url.Page(null, new { departmentPageNumber = 1, departmentResultsPerPage = "__SIZE__", departmentSearchTerm = Model.DepartmentSearchTerm, departmentMinBudget = Model.DepartmentMinBudget, departmentMaxBudget = Model.DepartmentMaxBudget, SortColumn = Model.SortColumn, SortOrder = Model.SortOrder })
                 };
                 <partial name="_Pagination" model="deptPagination" />
             }

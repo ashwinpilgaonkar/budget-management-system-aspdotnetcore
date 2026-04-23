@@ -15,14 +15,26 @@
             <div class="d-flex gap-2 mb-3 align-items-center">
                 <form method="get" class="flex-grow-1">
                     <div class="input-group search-group">
+                        <input type="hidden" name="UserStatusFilter" value="@Model.UserStatusFilter" />
+                        <input type="hidden" name="UserRoleIdFilter" value="@Model.UserRoleIdFilter" />
+                        <input type="hidden" name="SortColumn" value="@Model.SortColumn" />
+                        <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
                         <input type="text" name="UserSearchTerm" class="form-control" placeholder="Search..." value="@Model.UserSearchTerm" />
                         <button type="submit" class="btn btn-outline-secondary border-start-0" style="color: #6c757d;">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </form>
+                @if (!string.IsNullOrEmpty(Model.UserSearchTerm) || !string.IsNullOrEmpty(Model.UserStatusFilter) || Model.UserRoleIdFilter.HasValue)
+                {
+                    <a href="/users" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Clear filters
+                    </a>
+                }
                 <form method="post" asp-page-handler="ExportToExcelUsers" id="usersExportForm">
                     <input type="hidden" name="UserSearchTerm" value="@Model.UserSearchTerm" />
+                    <input type="hidden" name="UserStatusFilter" value="@Model.UserStatusFilter" />
+                    <input type="hidden" name="UserRoleIdFilter" value="@Model.UserRoleIdFilter" />
                     <input type="hidden" name="ExportAll" value="false" id="usersExportAllFlag" />
                     <div class="btn-group">
                         <button type="submit" class="btn btn-outline-success" id="usersExportBtn"
@@ -64,6 +76,8 @@
                                     <input type="hidden" name="userPageNumber" value="@Model.UserCurrentPage" />
                                     <input type="hidden" name="userResultsPerPage" value="@Model.UserResultsPerPage" />
                                     <input type="hidden" name="UserSearchTerm" value="@Model.UserSearchTerm" />
+                                    <input type="hidden" name="UserStatusFilter" value="@Model.UserStatusFilter" />
+                                    <input type="hidden" name="UserRoleIdFilter" value="@Model.UserRoleIdFilter" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("Email")"></i>
                                     </button>
@@ -79,6 +93,8 @@
                                     <input type="hidden" name="userPageNumber" value="@Model.UserCurrentPage" />
                                     <input type="hidden" name="userResultsPerPage" value="@Model.UserResultsPerPage" />
                                     <input type="hidden" name="UserSearchTerm" value="@Model.UserSearchTerm" />
+                                    <input type="hidden" name="UserStatusFilter" value="@Model.UserStatusFilter" />
+                                    <input type="hidden" name="UserRoleIdFilter" value="@Model.UserRoleIdFilter" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("FirstName")"></i>
                                     </button>
@@ -94,6 +110,8 @@
                                     <input type="hidden" name="userPageNumber" value="@Model.UserCurrentPage" />
                                     <input type="hidden" name="userResultsPerPage" value="@Model.UserResultsPerPage" />
                                     <input type="hidden" name="UserSearchTerm" value="@Model.UserSearchTerm" />
+                                    <input type="hidden" name="UserStatusFilter" value="@Model.UserStatusFilter" />
+                                    <input type="hidden" name="UserRoleIdFilter" value="@Model.UserRoleIdFilter" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("LastName")"></i>
                                     </button>
@@ -109,10 +127,37 @@
                                     <input type="hidden" name="userPageNumber" value="@Model.UserCurrentPage" />
                                     <input type="hidden" name="userResultsPerPage" value="@Model.UserResultsPerPage" />
                                     <input type="hidden" name="UserSearchTerm" value="@Model.UserSearchTerm" />
+                                    <input type="hidden" name="UserStatusFilter" value="@Model.UserStatusFilter" />
+                                    <input type="hidden" name="UserRoleIdFilter" value="@Model.UserRoleIdFilter" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("Status")"></i>
                                     </button>
                                 </form>
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-light" type="button" id="userStatusFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false"
+                                            style="@(!string.IsNullOrEmpty(Model.UserStatusFilter) ? "color: #0d6efd;" : "")">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+                                    <div class="dropdown-menu p-3 shadow-lg" style="min-width: 200px;">
+                                        <form method="get" id="userStatusFilterForm">
+                                            <input type="hidden" name="UserSearchTerm" value="@Model.UserSearchTerm" />
+                                            <input type="hidden" name="UserRoleIdFilter" value="@Model.UserRoleIdFilter" />
+                                            <input type="hidden" name="userResultsPerPage" value="@Model.UserResultsPerPage" />
+                                            <input type="hidden" name="SortColumn" value="@Model.SortColumn" />
+                                            <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
+                                            <label class="form-label small fw-semibold mb-1">Filter by Status</label>
+                                            <select name="UserStatusFilter" class="form-select form-select-sm" id="userStatusSelect">
+                                                <option value="">All</option>
+                                                <option value="active" selected="@(Model.UserStatusFilter == "active" ? "selected" : null)">Active</option>
+                                                <option value="inactive" selected="@(Model.UserStatusFilter == "inactive" ? "selected" : null)">Inactive</option>
+                                            </select>
+                                            <div class="d-flex gap-2 mt-2">
+                                                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                                <button type="button" class="btn btn-sm btn-secondary" onclick="resetUserStatusFilter()">Reset</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </th>
                             <th>
                                 Role
@@ -124,10 +169,42 @@
                                     <input type="hidden" name="userPageNumber" value="@Model.UserCurrentPage" />
                                     <input type="hidden" name="userResultsPerPage" value="@Model.UserResultsPerPage" />
                                     <input type="hidden" name="UserSearchTerm" value="@Model.UserSearchTerm" />
+                                    <input type="hidden" name="UserStatusFilter" value="@Model.UserStatusFilter" />
+                                    <input type="hidden" name="UserRoleIdFilter" value="@Model.UserRoleIdFilter" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("Role")"></i>
                                     </button>
                                 </form>
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-sm btn-light" type="button" id="userRoleFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false"
+                                            style="@(Model.UserRoleIdFilter.HasValue ? "color: #0d6efd;" : "")">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+                                    <div class="dropdown-menu p-3 shadow-lg" style="min-width: 220px;">
+                                        <form method="get" id="userRoleFilterForm">
+                                            <input type="hidden" name="UserSearchTerm" value="@Model.UserSearchTerm" />
+                                            <input type="hidden" name="UserStatusFilter" value="@Model.UserStatusFilter" />
+                                            <input type="hidden" name="userResultsPerPage" value="@Model.UserResultsPerPage" />
+                                            <input type="hidden" name="SortColumn" value="@Model.SortColumn" />
+                                            <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
+                                            <label class="form-label small fw-semibold mb-1">Filter by Role</label>
+                                            <select name="UserRoleIdFilter" class="form-select form-select-sm" id="userRoleSelect">
+                                                <option value="">All</option>
+                                                @if (Model.UserRoleOptions != null)
+                                                {
+                                                    @foreach (var role in Model.UserRoleOptions)
+                                                    {
+                                                        <option value="@role.Value" selected="@(Model.UserRoleIdFilter?.ToString() == role.Value ? "selected" : null)">@role.Text</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <div class="d-flex gap-2 mt-2">
+                                                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                                <button type="button" class="btn btn-sm btn-secondary" onclick="resetUserRoleFilter()">Reset</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </th>
                             <th>
                                 Departments Responsible for
@@ -137,9 +214,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model.Users != null)
+                        @if (Model.Users != null && Model.Users.Any())
                         {
-                            int index = 1;
+                            int index = (Model.UserCurrentPage - 1) * Model.UserResultsPerPage + 1;
                             @foreach (var user in Model.Users)
                             {
                                 if (Model.EditingUserID == user.UserId)
@@ -239,7 +316,7 @@
                 </table>
             </div>
 
-            @if (Model.Users != null)
+            @if (Model.Users != null && Model.Users.Any())
             {
                 var userPagination = new budget_management_system_aspdotnetcore.ViewModels.PaginationViewModel
                 {
@@ -249,9 +326,9 @@
                     ResultsPerPage = Model.UserResultsPerPage,
                     PageSizes = Model.PageSizes,
                     AriaLabel = "User page navigation",
-                    PrevUrl = Url.Page(null, new { userPageNumber = Model.UserCurrentPage - 1, userResultsPerPage = Model.UserResultsPerPage, userSearchTerm = Model.UserSearchTerm }),
-                    NextUrl = Url.Page(null, new { userPageNumber = Model.UserCurrentPage + 1, userResultsPerPage = Model.UserResultsPerPage, userSearchTerm = Model.UserSearchTerm }),
-                    SizeChangeUrlTemplate = Url.Page(null, new { userPageNumber = 1, userResultsPerPage = "__SIZE__", userSearchTerm = Model.UserSearchTerm })
+                    PrevUrl = Url.Page(null, new { userPageNumber = Model.UserCurrentPage - 1, userResultsPerPage = Model.UserResultsPerPage, UserSearchTerm = Model.UserSearchTerm, UserStatusFilter = Model.UserStatusFilter, UserRoleIdFilter = Model.UserRoleIdFilter, SortColumn = Model.SortColumn, SortOrder = Model.SortOrder }),
+                    NextUrl = Url.Page(null, new { userPageNumber = Model.UserCurrentPage + 1, userResultsPerPage = Model.UserResultsPerPage, UserSearchTerm = Model.UserSearchTerm, UserStatusFilter = Model.UserStatusFilter, UserRoleIdFilter = Model.UserRoleIdFilter, SortColumn = Model.SortColumn, SortOrder = Model.SortOrder }),
+                    SizeChangeUrlTemplate = Url.Page(null, new { userPageNumber = 1, userResultsPerPage = "__SIZE__", UserSearchTerm = Model.UserSearchTerm, UserStatusFilter = Model.UserStatusFilter, UserRoleIdFilter = Model.UserRoleIdFilter, SortColumn = Model.SortColumn, SortOrder = Model.SortOrder })
                 };
                 <partial name="_Pagination" model="userPagination" />
             }
@@ -346,6 +423,24 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function resetUserStatusFilter() {
+            document.getElementById('userStatusSelect').value = '';
+            document.getElementById('userStatusFilterForm').submit();
+        }
+
+        function resetUserRoleFilter() {
+            document.getElementById('userRoleSelect').value = '';
+            document.getElementById('userRoleFilterForm').submit();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            ['#userStatusFilterDropdown', '#userRoleFilterDropdown'].forEach(function (id) {
+                const menu = document.querySelector(id + ' + .dropdown-menu');
+                if (menu) menu.addEventListener('click', function (e) { e.stopPropagation(); });
+            });
+        });
+    </script>
     <script>
         document.getElementById('togglePasswordBtn').addEventListener('click', function () {
             const input = document.getElementById('passwordInput');

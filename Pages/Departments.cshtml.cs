@@ -21,7 +21,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         public string userRole { get; set; } = "";
         public string ActiveSortTable { get; set; } = "Department";
 
+        [BindProperty(SupportsGet = true)]
         public string SortColumn { get; set; } = "DepartmentName";
+        [BindProperty(SupportsGet = true)]
         public string SortOrder { get; set; } = "asc";
         public List<int> PageSizes { get; set; } = PaginationViewModel.DefaultPageSizes;
         #endregion
@@ -81,9 +83,18 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             if (!string.IsNullOrEmpty(SortColumn) && ActiveSortTable == "Department")
             {
-                departmentQuery = SortOrder == "asc"
-                    ? departmentQuery.OrderBy(e => EF.Property<object>(e, SortColumn))
-                    : departmentQuery.OrderByDescending(e => EF.Property<object>(e, SortColumn));
+                if (SortColumn == "Budget")
+                {
+                    departmentQuery = SortOrder == "asc"
+                        ? departmentQuery.OrderBy(d => d.DepartmentSpeedTypes.Sum(ds => ds.SpeedType.Budget))
+                        : departmentQuery.OrderByDescending(d => d.DepartmentSpeedTypes.Sum(ds => ds.SpeedType.Budget));
+                }
+                else
+                {
+                    departmentQuery = SortOrder == "asc"
+                        ? departmentQuery.OrderBy(e => EF.Property<object>(e, SortColumn))
+                        : departmentQuery.OrderByDescending(e => EF.Property<object>(e, SortColumn));
+                }
             }
 
             if (DepartmentMinBudget.HasValue)

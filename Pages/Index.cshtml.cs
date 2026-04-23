@@ -38,9 +38,12 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public string userRole{ get; set; } = "";
 
+        [BindProperty(SupportsGet = true)]
         public string ActiveSortTable { get; set; } = "Department";
 
+        [BindProperty(SupportsGet = true)]
         public string SortColumn { get; set; } = "DepartmentID";
+        [BindProperty(SupportsGet = true)]
         public string SortOrder { get; set; } = "asc";
 
         public List<int> PageSizes { get; set; } = PaginationViewModel.DefaultPageSizes;

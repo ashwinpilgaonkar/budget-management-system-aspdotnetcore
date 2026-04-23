@@ -15,12 +15,22 @@
             <div class="d-flex gap-2 mb-3 align-items-center">
                 <form method="get" class="flex-grow-1">
                     <div class="input-group search-group">
+                        <input type="hidden" name="SpeedTypeMinBudget" value="@Model.SpeedTypeMinBudget" />
+                        <input type="hidden" name="SpeedTypeMaxBudget" value="@Model.SpeedTypeMaxBudget" />
+                        <input type="hidden" name="SortColumn" value="@Model.SortColumn" />
+                        <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
                         <input type="text" name="SpeedTypeSearchTerm" class="form-control" placeholder="Search..." value="@Model.SpeedTypeSearchTerm" />
                         <button type="submit" class="btn btn-outline-secondary border-start-0" style="color: #6c757d;">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </form>
+                @if (!string.IsNullOrEmpty(Model.SpeedTypeSearchTerm) || Model.SpeedTypeMinBudget.HasValue || Model.SpeedTypeMaxBudget.HasValue)
+                {
+                    <a href="/speedtypes" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Clear filters
+                    </a>
+                }
                 <form method="post" asp-page-handler="ExportToExcelSpeedTypes" id="speedTypesExportForm">
                     <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
                     <input type="hidden" name="SpeedTypeMinBudget" value="@Model.SpeedTypeMinBudget" />
@@ -66,6 +76,8 @@
                                     <input type="hidden" name="speedTypePageNumber" value="@Model.SpeedTypeCurrentPage" />
                                     <input type="hidden" name="speedTypesPerPage" value="@Model.SpeedTypeResultsPerPage" />
                                     <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
+                                    <input type="hidden" name="SpeedTypeMinBudget" value="@Model.SpeedTypeMinBudget" />
+                                    <input type="hidden" name="SpeedTypeMaxBudget" value="@Model.SpeedTypeMaxBudget" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("Code")"></i>
                                     </button>
@@ -81,6 +93,8 @@
                                     <input type="hidden" name="speedTypePageNumber" value="@Model.SpeedTypeCurrentPage" />
                                     <input type="hidden" name="speedTypesPerPage" value="@Model.SpeedTypeResultsPerPage" />
                                     <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
+                                    <input type="hidden" name="SpeedTypeMinBudget" value="@Model.SpeedTypeMinBudget" />
+                                    <input type="hidden" name="SpeedTypeMaxBudget" value="@Model.SpeedTypeMaxBudget" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("Budget")"></i>
                                     </button>
@@ -93,6 +107,9 @@
 
                                     <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
                                         <form method="get" id="speedTypeBudgetFilterForm">
+                                            <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
+                                            <input type="hidden" name="SortColumn" value="@Model.SortColumn" />
+                                            <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
                                             <div class="mb-2">
                                                 <label class="form-label">Min Budget</label>
                                                 <input type="number" step="0.01" name="SpeedTypeMinBudget" id="speedTypeMinBudgetInput" class="form-control form-control-sm"
@@ -124,6 +141,8 @@
                                     <input type="hidden" name="speedTypePageNumber" value="@Model.SpeedTypeCurrentPage" />
                                     <input type="hidden" name="speedTypesPerPage" value="@Model.SpeedTypeResultsPerPage" />
                                     <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
+                                    <input type="hidden" name="SpeedTypeMinBudget" value="@Model.SpeedTypeMinBudget" />
+                                    <input type="hidden" name="SpeedTypeMaxBudget" value="@Model.SpeedTypeMaxBudget" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("FundCode")"></i>
                                     </button>
@@ -140,6 +159,8 @@
                                     <input type="hidden" name="speedTypePageNumber" value="@Model.SpeedTypeCurrentPage" />
                                     <input type="hidden" name="speedTypesPerPage" value="@Model.SpeedTypeResultsPerPage" />
                                     <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
+                                    <input type="hidden" name="SpeedTypeMinBudget" value="@Model.SpeedTypeMinBudget" />
+                                    <input type="hidden" name="SpeedTypeMaxBudget" value="@Model.SpeedTypeMaxBudget" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("ProgramCode")"></i>
                                     </button>
@@ -156,6 +177,8 @@
                                     <input type="hidden" name="speedTypePageNumber" value="@Model.SpeedTypeCurrentPage" />
                                     <input type="hidden" name="speedTypesPerPage" value="@Model.SpeedTypeResultsPerPage" />
                                     <input type="hidden" name="SpeedTypeSearchTerm" value="@Model.SpeedTypeSearchTerm" />
+                                    <input type="hidden" name="SpeedTypeMinBudget" value="@Model.SpeedTypeMinBudget" />
+                                    <input type="hidden" name="SpeedTypeMaxBudget" value="@Model.SpeedTypeMaxBudget" />
                                     <button type="submit" class="btn btn-link p-0">
                                         <i class="fas @Model.GetSortIcon("ClassCode")"></i>
                                     </button>
@@ -166,9 +189,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model.SpeedTypes != null)
+                        @if (Model.SpeedTypes != null && Model.SpeedTypes.Any())
                         {
-                            int index = 1;
+                            int index = (Model.SpeedTypeCurrentPage - 1) * Model.SpeedTypeResultsPerPage + 1;
                             @foreach (var speedType in Model.SpeedTypes)
                             {
                                 if (Model.EditingSpeedTypeID == speedType.SpeedTypeId)
@@ -233,7 +256,7 @@
                 </table>
             </div>
 
-            @if (Model.SpeedTypes != null)
+            @if (Model.SpeedTypes != null && Model.SpeedTypes.Any())
             {
                 var speedTypePagination = new budget_management_system_aspdotnetcore.ViewModels.PaginationViewModel
                 {
@@ -243,9 +266,9 @@
                     ResultsPerPage = Model.SpeedTypeResultsPerPage,
                     PageSizes = Model.PageSizes,
                     AriaLabel = "Speed type page navigation",
-                    PrevUrl = Url.Page(null, new { speedTypePageNumber = Model.SpeedTypeCurrentPage - 1, speedTypesPerPage = Model.SpeedTypeResultsPerPage, SpeedTypeSearchTerm = Model.SpeedTypeSearchTerm, SpeedTypeMinBudget = Model.SpeedTypeMinBudget, SpeedTypeMaxBudget = Model.SpeedTypeMaxBudget }),
-                    NextUrl = Url.Page(null, new { speedTypePageNumber = Model.SpeedTypeCurrentPage + 1, speedTypesPerPage = Model.SpeedTypeResultsPerPage, SpeedTypeSearchTerm = Model.SpeedTypeSearchTerm, SpeedTypeMinBudget = Model.SpeedTypeMinBudget, SpeedTypeMaxBudget = Model.SpeedTypeMaxBudget }),
-                    SizeChangeUrlTemplate = Url.Page(null, new { speedTypePageNumber = 1, speedTypesPerPage = "__SIZE__", SpeedTypeSearchTerm = Model.SpeedTypeSearchTerm, SpeedTypeMinBudget = Model.SpeedTypeMinBudget, SpeedTypeMaxBudget = Model.SpeedTypeMaxBudget })
+                    PrevUrl = Url.Page(null, new { speedTypePageNumber = Model.SpeedTypeCurrentPage - 1, speedTypesPerPage = Model.SpeedTypeResultsPerPage, SpeedTypeSearchTerm = Model.SpeedTypeSearchTerm, SpeedTypeMinBudget = Model.SpeedTypeMinBudget, SpeedTypeMaxBudget = Model.SpeedTypeMaxBudget, SortColumn = Model.SortColumn, SortOrder = Model.SortOrder }),
+                    NextUrl = Url.Page(null, new { speedTypePageNumber = Model.SpeedTypeCurrentPage + 1, speedTypesPerPage = Model.SpeedTypeResultsPerPage, SpeedTypeSearchTerm = Model.SpeedTypeSearchTerm, SpeedTypeMinBudget = Model.SpeedTypeMinBudget, SpeedTypeMaxBudget = Model.SpeedTypeMaxBudget, SortColumn = Model.SortColumn, SortOrder = Model.SortOrder }),
+                    SizeChangeUrlTemplate = Url.Page(null, new { speedTypePageNumber = 1, speedTypesPerPage = "__SIZE__", SpeedTypeSearchTerm = Model.SpeedTypeSearchTerm, SpeedTypeMinBudget = Model.SpeedTypeMinBudget, SpeedTypeMaxBudget = Model.SpeedTypeMaxBudget, SortColumn = Model.SortColumn, SortOrder = Model.SortOrder })
                 };
                 <partial name="_Pagination" model="speedTypePagination" />
             }

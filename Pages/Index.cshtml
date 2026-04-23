@@ -1,4 +1,4 @@
-﻿@page "/home"
+@page "/home"
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
@@ -237,11 +237,22 @@
                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                     <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                     <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                    <input type="hidden" name="SortColumn" value="@Model.SortColumn" />
+                                                                    <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
+                                                                    <input type="hidden" name="ActiveSortTable" value="@Model.ActiveSortTable" />
+                                                                    <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                    <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                    <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                    <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                    <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                    <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                    <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                    <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                    <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                     <div class="input-group search-group">
                                                                         <input type="text" name="BudgetAmendmentSearchTerm" class="form-control" placeholder="Search..." value="@Model.BudgetAmendmentSearchTerm" />
                                                                         <button type="submit" class="btn btn-outline-secondary border-start-0" style="color: #6c757d;">
@@ -250,6 +261,13 @@
                                                                     </div>
                                                                 </form>
 
+                                                                @if (!string.IsNullOrEmpty(Model.BudgetAmendmentSearchTerm) || Model.SelectedCreatedBy.HasValue || Model.SelectedEditedBy.HasValue || Model.SelectedUpdatedBy.HasValue)
+                                                                {
+                                                                    <a href="/home?SelectedDepartmentID=@Model.SelectedDepartmentID&SelectedStatusTab=@Model.SelectedStatusTab&SelectedBAMainStatusTab=@Model.SelectedBAMainStatusTab&SelectedBudgetAmendmentMainID=@Model.SelectedBudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")"
+                                                                       class="btn btn-outline-secondary flex-shrink-0">
+                                                                        <i class="fas fa-times me-1"></i> Clear filters
+                                                                    </a>
+                                                                }
 
                                                                 @if (Model.SelectedStatusTab == AmendmentStatus.Pending.ToString() && !String.Equals(userRole, "5"))
                                                                 {
@@ -257,8 +275,6 @@
                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                         <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -270,8 +286,6 @@
                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                         <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -407,13 +421,20 @@
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                     <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                     <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                    <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                    <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                    <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                    <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                     <button type="submit" class="btn btn-link p-0">
                                                                                         <i class="fas @Model.GetSortIcon("CategoryName")"></i>
                                                                                     </button>
@@ -435,13 +456,20 @@
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                     <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                     <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                    <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                    <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                    <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                    <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                     <button type="submit" class="btn btn-link p-0">
                                                                                         <i class="fas @Model.GetSortIcon("FundCode")"></i>
                                                                                     </button>
@@ -460,13 +488,20 @@
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                     <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                     <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                    <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                    <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                    <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                    <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                     <button type="submit" class="btn btn-link p-0">
                                                                                         <i class="fas @Model.GetSortIcon("ProgramCode")"></i>
                                                                                     </button>
@@ -482,13 +517,20 @@
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                     <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                     <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                    <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                    <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                    <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                    <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                     <button type="submit" class="btn btn-link p-0">
                                                                                         <i class="fas @Model.GetSortIcon("ClassCode")"></i>
                                                                                     </button>
@@ -507,13 +549,20 @@
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                     <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                     <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                    <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                    <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                    <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                    <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                     <button type="submit" class="btn btn-link p-0">
                                                                                         <i class="fas @Model.GetSortIcon("BudgetCode")"></i>
                                                                                     </button>
@@ -529,13 +578,20 @@
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                     <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                     <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                    <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                    <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                    <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                    <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                     <button type="submit" class="btn btn-link p-0">
                                                                                         <i class="fas @Model.GetSortIcon("PositionNumber")"></i>
                                                                                     </button>
@@ -551,13 +607,20 @@
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                     <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                     <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                    <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                    <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                    <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                    <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                     <button type="submit" class="btn btn-link p-0">
                                                                                         <i class="fas @Model.GetSortIcon("AmountIncrease")"></i>
                                                                                     </button>
@@ -573,13 +636,20 @@
                                                                                     <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                     <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                     <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                     <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                     <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                     <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                     <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                    <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                    <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                    <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                    <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                    <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                     <button type="submit" class="btn btn-link p-0">
                                                                                         <i class="fas @Model.GetSortIcon("AmountDecrease")"></i>
                                                                                     </button>
@@ -598,14 +668,20 @@
                                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                         <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                         <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                        <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                        <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                        <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                        <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                         <button type="submit" class="btn btn-link p-0">
                                                                                             <i class="fas @Model.GetSortIcon("CreatedBy")"></i>
                                                                                         </button>
@@ -618,6 +694,23 @@
 
                                                                                         <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
                                                                                             <form method="get">
+                                                                                                <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                                                <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                                <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                                <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                                                <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                                                <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                                <input type="hidden" name="SortColumn" value="@Model.SortColumn" />
+                                                                                                <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
+                                                                                                <input type="hidden" name="ActiveSortTable" value="@Model.ActiveSortTable" />
+                                                                                                <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                                <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                                <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                                 <!-- Creator Dropdown -->
                                                                                                 <div class="mb-2">
                                                                                                     <label for="SelectedCreatedBy" class="form-label">Created By</label>
@@ -661,14 +754,20 @@
                                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                         <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                         <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                        <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                        <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                        <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                        <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                         <button type="submit" class="btn btn-link p-0">
                                                                                             <i class="fas @Model.GetSortIcon("EditedBy")"></i>
                                                                                         </button>
@@ -681,6 +780,23 @@
 
                                                                                         <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
                                                                                             <form method="get">
+                                                                                                <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                                                <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                                <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                                <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                                                <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                                                <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                                <input type="hidden" name="SortColumn" value="@Model.SortColumn" />
+                                                                                                <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
+                                                                                                <input type="hidden" name="ActiveSortTable" value="@Model.ActiveSortTable" />
+                                                                                                <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                                <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                                <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                                 <!-- Editor Dropdown -->
                                                                                                 <div class="mb-2">
                                                                                                     <label for="SelectedEditedBy" class="form-label">Edited By</label>
@@ -724,14 +840,20 @@
                                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                         <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                         <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                        <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                        <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                        <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+                                                                                        <input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                        <input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
                                                                                         <button type="submit" class="btn btn-link p-0">
                                                                                             <i class="fas @Model.GetSortIcon("UpdatedBy")"></i>
                                                                                         </button>
@@ -744,6 +866,23 @@
 
                                                                                         <div class="dropdown-menu p-3 shadow-lg" style="min-width: 250px;">
                                                                                             <form method="get">
+                                                                                                <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+                                                                                                <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+                                                                                                <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+                                                                                                <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+                                                                                                <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+                                                                                                <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+                                                                                                <input type="hidden" name="SortColumn" value="@Model.SortColumn" />
+                                                                                                <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
+                                                                                                <input type="hidden" name="ActiveSortTable" value="@Model.ActiveSortTable" />
+                                                                                                <input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+                                                                                                <input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+                                                                                                <input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+                                                                                                <input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
                                                                                                 <!-- Updater Dropdown -->
                                                                                                 <div class="mb-2">
                                                                                                     <label for="SelectedUpdatedBy" class="form-label">Updated By</label>
@@ -800,7 +939,7 @@
                                                                             </tr>
                                                                         }
                                                                         @{
-                                                                            int index = 1;
+                                                                            int index = (Model.BudgetAmendmentCurrentPage - 1) * Model.BudgetAmendmentResultsPerPage + 1;
                                                                         }
                                                                         @foreach (var categoryGroup in Model.BudgetAmendments.GroupBy(a => a.CategoryName))
                                                                         {
@@ -817,7 +956,7 @@
                                                                                     var cellClass = netChange == 0 ? "text-success" : "text-danger";
                                                                                 }
                                                                                 <td colspan="9"></td>
-                                                                                <td colspan="2" class="@cellClass">$@netChange</td>
+                                                                                <td colspan="2" class="@cellClass">$@netChange.ToString("N2")</td>
                                                                                 <td colspan="7"></td>
                                                                             </tr>
 
@@ -874,11 +1013,6 @@
                                                                                                 <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                                 <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                                 <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                                 <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                                 <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                                 <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -906,8 +1040,8 @@
                                                                                         <td>@amendment.AcctDescription</td>
                                                                                         <td>@amendment.BudgetCode</td>
                                                                                         <td>@amendment.PositionNumber</td>
-                                                                                        <td>@amendment.AmountIncrease</td>
-                                                                                        <td>@amendment.AmountDecrease</td>
+                                                                                        <td>$@amendment.AmountIncrease.ToString("N2")</td>
+                                                                                        <td>$@amendment.AmountDecrease.ToString("N2")</td>
                                                                                         @if (!String.Equals(userRole, "5"))
                                                                                         {
                                                                                             <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
@@ -946,12 +1080,6 @@
                                                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                                         <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                                                <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -964,12 +1092,6 @@
                                                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                                         <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                                         <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                                                <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                        <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                                                                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
-                    <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
                                                                                                         <input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
                                                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
@@ -989,7 +1111,7 @@
                                                             </div>
 
                                                             @{
-                                                                var amendmentFilters = $"&SelectedDepartmentID={Model.SelectedDepartmentID}&SelectedStatusTab={Model.SelectedStatusTab}&SelectedBAMainStatusTab={Model.SelectedBAMainStatusTab}&SelectedBudgetAmendmentMainID={Model.SelectedBudgetAmendmentMainID}&SelectedFinancialYear={Model.SelectedFinancialYear}&CustomStartDate={Model.CustomStartDate?.ToString("yyyy-MM-dd")}&CustomEndDate={Model.CustomEndDate?.ToString("yyyy-MM-dd")}";
+                                                                var amendmentFilters = $"&SelectedDepartmentID={Model.SelectedDepartmentID}&SelectedStatusTab={Model.SelectedStatusTab}&SelectedBAMainStatusTab={Model.SelectedBAMainStatusTab}&SelectedBudgetAmendmentMainID={Model.SelectedBudgetAmendmentMainID}&SelectedFinancialYear={Model.SelectedFinancialYear}&CustomStartDate={Model.CustomStartDate?.ToString("yyyy-MM-dd")}&CustomEndDate={Model.CustomEndDate?.ToString("yyyy-MM-dd")}&BudgetAmendmentSearchTerm={Model.BudgetAmendmentSearchTerm}&SortColumn={Model.SortColumn}&SortOrder={Model.SortOrder}&ActiveSortTable={Model.ActiveSortTable}&SelectedCreatedBy={Model.SelectedCreatedBy}&CreatedFromDate={Model.CreatedFromDate?.ToString("yyyy-MM-dd")}&CreatedToDate={Model.CreatedToDate?.ToString("yyyy-MM-dd")}&SelectedEditedBy={Model.SelectedEditedBy}&EditedFromDate={Model.EditedFromDate?.ToString("yyyy-MM-dd")}&EditedToDate={Model.EditedToDate?.ToString("yyyy-MM-dd")}&SelectedUpdatedBy={Model.SelectedUpdatedBy}&UpdatedFromDate={Model.UpdatedFromDate?.ToString("yyyy-MM-dd")}&UpdatedToDate={Model.UpdatedToDate?.ToString("yyyy-MM-dd")}";
                                                                 var amendmentPagination = new budget_management_system_aspdotnetcore.ViewModels.PaginationViewModel
                                                                 {
                                                                     CurrentPage = Model.BudgetAmendmentCurrentPage,

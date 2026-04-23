@@ -24,7 +24,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         public string userRole { get; set; } = "";
         public string ActiveSortTable { get; set; } = "User";
 
+        [BindProperty(SupportsGet = true)]
         public string SortColumn { get; set; } = "Email";
+        [BindProperty(SupportsGet = true)]
         public string SortOrder { get; set; } = "asc";
         public List<int> PageSizes { get; set; } = PaginationViewModel.DefaultPageSizes;
         #endregion
@@ -45,6 +47,12 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         [BindProperty(SupportsGet = true)]
         public string? UserSearchTerm { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public string? UserStatusFilter { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int? UserRoleIdFilter { get; set; }
 
         public int UserCurrentPage { get; set; } = 1;
         public int UserResultsPerPage { get; set; } = 10;
@@ -78,6 +86,16 @@ namespace budget_management_system_aspdotnetcore.Pages
                 usersQuery = usersQuery.Where(s => s.FirstName.Contains(UserSearchTerm)
                 || s.LastName.Contains(UserSearchTerm)
                 || s.Email.Contains(UserSearchTerm));
+            }
+
+            if (!string.IsNullOrEmpty(UserStatusFilter) && Enum.TryParse<UserStatus>(UserStatusFilter, out var statusFilter))
+            {
+                usersQuery = usersQuery.Where(u => u.Status == statusFilter);
+            }
+
+            if (UserRoleIdFilter.HasValue)
+            {
+                usersQuery = usersQuery.Where(u => u.RoleID == UserRoleIdFilter.Value);
             }
 
             if (!string.IsNullOrEmpty(SortColumn) && ActiveSortTable == "User")
@@ -286,11 +304,24 @@ namespace budget_management_system_aspdotnetcore.Pages
                 .Include(u => u.DepartmentsResponsibleFor)
                 .AsQueryable();
 
-            if (!exportAll && !string.IsNullOrEmpty(UserSearchTerm))
+            if (!exportAll)
             {
-                usersQuery = usersQuery.Where(s => s.FirstName.Contains(UserSearchTerm)
-                    || s.LastName.Contains(UserSearchTerm)
-                    || s.Email.Contains(UserSearchTerm));
+                if (!string.IsNullOrEmpty(UserSearchTerm))
+                {
+                    usersQuery = usersQuery.Where(s => s.FirstName.Contains(UserSearchTerm)
+                        || s.LastName.Contains(UserSearchTerm)
+                        || s.Email.Contains(UserSearchTerm));
+                }
+
+                if (!string.IsNullOrEmpty(UserStatusFilter) && Enum.TryParse<UserStatus>(UserStatusFilter, out var statusFilter))
+                {
+                    usersQuery = usersQuery.Where(u => u.Status == statusFilter);
+                }
+
+                if (UserRoleIdFilter.HasValue)
+                {
+                    usersQuery = usersQuery.Where(u => u.RoleID == UserRoleIdFilter.Value);
+                }
             }
 
             var users = await usersQuery.ToListAsync();
