@@ -58,6 +58,12 @@ namespace budget_management_system_aspdotnetcore.Pages
         public string? SelectedBAMainStatusTab { get; set; } = "Pending";
 
         [BindProperty(SupportsGet = true)]
+        public bool ShowOverdueOnly { get; set; } = false;
+
+        [BindProperty(SupportsGet = true)]
+        public bool BAMainCollapsed { get; set; } = false;
+
+        [BindProperty(SupportsGet = true)]
         public string SelectedFinancialYear { get; set; } = "";
 
         [BindProperty(SupportsGet = true)]
@@ -113,6 +119,16 @@ namespace budget_management_system_aspdotnetcore.Pages
                         _          => true
                     };
                 }).ToList();
+            }
+
+            if (ShowOverdueOnly &&
+                (string.IsNullOrEmpty(SelectedBAMainStatusTab) ||
+                 SelectedBAMainStatusTab == "Pending" ||
+                 SelectedBAMainStatusTab == "Rejected"))
+            {
+                BudgetAmendmentsMain = BudgetAmendmentsMain
+                    .Where(bam => bam.ExtendedDeadline.Date < DateTime.Today)
+                    .ToList();
             }
 
             TotalBAMains = BudgetAmendmentsMain.Count;
@@ -240,7 +256,8 @@ namespace budget_management_system_aspdotnetcore.Pages
                 $"&SelectedBAMainStatusTab={SelectedBAMainStatusTab}" +
                 $"&SelectedFinancialYear={SelectedFinancialYear}" +
                 $"&CustomStartDate={CustomStartDate?.ToString("yyyy-MM-dd")}" +
-                $"&CustomEndDate={CustomEndDate?.ToString("yyyy-MM-dd")}";
+                $"&CustomEndDate={CustomEndDate?.ToString("yyyy-MM-dd")}" +
+                $"&ShowOverdueOnly={ShowOverdueOnly}";
 
             return new PaginationViewModel
             {

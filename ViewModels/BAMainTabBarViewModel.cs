@@ -7,5 +7,7 @@ namespace budget_management_system_aspdotnetcore.ViewModels
         public string? SelectedFinancialYear { get; set; }
         public DateTime? CustomStartDate { get; set; }
         public DateTime? CustomEndDate { get; set; }
+        public bool ShowOverdueOnly { get; set; }
+        public bool BAMainCollapsed { get; set; }
     }
 }

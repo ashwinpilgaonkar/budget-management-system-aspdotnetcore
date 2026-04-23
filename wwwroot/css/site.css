@@ -534,3 +534,81 @@ header.sticky-top.scrolled {
     margin-left: auto;
     margin-right: auto;
 }
+
+/* Overdue only toggle switch — 3-column grid keeps tabs centered, toggle at right edge */
+.tab-bar-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1rem;
+}
+
+.ba-tab-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+/* Contains wide accordion content so card-body width stays stable */
+.ba-accordion-wrapper {
+    overflow-x: auto;
+    min-width: 0;
+}
+
+.ba-overdue-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.ba-overdue-switch:hover {
+    text-decoration: none;
+}
+
+.ba-switch-track {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    background-color: #ced4da;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.ba-overdue-switch--on .ba-switch-track {
+    background-color: #dc3545;
+}
+
+.ba-switch-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: left 0.2s ease;
+}
+
+.ba-overdue-switch--on .ba-switch-thumb {
+    left: 21px;
+}
+
+.ba-switch-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6c757d;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+
+.ba-overdue-switch--on .ba-switch-label {
+    color: #dc3545;
+    font-weight: 600;
+}

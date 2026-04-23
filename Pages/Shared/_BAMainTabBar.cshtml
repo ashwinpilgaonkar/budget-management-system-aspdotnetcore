@@ -6,25 +6,49 @@
         (Label: "Rejected", Value: "Rejected"),
         (Label: "All",      Value: "")
     };
+    var overdueEligible = new HashSet<string?> { "Pending", "Rejected", "" };
+    bool isEligible = overdueEligible.Contains(Model.SelectedBAMainStatusTab ?? "");
+    var fyParams = $"SelectedFinancialYear={Model.SelectedFinancialYear}&CustomStartDate={Model.CustomStartDate?.ToString("yyyy-MM-dd")}&CustomEndDate={Model.CustomEndDate?.ToString("yyyy-MM-dd")}";
+    var collapsedParam = Model.BAMainCollapsed ? "&BAMainCollapsed=true" : "";
+    var toggleHref = Model.ShowOverdueOnly
+        ? $"?SelectedBAMainStatusTab={Model.SelectedBAMainStatusTab}&{fyParams}{collapsedParam}"
+        : $"?SelectedBAMainStatusTab={Model.SelectedBAMainStatusTab}&{fyParams}{collapsedParam}&ShowOverdueOnly=true";
 }
-<ul class="nav nav-tabs justify-content-center mb-3">
-    @foreach (var tab in tabs)
-    {
-        var isActive = (string.IsNullOrEmpty(tab.Value) && string.IsNullOrEmpty(Model.SelectedBAMainStatusTab))
-                    || tab.Value == Model.SelectedBAMainStatusTab;
-        var tabCount = Model.TabCounts.GetValueOrDefault(tab.Value, 0);
-        var isAllTab = string.IsNullOrEmpty(tab.Value);
-        var liClass = isAllTab ? "nav-item tab-all-separator" : "nav-item";
-        var badgeClass = isAllTab ? "badge badge-ghost" : "badge bg-secondary ms-1";
-        <li class="@liClass">
-            <a class="nav-link @(isActive ? "active" : "")"
-               href="?SelectedBAMainStatusTab=@tab.Value&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")">
-                @tab.Label
-                @if (tabCount > 0)
-                {
-                    <span class="@badgeClass">@tabCount</span>
-                }
+
+<div class="tab-bar-row">
+    <div class="ba-tab-spacer"></div>
+    <ul class="nav nav-tabs mb-0">
+        @foreach (var tab in tabs)
+        {
+            var isActive = (string.IsNullOrEmpty(tab.Value) && string.IsNullOrEmpty(Model.SelectedBAMainStatusTab))
+                        || tab.Value == Model.SelectedBAMainStatusTab;
+            var tabCount = Model.TabCounts.GetValueOrDefault(tab.Value, 0);
+            var isAllTab = string.IsNullOrEmpty(tab.Value);
+            var liClass = isAllTab ? "nav-item tab-all-separator" : "nav-item";
+            var badgeClass = isAllTab ? "badge badge-ghost" : "badge bg-secondary ms-1";
+            bool carryOverdue = tab.Value != "Approved" && Model.ShowOverdueOnly;
+            var href = $"?SelectedBAMainStatusTab={tab.Value}&{fyParams}{collapsedParam}" +
+                       (carryOverdue ? "&ShowOverdueOnly=true" : "");
+            <li class="@liClass">
+                <a class="nav-link @(isActive ? "active" : "")" href="@href">
+                    @tab.Label
+                    @if (tabCount > 0)
+                    {
+                        <span class="@badgeClass">@tabCount</span>
+                    }
+                </a>
+            </li>
+        }
+    </ul>
+    <div class="ba-tab-right">
+        @if (isEligible)
+        {
+            <a href="@toggleHref" class="ba-overdue-switch @(Model.ShowOverdueOnly ? "ba-overdue-switch--on" : "")" aria-label="Show overdue only">
+                <div class="ba-switch-track">
+                    <div class="ba-switch-thumb"></div>
+                </div>
+                <span class="ba-switch-label">Overdue only</span>
             </a>
-        </li>
-    }
-</ul>
+        }
+    </div>
+</div>

@@ -66,7 +66,8 @@
                             ["SelectedDepartmentID"] = Model.SelectedDepartmentID.ToString(),
                             ["SelectedStatusTab"] = Model.SelectedStatusTab ?? "",
                             ["SelectedBAMainStatusTab"] = Model.SelectedBAMainStatusTab ?? "",
-                            ["SelectedBudgetAmendmentMainID"] = Model.SelectedBudgetAmendmentMainID?.ToString() ?? ""
+                            ["SelectedBudgetAmendmentMainID"] = Model.SelectedBudgetAmendmentMainID?.ToString() ?? "",
+                            ["ShowOverdueOnly"] = Model.ShowOverdueOnly.ToString().ToLower()
                         }
                     };
                 }
@@ -84,6 +85,8 @@
                         SelectedFinancialYear = Model.SelectedFinancialYear,
                         CustomStartDate = Model.CustomStartDate,
                         CustomEndDate = Model.CustomEndDate,
+                        ShowOverdueOnly = Model.ShowOverdueOnly,
+                        BAMainCollapsed = Model.BAMainCollapsed,
                         TabCounts = new Dictionary<string, int>
                         {
                             [""] = Model.BudgetAmendmentsMainAll.Count,
@@ -117,7 +120,7 @@
 
             else
             {
-                    <div class="mb-4">
+                    <div class="mb-4 ba-accordion-wrapper">
                     <div class="accordion" id="budgetAmendmentsAccordion">
 
                         @{
@@ -128,7 +131,7 @@
                         {
                             var amendmentIndex = baIndex;
                             baIndex++;
-                            var isFirstLoadDefault = amendmentIndex == 0 && Model.SelectedDepartmentID == 0 && !Model.SelectedBudgetAmendmentMainID.HasValue;
+                            var isFirstLoadDefault = amendmentIndex == 0 && Model.SelectedDepartmentID == 0 && !Model.SelectedBudgetAmendmentMainID.HasValue && !Model.BAMainCollapsed;
 
                             
                                 var baRelated = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID).ToList();
@@ -1341,4 +1344,53 @@
             border-color: #0d6efd;
         }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Tab links: update BAMainCollapsed based on live accordion state.
+        // If no accordion (no records), leave URL untouched — server-rendered href already carries the right value.
+        const accordion = document.getElementById('budgetAmendmentsAccordion');
+
+        function isBaMainCollapsed() {
+            // Query only the top-level BA main collapse elements, not nested dept accordions
+            return !accordion || !accordion.querySelector(':scope > .accordion-item > .accordion-collapse.show');
+        }
+
+        document.querySelectorAll('.tab-bar-row .nav-link').forEach(function (link) {
+            link.addEventListener('click', function (e) {
+                if (!accordion) return;
+                e.preventDefault();
+                const url = new URL(this.href);
+                if (isBaMainCollapsed()) {
+                    url.searchParams.set('BAMainCollapsed', 'true');
+                } else {
+                    url.searchParams.delete('BAMainCollapsed');
+                }
+                window.location.href = url.toString();
+            });
+        });
+
+        // Toggle switch: animate then navigate, same collapse-state logic
+        const overdueSwitch = document.querySelector('.ba-overdue-switch');
+        if (overdueSwitch) {
+            overdueSwitch.addEventListener('click', function (e) {
+                e.preventDefault();
+                const href = this.href;
+                const isCollapsed = isBaMainCollapsed();
+                this.classList.toggle('ba-overdue-switch--on');
+                setTimeout(function () {
+                    const url = new URL(href);
+                    if (accordion) {
+                        if (isCollapsed) {
+                            url.searchParams.set('BAMainCollapsed', 'true');
+                        } else {
+                            url.searchParams.delete('BAMainCollapsed');
+                        }
+                    }
+                    window.location.href = url.toString();
+                }, 220);
+            });
+        }
+    });
+</script>
 
