@@ -1,38 +1,32 @@
 using budget_management_system_aspdotnetcore.Entities;
 using budget_management_system_aspdotnetcore.ViewModels;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using ClosedXML.Excel;
-using Microsoft.Data.SqlClient;
 using budget_management_system_aspdotnetcore.Services;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Vml;
 using Department = budget_management_system_aspdotnetcore.Entities.Department;
-using System.Security.Claims;
 using budget_management_system_aspdotnetcore.Helpers;
 
 namespace budget_management_system_aspdotnetcore.Pages
 {
-    public class IndexModel : PageModel
+    public class IndexModel(
+        CasdbtestContext context,
+        SpeedTypeService speedTypeService,
+        UserService userService,
+        IAuthenticationService authService) : PageModel
     {
         // ==============================================
         // Instance Variables -- HELPER
         // ==============================================
         #region HELPER
-            private readonly CasdbtestContext _context;
-            private readonly SpeedTypeService _speedTypeService;
-            private readonly IAuthenticationService _authService;
+            private readonly CasdbtestContext _context = context;
+            private readonly SpeedTypeService _speedTypeService = speedTypeService;
+            private readonly UserService _userService = userService;
+            private readonly IAuthenticationService _authService = authService;
         #endregion
-
-        private readonly UserService _userService;
-
-        public bool isAdmin { get; set; } = false;
 
         public int userID { get; set; } = 0;
 
@@ -55,9 +49,6 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public List<BudgetAmendmentMain> BudgetAmendmentsMain { get; set; }
         public List<BudgetAmendmentMain> BudgetAmendmentsMainAll { get; set; }
-
-        [BindProperty]
-        public BudgetAmendmentMain NewBudgetAmendmentMain { get; set; }
 
         public List<BudgetAmendment> BudgetAmendmentsAll { get; set; }
 
@@ -82,10 +73,6 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         [BindProperty(SupportsGet = true)]
         public string BudgetAmendmentSearchTerm { get; set; }
-
-        [BindProperty]
-        [Required]
-        public double AmountTotal { get; set; }
 
         [BindProperty(SupportsGet = true)]
         [Required]
@@ -168,24 +155,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         [DataType(DataType.Date)]
         public DateTime? CustomEndDate { get; set; }
 
-        [BindProperty(SupportsGet = true)]
-        public int? selectedBA { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public int? selectedDept { get; set; }
-
-        public int OverviewTotalCount { get; set; }
-        public int OverviewApprovedCount { get; set; }
-        public int OverviewPendingCount { get; set; }
-        public int OverviewRejectedCount { get; set; }
-
-        public int OverviewTotalActionsThisMonth { get; set; }
-
-        public string OverviewMostActiveUser { get; set; }
-
-        public DateTime OverviewLastActivityTime { get; set; }
-
         public List<string> FinancialYearOptions => FinancialYearHelper.GetOptions();
+
+        public Dictionary<string, int> BAMainTabCounts { get; set; } = new();
 
         private void SetDefaultFinancialYearRange()
         {
@@ -199,72 +171,12 @@ namespace budget_management_system_aspdotnetcore.Pages
                 CustomEndDate = new DateTime(startYear + 1, 6, 30);
         }
 
-        public void SetOverviewCardData()
-        {
-            DateTime startDate, endDate;
-
-            var userRole = _authService.GetUserRole(HttpContext);
-            var userID = _authService.GetAuthenticatedUserID(HttpContext);
-
-            if (string.IsNullOrEmpty(SelectedFinancialYear) && FinancialYearOptions.Any())
-            {
-                SelectedFinancialYear = FinancialYearOptions.First();
-            }
-
-            (startDate, endDate) = FinancialYearHelper.GetDateRange(SelectedFinancialYear, CustomStartDate, CustomEndDate);
-
-            var amendmentOverviewQuery = _context.BudgetAmendments
-                .Where(a => a.CreatedAt >= startDate && a.CreatedAt <= endDate);
-
-            if (userRole == RoleConstants.AFOIdString)
-            {
-                amendmentOverviewQuery = amendmentOverviewQuery.Where(a => a.CreatedBy == userID);
-            }
-
-            var amendmentList = amendmentOverviewQuery.ToList();
-
-            var startOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
-            var recentLogs = _context.UserActivityLogs
-                .Include(log => log.User)
-                .Where(log => log.Timestamp >= startOfMonth)
-                .ToList();
-
-            var mostActiveUser = recentLogs
-                .GroupBy(log => log.User.Email)
-                .OrderByDescending(g => g.Count())
-                .Select(g => g.Key)
-                .FirstOrDefault() ?? "N/A";
-
-            var lastActivityTime = recentLogs
-                .OrderByDescending(log => log.Timestamp)
-                .Select(log => log.Timestamp)
-                .FirstOrDefault();
-
-            OverviewTotalCount = amendmentList.Count;
-            OverviewApprovedCount = amendmentList.Count(a => a.Status == AmendmentStatus.Approved);
-            OverviewPendingCount = amendmentList.Count(a => a.Status == AmendmentStatus.Pending);
-            OverviewRejectedCount = amendmentList.Count(a => a.Status == AmendmentStatus.Rejected);
-
-            OverviewTotalActionsThisMonth = recentLogs.Count;
-            OverviewMostActiveUser = mostActiveUser;
-            OverviewLastActivityTime = lastActivityTime;
-        }
-
-        public IndexModel(CasdbtestContext context, SpeedTypeService speedTypeService, UserService userService, IAuthenticationService authService)
-        {
-            _context = context;
-            _speedTypeService = speedTypeService;
-            _userService = userService;
-            _authService = authService;
-        }
-
         public async Task LoadFormDataAsync()
         {
             userRole = _authService.GetUserRole(HttpContext);
             userID = _authService.GetAuthenticatedUserID(HttpContext);
 
             SetDefaultFinancialYearRange();
-            SetOverviewCardData();
 
 
             if (SelectedStatus == null || !SelectedStatus.Any())
@@ -284,10 +196,28 @@ namespace budget_management_system_aspdotnetcore.Pages
             .OrderByDescending(ba => ba.CreatedAt)
             .ToListAsync();
 
-            //Fetch BudgetAmendment Data
-            BudgetAmendmentsAll = _context.BudgetAmendments.ToList();
+            BudgetAmendmentsAll = await _context.BudgetAmendments
+                .Where(ba => ba.BudgetAmendmentMain.ExtendedDeadline >= startDate && ba.BudgetAmendmentMain.ExtendedDeadline <= endDate)
+                .ToListAsync();
 
             BudgetAmendmentsMainAll = BudgetAmendmentsMain;
+
+            BAMainTabCounts = new Dictionary<string, int>
+            {
+                [""] = BudgetAmendmentsMainAll.Count,
+                ["Pending"]  = BudgetAmendmentsMainAll.Count(bam =>
+                    BudgetAmendmentsAll.Any(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID && ba.Status == AmendmentStatus.Pending)),
+                ["Approved"] = BudgetAmendmentsMainAll.Count(bam =>
+                {
+                    var rel = BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
+                    return rel.Any() && rel.All(ba => ba.Status == AmendmentStatus.Approved);
+                }),
+                ["Rejected"] = BudgetAmendmentsMainAll.Count(bam =>
+                {
+                    var rel = BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
+                    return rel.Any() && rel.All(ba => ba.Status == AmendmentStatus.Rejected);
+                })
+            };
 
             if (!string.IsNullOrEmpty(SelectedBAMainStatusTab))
             {
@@ -365,10 +295,27 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             if (!string.IsNullOrEmpty(SortColumn) && ActiveSortTable == "AmendmentHistory")
             {
-                amendmentQuery = SortOrder == "asc"
-                    ? amendmentQuery.OrderBy(e => EF.Property<string>(e, SortColumn).ToString())
-                    : amendmentQuery.OrderByDescending(e => EF.Property<string>(e, SortColumn).ToString());
-
+                amendmentQuery = SortColumn switch
+                {
+                    "AmountIncrease" => SortOrder == "asc"
+                        ? amendmentQuery.OrderBy(e => e.AmountIncrease)
+                        : amendmentQuery.OrderByDescending(e => e.AmountIncrease),
+                    "AmountDecrease" => SortOrder == "asc"
+                        ? amendmentQuery.OrderBy(e => e.AmountDecrease)
+                        : amendmentQuery.OrderByDescending(e => e.AmountDecrease),
+                    "FundCode" => SortOrder == "asc"
+                        ? amendmentQuery.OrderBy(e => e.FundCode)
+                        : amendmentQuery.OrderByDescending(e => e.FundCode),
+                    "ProgramCode" => SortOrder == "asc"
+                        ? amendmentQuery.OrderBy(e => e.ProgramCode)
+                        : amendmentQuery.OrderByDescending(e => e.ProgramCode),
+                    "ClassCode" => SortOrder == "asc"
+                        ? amendmentQuery.OrderBy(e => e.ClassCode)
+                        : amendmentQuery.OrderByDescending(e => e.ClassCode),
+                    _ => SortOrder == "asc"
+                        ? amendmentQuery.OrderBy(e => EF.Property<string>(e, SortColumn))
+                        : amendmentQuery.OrderByDescending(e => EF.Property<string>(e, SortColumn))
+                };
             }
 
             CreatedByUsers = await amendmentQuery
@@ -496,6 +443,14 @@ namespace budget_management_system_aspdotnetcore.Pages
             return SortColumn == column && SortOrder == "asc" ? "desc" : "asc";
         }
 
+        public string GetStatusClass(AmendmentStatus status) => status switch
+        {
+            AmendmentStatus.Approved => "text-success",
+            AmendmentStatus.Rejected => "text-danger",
+            AmendmentStatus.Draft    => "text-primary",
+            _                        => ""
+        };
+
         public string GetSortIcon(string column)
         {
             if (SortColumn == column)
@@ -537,6 +492,9 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostAddAmendmentAsync()
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             if (string.IsNullOrWhiteSpace(NewBudgetAmendment.CategoryName)
                 || string.IsNullOrWhiteSpace(NewBudgetAmendment.AdjustmentDetail)
                 || string.IsNullOrWhiteSpace(NewBudgetAmendment.AcctDescription)
@@ -651,6 +609,9 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostEditAmendmentAsync(int id)
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             var amendment = await _context.BudgetAmendments.FindAsync(id);
 
             if (amendment != null && (amendment.Status == AmendmentStatus.Draft
@@ -658,9 +619,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                 || (amendment.Status == AmendmentStatus.Pending && _authService.IsAdminRole(HttpContext))))
             {
                 EditingBudgetAmendmentID = id;
-
-                selectedBA = SelectedBudgetAmendmentMainID;
-                selectedDept = SelectedDepartmentID;
 
                 var relatedAmendments = await _context.BudgetAmendments
                     .Where(a => a.TransactionId == amendment.TransactionId)
@@ -676,12 +634,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                     {
                         SourceSpeedtype = sourceAmendment.SpeedTypeId;
                         DestinationSpeedtype = destinationAmendment.SpeedTypeId;
-
-                        Debug.WriteLine("==== SOURCE SPEEDTYPE EDIT =======");
-                        Debug.WriteLine(sourceAmendment.SpeedTypeId);
-
-                        Debug.WriteLine("==== DESTINATION SPEEDTYPE EDIT =======");
-                        Debug.WriteLine(destinationAmendment.SpeedTypeId);
                     }
                 }
             }
@@ -703,6 +655,8 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostCancelEditAmendmentAsync(int id)
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
 
             EditingBudgetAmendmentID = 0;
 
@@ -722,12 +676,8 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostSaveAmendmentAsync()
         {
-
-            Debug.WriteLine("==== SOURCE SPEEDTYPE =======");
-            Debug.WriteLine(SourceSpeedtype);
-
-            Debug.WriteLine("==== DESTINATION SPEEDTYPE =======");
-            Debug.WriteLine(DestinationSpeedtype);
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
 
             var amendment = await _context.BudgetAmendments.FindAsync(NewBudgetAmendment.BudgetAmendmentID);
 
@@ -768,7 +718,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                         relatedAmendment.PositionNumber = NewBudgetAmendment.PositionNumber;
 
                         relatedAmendment.EditedAt = DateTime.Now;
-                        relatedAmendment.EditedBy = 1; // Set to current user's ID once available
+                        relatedAmendment.EditedBy = _authService.GetAuthenticatedUserID(HttpContext);
                     }
 
                     sourceAmendment.AmountIncrease = NewBudgetAmendment.AmountDecrease;
@@ -777,38 +727,10 @@ namespace budget_management_system_aspdotnetcore.Pages
                     destinationAmendment.AmountIncrease = NewBudgetAmendment.AmountIncrease;
                     destinationAmendment.AmountDecrease = NewBudgetAmendment.AmountDecrease;
 
-                    Debug.WriteLine("==== SOURCE AMENDMENT =======");
-                    Debug.WriteLine(sourceAmendment.SpeedTypeId);
-                    Debug.WriteLine(sourceAmendment.CategoryName);
-                    Debug.WriteLine(sourceAmendment.AdjustmentDetail);
-                    Debug.WriteLine(sourceAmendment.FundCode);
-                    Debug.WriteLine(sourceAmendment.DepartmentID);
-                    Debug.WriteLine(sourceAmendment.ClassCode);
-                    Debug.WriteLine(sourceAmendment.AcctDescription);
-                    Debug.WriteLine(sourceAmendment.BudgetCode);
-                    Debug.WriteLine(sourceAmendment.PositionNumber);
-                    Debug.WriteLine(sourceAmendment.AmountIncrease);
-                    Debug.WriteLine(sourceAmendment.AmountDecrease);
-
-                    Debug.WriteLine("==== DESTINATION AMENDMENT =======");
-                    Debug.WriteLine(destinationAmendment.SpeedTypeId);
-                    Debug.WriteLine(destinationAmendment.CategoryName);
-                    Debug.WriteLine(destinationAmendment.AdjustmentDetail);
-                    Debug.WriteLine(destinationAmendment.FundCode);
-                    Debug.WriteLine(destinationAmendment.DepartmentID);
-                    Debug.WriteLine(destinationAmendment.ClassCode);
-                    Debug.WriteLine(destinationAmendment.AcctDescription);
-                    Debug.WriteLine(destinationAmendment.BudgetCode);
-                    Debug.WriteLine(destinationAmendment.PositionNumber);
-                    Debug.WriteLine(destinationAmendment.AmountIncrease);
-                    Debug.WriteLine(destinationAmendment.AmountDecrease);
-
                     await _context.SaveChangesAsync();
                 }
                 await UpdateUserActivityLogAsync(NewBudgetAmendment.CategoryName, ActivityType.Edited);
             }
-
-            await LoadFormDataAsync();
 
             return RedirectToPage(new
             {
@@ -821,10 +743,11 @@ namespace budget_management_system_aspdotnetcore.Pages
             });
         }
 
-
-
         public async Task<IActionResult> OnPostDeleteAmendmentAsync(int id)
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             var amendment = await _context.BudgetAmendments.FindAsync(id);
 
             if (amendment == null)
@@ -846,9 +769,8 @@ namespace budget_management_system_aspdotnetcore.Pages
                 _context.BudgetAmendments.RemoveRange(relatedAmendments);
                 await _context.SaveChangesAsync();
 
-                await UpdateUserActivityLogAsync(categoryName, ActivityType.Edited);
+                await UpdateUserActivityLogAsync(categoryName, ActivityType.Deleted);
             }
-            await LoadFormDataAsync();
 
             return RedirectToPage(new
             {
@@ -863,6 +785,12 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostApproveCategoryAsync()
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
+            if (!_authService.IsAdminRole(HttpContext))
+                return Forbid();
+
             if (SelectedDepartmentID == 0)
                 return BadRequest("Invalid department");
 
@@ -896,6 +824,12 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostRejectCategoryAsync()
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
+            if (!_authService.IsAdminRole(HttpContext))
+                return Forbid();
+
             if (SelectedDepartmentID == 0)
                 return BadRequest("Invalid department");
 
@@ -928,6 +862,12 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostRevertCategoryAsync()
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
+            if (!_authService.IsAdminRole(HttpContext))
+                return Forbid();
+
             if (SelectedDepartmentID == 0)
                 return BadRequest("Invalid department");
 
@@ -957,41 +897,15 @@ namespace budget_management_system_aspdotnetcore.Pages
         }
 
 
-        /*        public async Task<IActionResult> OnPostSubmitCategoryAsync(string category)
-                {
-                    if (string.IsNullOrEmpty(category))
-                        return BadRequest("Invalid category");
-
-                    var amendments = _context.BudgetAmendments.Where(a => a.CategoryName == category);
-                    var categoryName = "";
-
-                    foreach (var amendment in amendments)
-                    {
-                        amendment.Status = AmendmentStatus.Pending;
-                        amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
-                        amendment.UpdatedAt = DateTime.Now;
-                        categoryName = amendment.CategoryName;
-                    }
-
-                    await _context.SaveChangesAsync();
-                    await UpdateUserActivityLogAsync(categoryName, ActivityType.Submitted);
-                    return RedirectToPage(new
-                    {
-                        SelectedDepartmentID,
-                        SelectedBudgetAmendmentMainID,
-                        SelectedStatusTab,
-                        SelectedFinancialYear,
-                        CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
-                        CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
-                    });
-                }*/
-
         public async Task<IActionResult> OnPostSubmitCategoryAsync()
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
 
-            Debug.WriteLine("=========ON POST SUBMIT=========");
-
-            var amendments = _context.BudgetAmendments.Where(a => a.Status == AmendmentStatus.Draft);
+            var amendments = _context.BudgetAmendments.Where(a =>
+                a.Status == AmendmentStatus.Draft
+                && a.BudgetAmendmentMainID == SelectedBudgetAmendmentMainID
+                && a.DepartmentID == SelectedDepartmentID);
             var categoryName = "";
 
             foreach (var amendment in amendments)
@@ -1015,56 +929,14 @@ namespace budget_management_system_aspdotnetcore.Pages
             });
         }
 
-/*        public async Task<IActionResult> OnPostSubmitSelectedCategoriesAsync(string SelectedCategoryList)
-        {
-            var selectedCategories = SelectedCategoryList?.Split(',') ?? Array.Empty<string>();
-
-            foreach (var category in selectedCategories)
-            {
-                var amendments = _context.BudgetAmendments
-                                         .Where(a => a.CategoryName == category)
-                                         .ToList();
-
-                // Check if any amendment is not a Draft
-                if (amendments.Any(a => a.Status != AmendmentStatus.Draft))
-                {
-                    TempData["Error"] = $"All amendments in category '{category}' must be Approved before submission.";
-                    return RedirectToPage(new
-                    {
-                        SelectedDepartmentID,
-                        SelectedBudgetAmendmentMainID,
-                        SelectedStatusTab,
-                        SelectedFinancialYear,
-                        CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
-                        CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
-                    });
-                }
-
-                // If all are Drafts, set them to Pending
-                foreach (var amendment in amendments)
-                {
-                    amendment.Status = AmendmentStatus.Pending;
-                    amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
-                    amendment.UpdatedAt = DateTime.Now;
-                }
-            }
-
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Selected categories submitted successfully.";
-            return RedirectToPage(new
-            {
-                SelectedDepartmentID,
-                SelectedBudgetAmendmentMainID,
-                SelectedStatusTab,
-                SelectedFinancialYear,
-                CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
-                CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
-            });
-        }*/
-
         public async Task<IActionResult> OnPostUpdateAmendmentStatusAsync(Guid transactionId, AmendmentStatus newStatus)
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
+            if (!_authService.IsAdminRole(HttpContext))
+                return Forbid();
+
             // Retrieve all amendments with the specified TransactionId
             var budgetAmendments = await _context.BudgetAmendments
                 .Where(ba => ba.TransactionId == transactionId)
@@ -1086,7 +958,6 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
 
             await _context.SaveChangesAsync();
-            await LoadFormDataAsync();
 
             return RedirectToPage(new
             {
@@ -1101,6 +972,9 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostExportToExcelBudgetAmendmentsAsync(string exportType = "current")
         {
+            if (!_authService.IsAuthenticated(HttpContext))
+                return RedirectToPage("/Login");
+
             var departments = await _context.Departments
                 .ToDictionaryAsync(d => d.DepartmentID, d => d.DepartmentName);
 

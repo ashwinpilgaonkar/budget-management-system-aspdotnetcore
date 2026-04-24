@@ -555,6 +555,29 @@ header.sticky-top.scrolled {
     align-items: center;
 }
 
+.ba-empty-state-card {
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+    padding: 3rem;
+    width: 100%;
+}
+
+.nav-pills .nav-link {
+    color: #495057;
+    background-color: #f8f9fa;
+    transition: background-color 0.3s ease;
+}
+
+.nav-pills .nav-link:hover {
+    background-color: #e2e6ea;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
 /* Contains wide accordion content so card-body width stays stable */
 .ba-accordion-wrapper {
     overflow-x: auto;

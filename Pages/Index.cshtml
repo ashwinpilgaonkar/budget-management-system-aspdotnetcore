@@ -3,7 +3,6 @@
 @{
     ViewData["Title"] = "Home page";
 }
-@using budget_management_system_aspdotnetcore.Entities
 
 <div class="container-fluid">
 
@@ -88,20 +87,7 @@
                         CustomEndDate = Model.CustomEndDate,
                         ShowOverdueOnly = Model.ShowOverdueOnly,
                         BAMainCollapsed = Model.BAMainCollapsed,
-                        TabCounts = new Dictionary<string, int>
-                        {
-                            [""] = Model.BudgetAmendmentsMainAll.Count,
-                            ["Pending"] = Model.BudgetAmendmentsMainAll.Count(bam =>
-                                Model.BudgetAmendmentsAll.Any(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID && ba.Status == AmendmentStatus.Pending)),
-                            ["Approved"] = Model.BudgetAmendmentsMainAll.Count(bam => {
-                                var rel = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
-                                return rel.Any() && rel.All(ba => ba.Status == AmendmentStatus.Approved);
-                            }),
-                            ["Rejected"] = Model.BudgetAmendmentsMainAll.Count(bam => {
-                                var rel = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
-                                return rel.Any() && rel.All(ba => ba.Status == AmendmentStatus.Rejected);
-                            })
-                        }
+                        TabCounts = Model.BAMainTabCounts
                     };
                 }
                 <partial name="_BAMainTabBar" model="tabBarModel" />
@@ -109,7 +95,7 @@
             @if (!Model.BudgetAmendmentsMain.Any())
             {
                 <div class="d-flex justify-content-center align-items-center">
-                    <div class="card" style="background-color: #e9ecef; border: 1px solid #dee2e6; padding: 3rem; width: 100%;">
+                    <div class="card ba-empty-state-card">
                         <div class="card-body text-center">
                             <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                             <p class="text-muted mb-0">No records found</p>
@@ -152,21 +138,17 @@
                                         <div class="d-flex justify-content-between w-100 align-items-center">
                                             <partial name="_BAMainHeader" model="new BAMainHeaderViewModel { Record = amendmentmain, Status = baMainStatus }" />
 
-                                            @{
-                                                var relatedAmendments = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID).ToList();
-
-                                                if (relatedAmendments.Any(ba => ba.Status == AmendmentStatus.Pending))
-                                                {
-                                                    <span class="badge text-primary">PENDING</span>
-                                                }
-                                                else if (relatedAmendments.Any() && relatedAmendments.All(ba => ba.Status == AmendmentStatus.Approved))
-                                                {
-                                                    <span class="badge text-success">APPROVED</span>
-                                                }
-                                                else if (relatedAmendments.Any() && relatedAmendments.All(ba => ba.Status == AmendmentStatus.Rejected))
-                                                {
-                                                    <span class="badge text-danger">REJECTED</span>
-                                                }
+                                            @if (baMainStatus == "Pending")
+                                            {
+                                                <span class="badge text-primary">PENDING</span>
+                                            }
+                                            else if (baMainStatus == "Approved")
+                                            {
+                                                <span class="badge text-success">APPROVED</span>
+                                            }
+                                            else if (baMainStatus == "Rejected")
+                                            {
+                                                <span class="badge text-danger">REJECTED</span>
                                             }
                                         </div>
                                     </button>
@@ -192,7 +174,8 @@
                                                         <a href="@(isDeptSelected ? "javascript:void(0);" : $"?SelectedDepartmentID={dept.DepartmentID}&SelectedStatusTab={Model.SelectedStatusTab}&SelectedBAMainStatusTab={Model.SelectedBAMainStatusTab}&SelectedBudgetAmendmentMainID={amendmentmain.BudgetAmendmentMainID}&SelectedFinancialYear={Model.SelectedFinancialYear}&CustomStartDate={Model.CustomStartDate?.ToString("yyyy-MM-dd")}&CustomEndDate={Model.CustomEndDate?.ToString("yyyy-MM-dd")}")"
                                                            class="inner-acc-btn accordion-button @(isDeptSelected || isDefaultExpanded ? "" : "collapsed") py-3 text-decoration-none"
                                                            style="display: block;"
-                                                           @Html.Raw(isDeptSelected || isDefaultExpanded ? $"data-bs-toggle=\"collapse\" data-bs-target=\"#collapse{deptId}BA{amendmentIndex}\"" : "")>
+                                                           data-bs-toggle="@(isDeptSelected || isDefaultExpanded ? "collapse" : null)"
+                                                           data-bs-target="@(isDeptSelected || isDefaultExpanded ? $"#collapse{deptId}BA{amendmentIndex}" : null)">
                                                             
                                                             <div class="inner-acc-left">
                                                                 <span class="inner-dept-name">@dept.DepartmentName</span>
@@ -280,7 +263,7 @@
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                         <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                        <button type="submit" onclick="return confirm('Are you sure you want to approve all these entries?');" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link">Approve All ✔️</button>
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to approve all these entries?');" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link">Approve All ✔️</button>
                                                                     </form>
 
                                                                     <form method="post" asp-page-handler="RejectCategory">
@@ -291,7 +274,7 @@
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                         <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                        <button type="submit" onclick="return confirm('Are you sure you want to reject all these entries?');" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link">Reject All ❌</button>
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to reject all these entries?');" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link">Reject All ❌</button>
                                                                     </form>
 
                                                                 }
@@ -306,7 +289,7 @@
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                         <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                        <button type="submit" onclick="return confirm('Are you sure you want to undo this decision?');" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link text-nowrap">Revert Decision ↩️</button>
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to undo this decision?');" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link text-nowrap">Revert Decision ↩️</button>
                                                                     </form>
                                                                 }
 
@@ -320,7 +303,7 @@
                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                         <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                        <button type="submit" onclick="return confirm('Are you sure you want to resubmit these entries for review?');" disabled=@(!Model.BudgetAmendments.Any()) class="btn btn-link text-nowrap">Resubmit for review 🗒️</button>
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to resubmit these entries for review?');" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link text-nowrap">Resubmit for review 🗒️</button>
                                                                     </form>
                                                                 }
 
@@ -984,52 +967,33 @@
                                                                             {
                                                                                 if (Model.EditingBudgetAmendmentID == amendment.BudgetAmendmentID)
                                                                                 {
+                                                                                    var editFormId = $"editForm-{amendment.BudgetAmendmentID}";
                                                                                     <tr>
-                                                                                        <form method="post" asp-route-id="@amendment.BudgetAmendmentID">
-                                                                                        <td><input asp-for="NewBudgetAmendment.BudgetAmendmentID" value="@amendment.BudgetAmendmentID" class="form-control" readonly /></td>
-                                                                                        <td><input asp-for="NewBudgetAmendment.CategoryName" value="@amendment.CategoryName" class="form-control" /></td>
-                                                                                        <td><input asp-for="NewBudgetAmendment.AdjustmentDetail" value="@amendment.AdjustmentDetail" class="form-control" /></td>
+                                                                                        <td><input asp-for="NewBudgetAmendment.BudgetAmendmentID" value="@amendment.BudgetAmendmentID" class="form-control" form="@editFormId" readonly /></td>
+                                                                                        <td><input asp-for="NewBudgetAmendment.CategoryName" value="@amendment.CategoryName" class="form-control" form="@editFormId" /></td>
+                                                                                        <td><input asp-for="NewBudgetAmendment.AdjustmentDetail" value="@amendment.AdjustmentDetail" class="form-control" form="@editFormId" /></td>
                                                                                         <td>@amendment.SpeedType.Code</td>
-                                                                                        <input asp-for="@Model.SourceSpeedtype" type="hidden" value="@Model.SourceSpeedtype" />
-                                                                                        <input asp-for="@Model.DestinationSpeedtype" type="hidden" value="@Model.DestinationSpeedtype" />
-                                                                                        <td><input asp-for="NewBudgetAmendment.FundCode" value="@amendment.FundCode" class="form-control" /></td>
-                                                                                        <td><input asp-for="NewBudgetAmendment.DepartmentID" value="@amendment.DepartmentID" class="form-control" /></td>
-                                                                                        <td><input asp-for="NewBudgetAmendment.ProgramCode" value="@amendment.ProgramCode" class="form-control" /></td>
-                                                                                        <td><input asp-for="NewBudgetAmendment.ClassCode" value="@amendment.ClassCode" class="form-control" /></td>
-                                                                                        <td><input asp-for="NewBudgetAmendment.AcctDescription" value="@amendment.AcctDescription" class="form-control" /></td>
-                                                                                        <td><input asp-for="NewBudgetAmendment.BudgetCode" value="@amendment.BudgetCode" class="form-control" /></td>
-                                                                                        <td><input asp-for="NewBudgetAmendment.PositionNumber" value="@amendment.PositionNumber" class="form-control" /></td>
-                                                                                        <td><input asp-for="NewBudgetAmendment.AmountIncrease" value="@amendment.AmountIncrease" class="form-control" /></td>
-                                                                                        <td><input asp-for="NewBudgetAmendment.AmountDecrease" value="@amendment.AmountDecrease" class="form-control" /></td>
+                                                                                        <td><input asp-for="NewBudgetAmendment.FundCode" value="@amendment.FundCode" class="form-control" form="@editFormId" /></td>
+                                                                                        <td><input asp-for="NewBudgetAmendment.DepartmentID" value="@amendment.DepartmentID" class="form-control" form="@editFormId" /></td>
+                                                                                        <td><input asp-for="NewBudgetAmendment.ProgramCode" value="@amendment.ProgramCode" class="form-control" form="@editFormId" /></td>
+                                                                                        <td><input asp-for="NewBudgetAmendment.ClassCode" value="@amendment.ClassCode" class="form-control" form="@editFormId" /></td>
+                                                                                        <td><input asp-for="NewBudgetAmendment.AcctDescription" value="@amendment.AcctDescription" class="form-control" form="@editFormId" /></td>
+                                                                                        <td><input asp-for="NewBudgetAmendment.BudgetCode" value="@amendment.BudgetCode" class="form-control" form="@editFormId" /></td>
+                                                                                        <td><input asp-for="NewBudgetAmendment.PositionNumber" value="@amendment.PositionNumber" class="form-control" form="@editFormId" /></td>
+                                                                                        <td><input asp-for="NewBudgetAmendment.AmountIncrease" value="@amendment.AmountIncrease" class="form-control" form="@editFormId" /></td>
+                                                                                        <td><input asp-for="NewBudgetAmendment.AmountDecrease" value="@amendment.AmountDecrease" class="form-control" form="@editFormId" /></td>
                                                                                         @if (!String.Equals(userRole, RoleConstants.AFOIdString))
                                                                                         {
                                                                                             <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                                                                             <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                                                                             <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                                                                         }
-                                                                                        @{
-                                                                                            var isApproved = amendment.Status == AmendmentStatus.Approved;
-                                                                                            var statusClass = isApproved ? "text-primary" : "";
-
-                                                                                            switch (amendment.Status)
-                                                                                            {
-                                                                                                case AmendmentStatus.Approved:
-                                                                                                    statusClass = "text-success";
-                                                                                                    break;
-                                                                                                case AmendmentStatus.Rejected:
-                                                                                                    statusClass = "text-danger";
-                                                                                                    break;
-                                                                                                case AmendmentStatus.Draft:
-                                                                                                    statusClass = "text-primary";
-                                                                                                    break;
-                                                                                                default:
-                                                                                                    statusClass = "";
-                                                                                                    break;
-                                                                                            }
-                                                                                        }
-                                                                                        <td class="@statusClass">@amendment.Status</td>
-                                                                                        <td>
-                                                                                            <div class="d-flex justify-content-evenly gap-2">
+                                                                                        <td class="@Model.GetStatusClass(amendment.Status)">@amendment.Status</td>
+                                                                                        <td colspan="4">
+                                                                                            <form id="@editFormId" method="post" asp-route-id="@amendment.BudgetAmendmentID">
+                                                                                                <input asp-for="NewBudgetAmendment.BudgetAmendmentID" type="hidden" value="@amendment.BudgetAmendmentID" />
+                                                                                                <input asp-for="SourceSpeedtype" type="hidden" value="@Model.SourceSpeedtype" />
+                                                                                                <input asp-for="DestinationSpeedtype" type="hidden" value="@Model.DestinationSpeedtype" />
                                                                                                 <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
                                                                                                 <input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
                                                                                                 <input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
@@ -1037,13 +1001,12 @@
                                                                                                 <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                                 <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                                 <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                                                <input asp-for="@Model.SourceSpeedtype" type="hidden" value="@Model.SourceSpeedtype" />
-                                                                                                <input asp-for="@Model.DestinationSpeedtype" type="hidden" value="@Model.DestinationSpeedtype" />
-                                                                                                <button type="submit" asp-page-handler="SaveAmendment" class="btn btn-success">Save</button>
-                                                                                                <button type="submit" asp-page-handler="CancelEditAmendment" class="btn btn-secondary">Cancel</button>
-                                                                                            </div>
+                                                                                                <div class="d-flex justify-content-evenly gap-2">
+                                                                                                    <button type="submit" asp-page-handler="SaveAmendment" class="btn btn-success">Save</button>
+                                                                                                    <button type="submit" asp-page-handler="CancelEditAmendment" class="btn btn-secondary">Cancel</button>
+                                                                                                </div>
+                                                                                            </form>
                                                                                         </td>
-                                                                                        </form>
                                                                                     </tr>
                                                                                 }
                                                                                 else
@@ -1068,27 +1031,7 @@
                                                                                             <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                                                                             <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                                                                         }
-                                                                                        @{
-                                                                                            var isApproved = amendment.Status == AmendmentStatus.Approved;
-                                                                                            var statusClass = isApproved ? "text-primary" : "";
-
-                                                                                            switch (amendment.Status)
-                                                                                            {
-                                                                                                case AmendmentStatus.Approved:
-                                                                                                    statusClass = "text-success";
-                                                                                                    break;
-                                                                                                case AmendmentStatus.Rejected:
-                                                                                                    statusClass = "text-danger";
-                                                                                                    break;
-                                                                                                case AmendmentStatus.Draft:
-                                                                                                    statusClass = "text-primary";
-                                                                                                    break;
-                                                                                                default:
-                                                                                                    statusClass = "";
-                                                                                                    break;
-                                                                                            }
-                                                                                        }
-                                                                                        <td class="@statusClass">@amendment.Status</td>
+                                                                                        <td class="@Model.GetStatusClass(amendment.Status)">@amendment.Status</td>
                                                                                         <td colspan="4">
                                                                                             @{
                                                                                                 var isEnabled = amendment.Status == AmendmentStatus.Draft
@@ -1108,7 +1051,7 @@
                                                                                                         <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
                                                                                                         <input asp-for="@Model.SourceSpeedtype" type="hidden" value="@Model.SourceSpeedtype" />
                                                                                                         <input asp-for="@Model.DestinationSpeedtype" type="hidden" value="@Model.DestinationSpeedtype" />
-                                                                                                        <button type="submit" disabled=@(!isEnabled) class="btn btn-outline-secondary">Edit</button>
+                                                                                                        <button type="submit" disabled="@(!isEnabled)" class="btn btn-outline-secondary">Edit</button>
                                                                                                     </form>
                                                                                                     <form method="post" asp-page-handler="DeleteAmendment" asp-route-id="@amendment.BudgetAmendmentID">
                                                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
@@ -1118,7 +1061,7 @@
                                                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                                         <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                                                        <button type="submit" onclick="return confirm('Are you sure you want to delete this entry?');" disabled=@(!isEnabled) class="btn btn-outline-danger">Delete</button>
+                                                                                                        <button type="submit" onclick="return confirm('Are you sure you want to delete this entry?');" disabled="@(!isEnabled)" class="btn btn-outline-danger">Delete</button>
                                                                                                     </form>
                                                                                                 </div>
                                                                                             }
@@ -1204,7 +1147,7 @@
                             </div>
                             <div class="col-md-6 mb-3 d-flex flex-column">
                                 <label asp-for="DestinationSpeedtype" class="form-label">Destination SpeedType: <span class="text-danger ms-1">*</span></label>
-                                <select asp-for="DestinationSpeedtype" class="selectpicker w-100" data-live-search="true">
+                                <select asp-for="DestinationSpeedtype" class="selectpicker w-100" data-live-search="true" id="destinationSpeedtype">
                                     @foreach (var speedtype in Model.SpeedTypes)
                                     {
                                         <option value="@speedtype.SpeedTypeId" data-tokens="@speedtype.Code">
@@ -1299,287 +1242,193 @@
                 document.getElementById(formId).submit();
             }
         }
-    </script>
-}
 
-<script>
-    window.addEventListener('beforeunload', function () {
-        sessionStorage.setItem('scrollPosition', window.scrollY);
-    });
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const scrollPosition = sessionStorage.getItem('scrollPosition');
-        const urlParams = new URLSearchParams(window.location.search);
-        const selectedBA = urlParams.get('SelectedBudgetAmendmentMainID');
-        const selectedDept = urlParams.get('SelectedDepartmentID');
-
-        if (selectedBA && selectedDept) {
-            const baAccordions = document.querySelectorAll('[id^="collapseBA"]');
-            baAccordions.forEach(accordion => {
-                if (accordion.getAttribute('data-ba-id') == selectedBA) {
-                    new bootstrap.Collapse(accordion, { show: true });
-
-                    setTimeout(() => {
-                        const deptAccordions = accordion.querySelectorAll('[data-dept-id]');
-                        deptAccordions.forEach(deptAccordion => {
-                            if (deptAccordion.getAttribute('data-dept-id') == selectedDept) {
-                                new bootstrap.Collapse(deptAccordion, { show: true });
-                            }
-                        });
-
-                        // Scroll to saved position after accordions have expanded
-                        setTimeout(() => {
-                            if (scrollPosition) {
-                                window.scrollTo(0, parseInt(scrollPosition));
-                                sessionStorage.removeItem('scrollPosition');
-                            }
-                        }, 150);
-
-                    }, 350);
-                }
-            });
-        } else {
-            // If no accordions to open, scroll immediately
-            if (scrollPosition) {
-                window.scrollTo(0, parseInt(scrollPosition));
-                sessionStorage.removeItem('scrollPosition');
-            }
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const sourceSpeedtype = document.getElementById('sourceSpeedtype');
-        const destinationSpeedtype = document.getElementById('destinationSpeedtype');
-        const speedtypeError = document.getElementById('speedtypeError');
-        const form = sourceSpeedtype.closest('form');
-
-        function validateSpeedtypes() {
-            const sourceValue = sourceSpeedtype.value;
-            const destValue = destinationSpeedtype.value;
-
-            if (sourceValue && destValue && sourceValue === destValue) {
-                destinationSpeedtype.classList.add('is-invalid');
-                speedtypeError.style.display = 'block';
+        function validateNetChange(form) {
+            const netChangeValue = parseFloat(form.querySelector('input[name="NetChange"]').value);
+            if (netChangeValue !== 0) {
+                window.alert("Cannot approve category: Balance is not zero.");
                 return false;
-            } else {
-                destinationSpeedtype.classList.remove('is-invalid');
-                speedtypeError.style.display = 'none';
-                return true;
-            }
-        }
-
-        // Validate on change (for bootstrap-select, use 'changed.bs.select' event)
-        $(sourceSpeedtype).on('changed.bs.select', validateSpeedtypes);
-        $(destinationSpeedtype).on('changed.bs.select', validateSpeedtypes);
-
-        // Prevent form submission if invalid
-        form.addEventListener('submit', function(e) {
-            if (!validateSpeedtypes()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        });
-    });
-
-
-    document.addEventListener("DOMContentLoaded", function () {
-        toggleDateRange(document.getElementById("financialYear").value);
-    });
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const checkboxes = document.querySelectorAll("#statusFilterForm input[type='checkbox']");
-
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener("change", function () {
-                const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
-
-                if (checkedBoxes.length === 0) {
-                    this.checked = true;
-                }
-            });
-        });
-
-        statusDropdownMenu = document.querySelector('#statusFilterDropdown + .dropdown-menu');
-
-        if (statusDropdownMenu) {
-            statusDropdownMenu.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                });
-        }
-
-        createdByDropdownMenu = document.querySelector('#createdByFilterDropdown + .dropdown-menu');
-
-        if (createdByDropdownMenu) {
-            createdByDropdownMenu.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                });
-        }
-
-        editedByDropdownMenu = document.querySelector('#editedByFilterDropdown + .dropdown-menu');
-
-        if (editedByDropdownMenu) {
-            editedByDropdownMenu.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                });
-        }
-
-        updatedByDropdownMenu = document.querySelector('#updatedByFilterDropdown + .dropdown-menu');
-
-        if (updatedByDropdownMenu) {
-            updatedByDropdownMenu.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                });
-        }
-    });
-
-    function validateNetChange(form) {
-
-        const netChangeValue = parseFloat(form.querySelector('input[name="NetChange"]').value);
-        if (netChangeValue !== 0) {
-            window.alert("Cannot approve category: Balance is not zero.");
-            return false;
-        }
-        return true;
-    }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const speedtypeSelect = document.getElementById('sourceSpeedtype');
-            const fundCodeInput = document.getElementById('fundCode');
-            const programCodeInput = document.getElementById('programCode');
-            const classCodeInput = document.getElementById('classCode');
-
-        function populateFields() {
-            const selectedOption = speedtypeSelect.options[speedtypeSelect.selectedIndex];
-            const fundCode = selectedOption.getAttribute('data-fundcode');
-            fundCodeInput.value = fundCode || '';
-            const programCode = selectedOption.getAttribute('data-programcode');
-            programCodeInput.value = programCode || '';
-            const classCode = selectedOption.getAttribute('data-classcode');
-            classCodeInput.value = classCode || '';
-        }
-
-           populateFields();
-            speedtypeSelect.addEventListener('change', populateFields);
-
-            [fundCodeInput, programCodeInput, classCodeInput].forEach(field => {
-            if (field) {
-                field.setAttribute('readonly', true);
-                field.style.backgroundColor = '#f0f0f0';
-            }
-            });
-        });
-
-</script>
-
-<style>
-    .nav-pills .nav-link {
-        color: #495057;
-        background-color: #f8f9fa;
-        transition: background-color 0.3s ease;
-    }
-
-        .nav-pills .nav-link:hover {
-            background-color: #e2e6ea;
-        }
-
-        .nav-pills .nav-link.active {
-            background-color: #0d6efd;
-            color: white;
-            border-color: #0d6efd;
-        }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Tab links: update BAMainCollapsed based on live accordion state.
-        // If no accordion (no records), leave URL untouched — server-rendered href already carries the right value.
-        const accordion = document.getElementById('budgetAmendmentsAccordion');
-
-        function isBaMainCollapsed() {
-            return !accordion || !accordion.querySelector(':scope > .accordion-item > .accordion-collapse.show');
-        }
-
-        function isBaDeptCollapsed() {
-            if (!accordion) return true;
-            for (const main of accordion.querySelectorAll(':scope > .accordion-item > .accordion-collapse.show')) {
-                if (main.querySelector('.accordion-collapse.show')) return false;
             }
             return true;
         }
 
-        function applyCollapseState(url) {
-            if (isBaMainCollapsed()) {
-                url.searchParams.set('BAMainCollapsed', 'true');
-            } else {
-                url.searchParams.delete('BAMainCollapsed');
-            }
-            if (isBaDeptCollapsed()) {
-                url.searchParams.set('BADeptCollapsed', 'true');
-            } else {
-                url.searchParams.delete('BADeptCollapsed');
-            }
-        }
-
-        document.querySelectorAll('.tab-bar-row .nav-link').forEach(function (link) {
-            link.addEventListener('click', function (e) {
-                if (!accordion) return;
-                e.preventDefault();
-                const url = new URL(this.href);
-                applyCollapseState(url);
-                window.location.href = url.toString();
-            });
+        window.addEventListener('beforeunload', function () {
+            sessionStorage.setItem('scrollPosition', window.scrollY);
         });
 
-        // Toggle switch: animate then navigate, same collapse-state logic
-        const overdueSwitch = document.querySelector('.ba-overdue-switch');
-        if (overdueSwitch) {
-            overdueSwitch.addEventListener('click', function (e) {
-                e.preventDefault();
-                const href = this.href;
-                const mainCollapsed = isBaMainCollapsed();
-                const deptCollapsed = isBaDeptCollapsed();
-                this.classList.toggle('ba-overdue-switch--on');
-                setTimeout(function () {
-                    const url = new URL(href);
-                    if (accordion) {
-                        mainCollapsed ? url.searchParams.set('BAMainCollapsed', 'true') : url.searchParams.delete('BAMainCollapsed');
-                        deptCollapsed ? url.searchParams.set('BADeptCollapsed', 'true') : url.searchParams.delete('BADeptCollapsed');
-                    }
-                    window.location.href = url.toString();
-                }, 220);
-            });
-        }
+        document.addEventListener('DOMContentLoaded', function () {
+            // ----- Scroll restoration + accordion open -----
+            const scrollPosition = sessionStorage.getItem('scrollPosition');
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedBA = urlParams.get('SelectedBudgetAmendmentMainID');
+            const selectedDept = urlParams.get('SelectedDepartmentID');
 
-        // Financial year filter: inject both collapse params into form submission based on live DOM state
-        const fyForm = document.querySelector('form[method="get"]');
-        if (fyForm) {
-            fyForm.addEventListener('submit', function () {
-                [['BAMainCollapsed', isBaMainCollapsed()], ['BADeptCollapsed', isBaDeptCollapsed()]].forEach(function ([name, val]) {
-                    let input = fyForm.querySelector(`input[name="${name}"]`);
-                    if (!input) {
-                        input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = name;
-                        fyForm.appendChild(input);
+            if (selectedBA && selectedDept) {
+                const baAccordions = document.querySelectorAll('[id^="collapseBA"]');
+                baAccordions.forEach(accordion => {
+                    if (accordion.getAttribute('data-ba-id') == selectedBA) {
+                        new bootstrap.Collapse(accordion, { show: true });
+
+                        setTimeout(() => {
+                            const deptAccordions = accordion.querySelectorAll('[data-dept-id]');
+                            deptAccordions.forEach(deptAccordion => {
+                                if (deptAccordion.getAttribute('data-dept-id') == selectedDept) {
+                                    new bootstrap.Collapse(deptAccordion, { show: true });
+                                }
+                            });
+
+                            setTimeout(() => {
+                                if (scrollPosition) {
+                                    window.scrollTo(0, parseInt(scrollPosition));
+                                    sessionStorage.removeItem('scrollPosition');
+                                }
+                            }, 150);
+                        }, 350);
                     }
-                    input.value = val ? 'true' : 'false';
                 });
-            });
-        }
+            } else {
+                if (scrollPosition) {
+                    window.scrollTo(0, parseInt(scrollPosition));
+                    sessionStorage.removeItem('scrollPosition');
+                }
+            }
 
-        // BAMain pagination (show buttons + prev/next): update collapse params in pre-built URLs to live DOM state
-        const baMainPagNav = document.querySelector('nav[aria-label="Budget amendment main page navigation"]');
-        if (baMainPagNav && accordion) {
-            baMainPagNav.querySelectorAll('a.page-link').forEach(function (link) {
+            // ----- SpeedType source/destination validation -----
+            const sourceSpeedtype = document.getElementById('sourceSpeedtype');
+            const destinationSpeedtype = document.getElementById('destinationSpeedtype');
+            const speedtypeError = document.getElementById('speedtypeError');
+            if (sourceSpeedtype && destinationSpeedtype) {
+                const speedtypeForm = sourceSpeedtype.closest('form');
+
+                function validateSpeedtypes() {
+                    if (sourceSpeedtype.value && destinationSpeedtype.value && sourceSpeedtype.value === destinationSpeedtype.value) {
+                        destinationSpeedtype.classList.add('is-invalid');
+                        speedtypeError.style.display = 'block';
+                        return false;
+                    }
+                    destinationSpeedtype.classList.remove('is-invalid');
+                    speedtypeError.style.display = 'none';
+                    return true;
+                }
+
+                $(sourceSpeedtype).on('changed.bs.select', validateSpeedtypes);
+                $(destinationSpeedtype).on('changed.bs.select', validateSpeedtypes);
+
+                speedtypeForm.addEventListener('submit', function (e) {
+                    if (!validateSpeedtypes()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                });
+
+                // ----- SpeedType field auto-population -----
+                function populateFields() {
+                    const selectedOption = sourceSpeedtype.options[sourceSpeedtype.selectedIndex];
+                    document.getElementById('fundCode').value    = selectedOption.getAttribute('data-fundcode')    || '';
+                    document.getElementById('programCode').value = selectedOption.getAttribute('data-programcode') || '';
+                    document.getElementById('classCode').value   = selectedOption.getAttribute('data-classcode')   || '';
+                }
+
+                populateFields();
+                sourceSpeedtype.addEventListener('change', populateFields);
+
+                ['fundCode', 'programCode', 'classCode'].forEach(id => {
+                    const field = document.getElementById(id);
+                    if (field) {
+                        field.setAttribute('readonly', true);
+                        field.style.backgroundColor = '#f0f0f0';
+                    }
+                });
+            }
+
+            // ----- Financial year range toggle -----
+            const fySelect = document.getElementById("financialYear");
+            if (fySelect) toggleDateRange(fySelect.value);
+
+            // ----- Dropdown click-through prevention -----
+            ['#createdByFilterDropdown', '#editedByFilterDropdown', '#updatedByFilterDropdown'].forEach(function (selector) {
+                const menu = document.querySelector(selector + ' + .dropdown-menu');
+                if (menu) menu.addEventListener('click', function (e) { e.stopPropagation(); });
+            });
+
+            // ----- Collapse state management for tab bar, overdue toggle, FY filter, BA pagination -----
+            const accordion = document.getElementById('budgetAmendmentsAccordion');
+
+            function isBaMainCollapsed() {
+                return !accordion || !accordion.querySelector(':scope > .accordion-item > .accordion-collapse.show');
+            }
+
+            function isBaDeptCollapsed() {
+                if (!accordion) return true;
+                for (const main of accordion.querySelectorAll(':scope > .accordion-item > .accordion-collapse.show')) {
+                    if (main.querySelector('.accordion-collapse.show')) return false;
+                }
+                return true;
+            }
+
+            function applyCollapseState(url) {
+                isBaMainCollapsed() ? url.searchParams.set('BAMainCollapsed', 'true') : url.searchParams.delete('BAMainCollapsed');
+                isBaDeptCollapsed() ? url.searchParams.set('BADeptCollapsed', 'true')  : url.searchParams.delete('BADeptCollapsed');
+            }
+
+            document.querySelectorAll('.tab-bar-row .nav-link').forEach(function (link) {
                 link.addEventListener('click', function (e) {
-                    if (this.getAttribute('href') === '#') return;
+                    if (!accordion) return;
                     e.preventDefault();
                     const url = new URL(this.href);
                     applyCollapseState(url);
                     window.location.href = url.toString();
                 });
             });
-        }
-    });
-</script>
+
+            const overdueSwitch = document.querySelector('.ba-overdue-switch');
+            if (overdueSwitch) {
+                overdueSwitch.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const href = this.href;
+                    const mainCollapsed = isBaMainCollapsed();
+                    const deptCollapsed = isBaDeptCollapsed();
+                    this.classList.toggle('ba-overdue-switch--on');
+                    setTimeout(function () {
+                        const url = new URL(href);
+                        if (accordion) {
+                            mainCollapsed ? url.searchParams.set('BAMainCollapsed', 'true') : url.searchParams.delete('BAMainCollapsed');
+                            deptCollapsed ? url.searchParams.set('BADeptCollapsed', 'true')  : url.searchParams.delete('BADeptCollapsed');
+                        }
+                        window.location.href = url.toString();
+                    }, 220);
+                });
+            }
+
+            const fyForm = document.querySelector('form[method="get"]');
+            if (fyForm) {
+                fyForm.addEventListener('submit', function () {
+                    [['BAMainCollapsed', isBaMainCollapsed()], ['BADeptCollapsed', isBaDeptCollapsed()]].forEach(function ([name, val]) {
+                        let input = fyForm.querySelector(`input[name="${name}"]`);
+                        if (!input) {
+                            input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = name;
+                            fyForm.appendChild(input);
+                        }
+                        input.value = val ? 'true' : 'false';
+                    });
+                });
+            }
+
+            const baMainPagNav = document.querySelector('nav[aria-label="Budget amendment main page navigation"]');
+            if (baMainPagNav && accordion) {
+                baMainPagNav.querySelectorAll('a.page-link').forEach(function (link) {
+                    link.addEventListener('click', function (e) {
+                        if (this.getAttribute('href') === '#') return;
+                        e.preventDefault();
+                        const url = new URL(this.href);
+                        applyCollapseState(url);
+                        window.location.href = url.toString();
+                    });
+                });
+            }
+        });
+    </script>
+}
 
