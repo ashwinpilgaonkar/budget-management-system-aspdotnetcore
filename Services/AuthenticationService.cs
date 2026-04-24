@@ -1,4 +1,5 @@
 ﻿using budget_management_system_aspdotnetcore.Entities;
+using budget_management_system_aspdotnetcore.Helpers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
@@ -22,6 +23,15 @@ namespace budget_management_system_aspdotnetcore.Services
             }
 
             return roleString;
+        }
+
+        public bool IsAFO(HttpContext httpContext) =>
+            GetUserRole(httpContext) == RoleConstants.AFOIdString;
+
+        public bool IsAdminRole(HttpContext httpContext)
+        {
+            var role = GetUserRole(httpContext);
+            return role == RoleConstants.CFOIdString || role == RoleConstants.SuperAdminIdString;
         }
 
 

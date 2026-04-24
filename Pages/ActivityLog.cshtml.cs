@@ -29,9 +29,10 @@ namespace budget_management_system_aspdotnetcore.Pages
         public async Task<IActionResult> OnGetAsync(int pageNumber = 1, int resultsPerPage = 10)
         {
             if (!_authService.IsAuthenticated(HttpContext))
-            {
                 return RedirectToPage("/Login");
-            }
+
+            if (!_authService.IsAdminRole(HttpContext))
+                return Forbid();
 
             CurrentPage = pageNumber;
             ResultsPerPage = resultsPerPage;

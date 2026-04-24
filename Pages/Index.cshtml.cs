@@ -119,6 +119,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         public bool BAMainCollapsed { get; set; } = false;
 
         [BindProperty(SupportsGet = true)]
+        public bool BADeptCollapsed { get; set; } = false;
+
+        [BindProperty(SupportsGet = true)]
         public List<string> SelectedStatus { get; set; }
 
         [BindProperty(SupportsGet = true)]
@@ -213,7 +216,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             var amendmentOverviewQuery = _context.BudgetAmendments
                 .Where(a => a.CreatedAt >= startDate && a.CreatedAt <= endDate);
 
-            if (userRole == "5")
+            if (userRole == RoleConstants.AFOIdString)
             {
                 amendmentOverviewQuery = amendmentOverviewQuery.Where(a => a.CreatedBy == userID);
             }
@@ -515,7 +518,8 @@ namespace budget_management_system_aspdotnetcore.Pages
                 $"&amendmentPageNumber={BudgetAmendmentCurrentPage}" +
                 $"&amendmentResultsPerPage={BudgetAmendmentResultsPerPage}" +
                 $"&ShowOverdueOnly={ShowOverdueOnly}" +
-                $"&BAMainCollapsed={BAMainCollapsed}";
+                $"&BAMainCollapsed={BAMainCollapsed}" +
+                $"&BADeptCollapsed={BADeptCollapsed}";
 
             return new PaginationViewModel
             {

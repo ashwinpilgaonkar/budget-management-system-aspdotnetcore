@@ -72,7 +72,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             var amendmentQuery = _context.BudgetAmendments
                 .Where(a => a.CreatedAt >= startDate && a.CreatedAt <= endDate);
 
-            if (userRole == "5")
+            if (userRole == RoleConstants.AFOIdString)
                 amendmentQuery = amendmentQuery.Where(a => a.CreatedBy == userID);
 
             var amendments = amendmentQuery.ToList();

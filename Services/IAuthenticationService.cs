@@ -6,6 +6,10 @@
 
         string GetUserRole(HttpContext httpContext);
 
+        bool IsAFO(HttpContext httpContext);
+
+        bool IsAdminRole(HttpContext httpContext);
+
         int GetAuthenticatedUserID(HttpContext httpContext);
     }
 }

@@ -111,9 +111,10 @@ namespace budget_management_system_aspdotnetcore.Pages
             SpeedTypeResultsPerPage = speedTypesPerPage;
 
             if (!_authService.IsAuthenticated(HttpContext))
-            {
                 return RedirectToPage("/Login");
-            }
+
+            if (!_authService.IsAdminRole(HttpContext))
+                return Forbid();
 
             await LoadFormDataAsync();
             return Page();

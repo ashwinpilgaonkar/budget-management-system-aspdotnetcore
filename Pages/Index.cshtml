@@ -12,7 +12,7 @@
     }
 
     <!-- Budget Amendment History Card -->
-    <div class="card mb-4 card-macos" style="border-radius: 10px;">
+    <div class="card mb-4 card-macos ba-index-card" style="border-radius: 10px;">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
                 <h3 class="page-title">Budget Amendments</h3>
@@ -67,7 +67,8 @@
                             ["SelectedStatusTab"] = Model.SelectedStatusTab ?? "",
                             ["SelectedBAMainStatusTab"] = Model.SelectedBAMainStatusTab ?? "",
                             ["SelectedBudgetAmendmentMainID"] = Model.SelectedBudgetAmendmentMainID?.ToString() ?? "",
-                            ["ShowOverdueOnly"] = Model.ShowOverdueOnly.ToString().ToLower()
+                            ["ShowOverdueOnly"] = Model.ShowOverdueOnly.ToString().ToLower(),
+                            ["BADeptCollapsed"] = Model.BADeptCollapsed.ToString().ToLower()
                         }
                     };
                 }
@@ -120,7 +121,7 @@
 
             else
             {
-                    <div class="mb-4 ba-accordion-wrapper">
+                    <div class="mb-2 ba-accordion-wrapper">
                     <div class="accordion" id="budgetAmendmentsAccordion">
 
                         @{
@@ -182,7 +183,7 @@
                                             @foreach (var dept in userDepartmentsBA)
                                             {
                                                 var deptId = $"Dept{dept.DepartmentID}";
-                                                var isDefaultExpanded = amendmentIndex == 0 && deptIndex == 0 && Model.SelectedDepartmentID == 0 && !Model.SelectedBudgetAmendmentMainID.HasValue;
+                                                var isDefaultExpanded = amendmentIndex == 0 && deptIndex == 0 && Model.SelectedDepartmentID == 0 && !Model.SelectedBudgetAmendmentMainID.HasValue && !Model.BADeptCollapsed;
                                                 var isDeptSelected = Model.SelectedDepartmentID == dept.DepartmentID && Model.SelectedBudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID;
                                                 deptIndex++;
 
@@ -269,7 +270,7 @@
                                                                     </a>
                                                                 }
 
-                                                                @if (Model.SelectedStatusTab == AmendmentStatus.Pending.ToString() && !String.Equals(userRole, "5"))
+                                                                @if (Model.SelectedStatusTab == AmendmentStatus.Pending.ToString() && !String.Equals(userRole, RoleConstants.AFOIdString))
                                                                 {
                                                                     <form method="post" asp-page-handler="ApproveCategory" onsubmit="return validateNetChange(this)">
                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
@@ -295,7 +296,7 @@
 
                                                                 }
 
-                                                                else if(Model.SelectedStatusTab == AmendmentStatus.Approved.ToString() && !String.Equals(userRole, "5"))
+                                                                else if(Model.SelectedStatusTab == AmendmentStatus.Approved.ToString() && !String.Equals(userRole, RoleConstants.AFOIdString))
                                                                 {
                                                                     <form method="post" asp-page-handler="RevertCategory">
                                                                         <input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
@@ -656,7 +657,7 @@
                                                                                 </form>
                                                                             </th>
 
-                                                                            @if (!String.Equals(userRole, "5"))
+                                                                            @if (!String.Equals(userRole, RoleConstants.AFOIdString))
                                                                             {
                                                                                 <th>
                                                                                     Created By
@@ -919,7 +920,7 @@
                                                                             <th>
                                                                                 Status
                                                                             </th>
-                                                                            @if (!String.Equals(userRole, "5") || Model.SelectedStatusTab==AmendmentStatus.Draft.ToString() || Model.SelectedStatusTab==AmendmentStatus.Rejected.ToString())
+                                                                            @if (!String.Equals(userRole, RoleConstants.AFOIdString) || Model.SelectedStatusTab==AmendmentStatus.Draft.ToString() || Model.SelectedStatusTab==AmendmentStatus.Rejected.ToString())
                                                                             {
                                                                                 <th colspan="4">Actions</th>                                                                                
                                                                             }
@@ -981,7 +982,7 @@
                                                                                         <td><input asp-for="NewBudgetAmendment.PositionNumber" value="@amendment.PositionNumber" class="form-control" /></td>
                                                                                         <td><input asp-for="NewBudgetAmendment.AmountIncrease" value="@amendment.AmountIncrease" class="form-control" /></td>
                                                                                         <td><input asp-for="NewBudgetAmendment.AmountDecrease" value="@amendment.AmountDecrease" class="form-control" /></td>
-                                                                                        @if (!String.Equals(userRole, "5"))
+                                                                                        @if (!String.Equals(userRole, RoleConstants.AFOIdString))
                                                                                         {
                                                                                             <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                                                                             <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
@@ -1042,7 +1043,7 @@
                                                                                         <td>@amendment.PositionNumber</td>
                                                                                         <td>$@amendment.AmountIncrease.ToString("N2")</td>
                                                                                         <td>$@amendment.AmountDecrease.ToString("N2")</td>
-                                                                                        @if (!String.Equals(userRole, "5"))
+                                                                                        @if (!String.Equals(userRole, RoleConstants.AFOIdString))
                                                                                         {
                                                                                             <td>@(amendment.CreatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.CreatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                                                                             <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
@@ -1073,7 +1074,7 @@
                                                                                             @{
                                                                                                 var isEnabled = amendment.Status == AmendmentStatus.Draft || amendment.Status == AmendmentStatus.Rejected;
                                                                                             }
-                                                                                            @if (!String.Equals(userRole, "5") || Model.SelectedStatusTab==AmendmentStatus.Draft.ToString() || Model.SelectedStatusTab==AmendmentStatus.Rejected.ToString())
+                                                                                            @if (!String.Equals(userRole, RoleConstants.AFOIdString) || Model.SelectedStatusTab==AmendmentStatus.Draft.ToString() || Model.SelectedStatusTab==AmendmentStatus.Rejected.ToString())
                                                                                             {
                                                                                                 <div class="d-flex justify-content-evenly gap-2">
                                                                                                     <form method="post" asp-page-handler="EditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
@@ -1474,8 +1475,28 @@
         const accordion = document.getElementById('budgetAmendmentsAccordion');
 
         function isBaMainCollapsed() {
-            // Query only the top-level BA main collapse elements, not nested dept accordions
             return !accordion || !accordion.querySelector(':scope > .accordion-item > .accordion-collapse.show');
+        }
+
+        function isBaDeptCollapsed() {
+            if (!accordion) return true;
+            for (const main of accordion.querySelectorAll(':scope > .accordion-item > .accordion-collapse.show')) {
+                if (main.querySelector('.accordion-collapse.show')) return false;
+            }
+            return true;
+        }
+
+        function applyCollapseState(url) {
+            if (isBaMainCollapsed()) {
+                url.searchParams.set('BAMainCollapsed', 'true');
+            } else {
+                url.searchParams.delete('BAMainCollapsed');
+            }
+            if (isBaDeptCollapsed()) {
+                url.searchParams.set('BADeptCollapsed', 'true');
+            } else {
+                url.searchParams.delete('BADeptCollapsed');
+            }
         }
 
         document.querySelectorAll('.tab-bar-row .nav-link').forEach(function (link) {
@@ -1483,11 +1504,7 @@
                 if (!accordion) return;
                 e.preventDefault();
                 const url = new URL(this.href);
-                if (isBaMainCollapsed()) {
-                    url.searchParams.set('BAMainCollapsed', 'true');
-                } else {
-                    url.searchParams.delete('BAMainCollapsed');
-                }
+                applyCollapseState(url);
                 window.location.href = url.toString();
             });
         });
@@ -1498,19 +1515,48 @@
             overdueSwitch.addEventListener('click', function (e) {
                 e.preventDefault();
                 const href = this.href;
-                const isCollapsed = isBaMainCollapsed();
+                const mainCollapsed = isBaMainCollapsed();
+                const deptCollapsed = isBaDeptCollapsed();
                 this.classList.toggle('ba-overdue-switch--on');
                 setTimeout(function () {
                     const url = new URL(href);
                     if (accordion) {
-                        if (isCollapsed) {
-                            url.searchParams.set('BAMainCollapsed', 'true');
-                        } else {
-                            url.searchParams.delete('BAMainCollapsed');
-                        }
+                        mainCollapsed ? url.searchParams.set('BAMainCollapsed', 'true') : url.searchParams.delete('BAMainCollapsed');
+                        deptCollapsed ? url.searchParams.set('BADeptCollapsed', 'true') : url.searchParams.delete('BADeptCollapsed');
                     }
                     window.location.href = url.toString();
                 }, 220);
+            });
+        }
+
+        // Financial year filter: inject both collapse params into form submission based on live DOM state
+        const fyForm = document.querySelector('form[method="get"]');
+        if (fyForm) {
+            fyForm.addEventListener('submit', function () {
+                [['BAMainCollapsed', isBaMainCollapsed()], ['BADeptCollapsed', isBaDeptCollapsed()]].forEach(function ([name, val]) {
+                    let input = fyForm.querySelector(`input[name="${name}"]`);
+                    if (!input) {
+                        input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = name;
+                        fyForm.appendChild(input);
+                    }
+                    input.value = val ? 'true' : 'false';
+                });
+            });
+        }
+
+        // BAMain pagination (show buttons + prev/next): update collapse params in pre-built URLs to live DOM state
+        const baMainPagNav = document.querySelector('nav[aria-label="Budget amendment main page navigation"]');
+        if (baMainPagNav && accordion) {
+            baMainPagNav.querySelectorAll('a.page-link').forEach(function (link) {
+                link.addEventListener('click', function (e) {
+                    if (this.getAttribute('href') === '#') return;
+                    e.preventDefault();
+                    const url = new URL(this.href);
+                    applyCollapseState(url);
+                    window.location.href = url.toString();
+                });
             });
         }
     });

@@ -152,9 +152,10 @@ namespace budget_management_system_aspdotnetcore.Pages
             BAMainResultsPerPage = baMainResultsPerPage;
 
             if (!_authService.IsAuthenticated(HttpContext))
-            {
                 return RedirectToPage("/Login");
-            }
+
+            if (!_authService.IsAdminRole(HttpContext))
+                return Forbid();
 
             await LoadFormDataAsync();
             return Page();
@@ -162,7 +163,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostAddAmendmentMainAsync()
         {
-            if (_authService.GetUserRole(HttpContext) == "5")
+            if (!_authService.IsAdminRole(HttpContext))
                 return Forbid();
 
             if (!ModelState.IsValid)
@@ -187,7 +188,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public async Task<IActionResult> OnPostExtendDeadlineAsync(int BudgetAmendmentMainID, DateTime ExtendDeadlineTo)
         {
-            if (_authService.GetUserRole(HttpContext) == "5")
+            if (!_authService.IsAdminRole(HttpContext))
                 return Forbid();
 
             var amendment = await _context.BudgetAmendmentMain.FindAsync(BudgetAmendmentMainID);

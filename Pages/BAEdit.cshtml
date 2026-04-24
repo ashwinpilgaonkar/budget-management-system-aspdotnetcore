@@ -25,7 +25,7 @@
             <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 10px;">
                 <h3 class="page-title">Budget Amendments</h3>
 
-                @if (!String.Equals(userRole, "5"))
+                @if (!String.Equals(userRole, RoleConstants.AFOIdString))
                 {
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAmendmentMainModal">
                         Create New +
@@ -98,7 +98,7 @@
                         {
                             <span class="badge bg-secondary ms-3">@extCount dept override@(extCount == 1 ? "" : "s")</span>
                         }
-                        @if (!String.Equals(userRole, "5"))
+                        @if (!String.Equals(userRole, RoleConstants.AFOIdString))
                         {
                             <button class="btn btn-outline-secondary me-3"
                                     data-bs-toggle="modal"
