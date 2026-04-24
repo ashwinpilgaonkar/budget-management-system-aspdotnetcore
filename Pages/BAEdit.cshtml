@@ -11,14 +11,6 @@
         var userRole = Model.userRole;
     }
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show mb-3" role="alert" style="width: fit-content; max-width: 600px; margin-left: auto; margin-right: auto;">
-            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
     <!-- Budget Amendment History Card -->
     <div class="card mb-4 card-macos" style="border-radius: 10px; max-width: 960px; margin-left: auto; margin-right: auto;">
         <div class="card-body">
@@ -184,7 +176,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Extend Deadline To:</label>
+                            <label class="form-label">Extend Deadline to:</label>
                             <input id="editBAExtendDeadline" name="ExtendDeadlineTo"
                                    type="datetime-local" class="form-control" required />
                             <div class="invalid-feedback">
@@ -193,7 +185,7 @@
                         </div>
 
                         <div class="mb-3 d-flex flex-column">
-                            <label class="form-label">Departments to Apply To:</label>
+                            <label class="form-label">Departments to Apply to: </label>
                             <select id="editBADeptSelect" name="SelectedDepartments" class="selectpicker w-100" multiple data-live-search="true">
                                 <option value="ALL" selected>All Departments</option>
                                 @foreach (var dept in Model.Departments)
@@ -278,6 +270,51 @@
             extendInput.addEventListener('change', validateExtend);
             editModal.addEventListener('shown.bs.modal', validateExtend);
 
+            // selectpicker('refresh') has a reloadLi duplication bug in this version.
+            // destroy().selectpicker() starts clean for each modal open.
+            // Inside the handler we reconstruct the true post-change selection from
+            // previousValue + clickedIndex/isSelected because $(this).val() is stale at
+            // event time. We then apply changes and call $sel.trigger('change') so
+            // bootstrap-select's own change handler runs render() — no reloadLi, no
+            // duplication, and the dropdown stays open. The clickedIndex === null guard
+            // stops the re-trigger from looping back into this handler.
+            function initDeptSelect($deptSelect) {
+                $deptSelect.selectpicker('destroy').selectpicker();
+                $deptSelect.on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+                    if (clickedIndex === null) return;
+
+                    var $sel      = $(this);
+                    var previous  = [].concat(previousValue || []);
+                    var clickedVal = $sel.find('option').eq(clickedIndex).val();
+
+                    // Reconstruct the true post-change selection
+                    var current = isSelected
+                        ? previous.filter(function (v) { return v !== clickedVal; }).concat([clickedVal])
+                        : previous.filter(function (v) { return v !== clickedVal; });
+
+                    // Nothing selected — snap back to All Departments
+                    if (!current.length) {
+                        $sel.val(['ALL']);
+                        $sel.trigger('change');
+                        return;
+                    }
+
+                    var allSelected    = current.includes('ALL');
+                    var othersSelected = current.some(function (v) { return v !== 'ALL'; });
+
+                    if (allSelected && othersSelected) {
+                        if (previous.includes('ALL')) {
+                            // ALL was already on; user picked a specific dept — drop ALL
+                            $sel.val(current.filter(function (v) { return v !== 'ALL'; }));
+                        } else {
+                            // User just checked ALL — drop specific depts
+                            $sel.val(['ALL']);
+                        }
+                        $sel.trigger('change');
+                    }
+                });
+            }
+
             editModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
 
@@ -286,25 +323,7 @@
                 document.getElementById('editBAStart').value = button.getAttribute('data-ba-start');
                 endInput.value = button.getAttribute('data-ba-end');
                 extendInput.value = button.getAttribute('data-ba-extend');
-                $('#editBADeptSelect').selectpicker('refresh');
-            });
-
-            $('#editBADeptSelect').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
-                var current = $(this).val() || [];
-                var previous = previousValue || [];
-                var allNowSelected = current.includes('ALL');
-                var hasOtherSelections = current.some(function (v) { return v !== 'ALL'; });
-
-                if (allNowSelected && hasOtherSelections) {
-                    if (previous.includes('ALL')) {
-                        // ALL was already selected; user added a specific dept — remove ALL
-                        $(this).find('option[value="ALL"]').prop('selected', false);
-                    } else {
-                        // User just selected ALL — clear specific selections
-                        $(this).val(['ALL']);
-                    }
-                    $(this).selectpicker('refresh');
-                }
+                initDeptSelect($('#editBADeptSelect'));
             });
 
         });

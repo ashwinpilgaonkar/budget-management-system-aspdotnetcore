@@ -33,7 +33,6 @@ namespace budget_management_system_aspdotnetcore.Pages
         [BindProperty]
         public BudgetAmendmentMain NewBudgetAmendmentMain { get; set; }
 
-        [BindProperty]
         public List<Department> Departments { get; set; }
 
         [BindProperty]
@@ -157,6 +156,12 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!_authService.IsAdminRole(HttpContext))
                 return Forbid();
 
+            NewBudgetAmendmentMain = new BudgetAmendmentMain
+            {
+                StartDate = DateTime.Now,
+                EndDate   = DateTime.Now.AddDays(30)
+            };
+
             await LoadFormDataAsync();
             return Page();
         }
@@ -166,7 +171,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!_authService.IsAdminRole(HttpContext))
                 return Forbid();
 
-            if (!ModelState.IsValid)
+            if (string.IsNullOrWhiteSpace(NewBudgetAmendmentMain?.Name))
             {
                 await LoadFormDataAsync();
                 return Page();
