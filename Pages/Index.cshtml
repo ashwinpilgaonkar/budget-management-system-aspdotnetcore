@@ -358,17 +358,36 @@
                                                                 else 
                                                                 {}
 
-                                                                @if (Model.BudgetAmendmentMainEndDate < DateTime.Now)
+                                                                @{
+                                                                    var canCreateDraft = !Model.BudgetAmendmentsAll.Any(ba =>
+                                                                        ba.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID
+                                                                        && ba.DepartmentID == dept.DepartmentID
+                                                                        && (ba.Status == AmendmentStatus.Pending
+                                                                            || ba.Status == AmendmentStatus.Approved
+                                                                            || ba.Status == AmendmentStatus.Rejected));
+                                                                }
+
+                                                                @if (DateTime.Now > Model.BudgetAmendmentMainEndDate)
                                                                 {
-                                                                    <button type="button" class="btn btn-primary flex-shrink-0" onclick="return alert(`Error: The submission deadline for this budget amendment has passed.`);" )>
+                                                                    <button type="button" class="btn btn-primary flex-shrink-0" onclick="return alert(`Error: The submission deadline for this budget amendment has passed.`);">
                                                                         Create New +
                                                                     </button>
                                                                 }
-
+                                                                else if (DateTime.Now < Model.BudgetAmendmentMainStartDate)
+                                                                {
+                                                                    <button type="button" class="btn btn-primary flex-shrink-0" onclick="return alert(`Error: This budget amendment has not started yet.`);">
+                                                                        Create New +
+                                                                    </button>
+                                                                }
+                                                                else if (!canCreateDraft)
+                                                                {
+                                                                    <button type="button" class="btn btn-primary flex-shrink-0" onclick="return alert(`Cannot create new drafts: this department already has entries in Pending, Approved, or Rejected status.`);">
+                                                                        Create New +
+                                                                    </button>
+                                                                }
                                                                 else
                                                                 {
-                                                                    <button type="button" class="btn btn-primary flex-shrink-0" data-bs-toggle="modal" data-bs-target="#addAmendmentModal"
-                                                                            @(DateTime.Now < Model.BudgetAmendmentMainStartDate || DateTime.Now > Model.BudgetAmendmentMainEndDate ? "disabled" : "")>
+                                                                    <button type="button" class="btn btn-primary flex-shrink-0" data-bs-toggle="modal" data-bs-target="#addAmendmentModal">
                                                                         Create New +
                                                                     </button>
                                                                 }
@@ -1072,9 +1091,11 @@
                                                                                         <td class="@statusClass">@amendment.Status</td>
                                                                                         <td colspan="4">
                                                                                             @{
-                                                                                                var isEnabled = amendment.Status == AmendmentStatus.Draft || amendment.Status == AmendmentStatus.Rejected;
+                                                                                                var isEnabled = amendment.Status == AmendmentStatus.Draft
+                                                                                                    || amendment.Status == AmendmentStatus.Rejected
+                                                                                                    || (amendment.Status == AmendmentStatus.Pending && !String.Equals(userRole, RoleConstants.AFOIdString));
                                                                                             }
-                                                                                            @if (!String.Equals(userRole, RoleConstants.AFOIdString) || Model.SelectedStatusTab==AmendmentStatus.Draft.ToString() || Model.SelectedStatusTab==AmendmentStatus.Rejected.ToString())
+                                                                                            @if (!String.Equals(userRole, RoleConstants.AFOIdString) || amendment.Status == AmendmentStatus.Draft || amendment.Status == AmendmentStatus.Rejected)
                                                                                             {
                                                                                                 <div class="d-flex justify-content-evenly gap-2">
                                                                                                     <form method="post" asp-page-handler="EditAmendment" asp-route-id="@amendment.BudgetAmendmentID">
@@ -1097,7 +1118,7 @@
                                                                                                         <input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
                                                                                                         <input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
                                                                                                         <input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
-                                                                                                        <button type="submit" onclick="return confirm('Are you sure you want to delete this item?');" disabled=@(!isEnabled) class="btn btn-outline-danger">Delete</button>
+                                                                                                        <button type="submit" onclick="return confirm('Are you sure you want to delete this entry?');" disabled=@(!isEnabled) class="btn btn-outline-danger">Delete</button>
                                                                                                     </form>
                                                                                                 </div>
                                                                                             }

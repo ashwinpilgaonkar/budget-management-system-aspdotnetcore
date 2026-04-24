@@ -556,6 +556,27 @@ namespace budget_management_system_aspdotnetcore.Pages
                 });
             }
 
+            var hasBlockingEntries = await _context.BudgetAmendments.AnyAsync(ba =>
+                ba.BudgetAmendmentMainID == NewBudgetAmendment.BudgetAmendmentMainID
+                && ba.DepartmentID == NewBudgetAmendment.DepartmentID
+                && (ba.Status == AmendmentStatus.Pending
+                    || ba.Status == AmendmentStatus.Approved
+                    || ba.Status == AmendmentStatus.Rejected));
+
+            if (hasBlockingEntries)
+            {
+                TempData["ErrorMessage"] = "Cannot create new drafts: this department already has entries in Pending, Approved, or Rejected status.";
+                return RedirectToPage(new
+                {
+                    SelectedDepartmentID,
+                    SelectedBudgetAmendmentMainID,
+                    SelectedStatusTab,
+                    SelectedFinancialYear,
+                    CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
+                    CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
+                });
+            }
+
             var transactionId = Guid.NewGuid();
 
             var budgetAmendment1 = new BudgetAmendment
@@ -632,7 +653,9 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             var amendment = await _context.BudgetAmendments.FindAsync(id);
 
-            if (amendment != null && (amendment.Status == AmendmentStatus.Draft || amendment.Status == AmendmentStatus.Rejected))
+            if (amendment != null && (amendment.Status == AmendmentStatus.Draft
+                || amendment.Status == AmendmentStatus.Rejected
+                || (amendment.Status == AmendmentStatus.Pending && _authService.IsAdminRole(HttpContext))))
             {
                 EditingBudgetAmendmentID = id;
 
@@ -710,6 +733,13 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             if (amendment != null)
             {
+                var canEdit = amendment.Status == AmendmentStatus.Draft
+                    || amendment.Status == AmendmentStatus.Rejected
+                    || (amendment.Status == AmendmentStatus.Pending && _authService.IsAdminRole(HttpContext));
+
+                if (!canEdit)
+                    return Forbid();
+
                 var relatedAmendments = await _context.BudgetAmendments
                     .Where(a => a.TransactionId == amendment.TransactionId)
                     .ToListAsync();
@@ -802,7 +832,9 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return NotFound();
             }
 
-            if (amendment.Status == AmendmentStatus.Draft || amendment.Status == AmendmentStatus.Rejected)
+            if (amendment.Status == AmendmentStatus.Draft
+                || amendment.Status == AmendmentStatus.Rejected
+                || (amendment.Status == AmendmentStatus.Pending && _authService.IsAdminRole(HttpContext)))
             {
                 var categoryName = amendment.CategoryName;
 
