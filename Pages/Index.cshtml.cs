@@ -22,15 +22,13 @@ namespace budget_management_system_aspdotnetcore.Pages
         // Instance Variables -- HELPER
         // ==============================================
         #region HELPER
-            private readonly CasdbtestContext _context = context;
-            private readonly SpeedTypeService _speedTypeService = speedTypeService;
-            private readonly UserService _userService = userService;
-            private readonly IAuthenticationService _authService = authService;
-        #endregion
+        private readonly CasdbtestContext _context = context;
+        private readonly SpeedTypeService _speedTypeService = speedTypeService;
+        private readonly UserService _userService = userService;
+        private readonly IAuthenticationService _authService = authService;
 
         public int userID { get; set; } = 0;
-
-        public string userRole{ get; set; } = "";
+        public string userRole { get; set; } = "";
 
         [BindProperty(SupportsGet = true)]
         public string ActiveSortTable { get; set; } = "Department";
@@ -41,6 +39,12 @@ namespace budget_management_system_aspdotnetcore.Pages
         public string SortOrder { get; set; } = "asc";
 
         public List<int> PageSizes { get; set; } = PaginationViewModel.DefaultPageSizes;
+        #endregion
+
+        // ==============================================
+        // Instance Variables -- BUDGET AMENDMENTS
+        // ==============================================
+        #region BUDGET AMENDMENTS
 
         public IEnumerable<SpeedType> SpeedTypes { get; set; }
 
@@ -109,9 +113,6 @@ namespace budget_management_system_aspdotnetcore.Pages
         public bool BADeptCollapsed { get; set; } = false;
 
         [BindProperty(SupportsGet = true)]
-        public List<string> SelectedStatus { get; set; }
-
-        [BindProperty(SupportsGet = true)]
         public int? SelectedCreatedBy { get; set; }
 
         [BindProperty(SupportsGet = true)]
@@ -159,6 +160,45 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public Dictionary<string, int> BAMainTabCounts { get; set; } = new();
 
+        public FilterStateViewModel FilterState => new()
+        {
+            SelectedDepartmentID = SelectedDepartmentID,
+            SelectedStatusTab = SelectedStatusTab,
+            SelectedBAMainStatusTab = SelectedBAMainStatusTab,
+            SelectedBudgetAmendmentMainID = SelectedBudgetAmendmentMainID,
+            SelectedFinancialYear = SelectedFinancialYear,
+            CustomStartDate = CustomStartDate,
+            CustomEndDate = CustomEndDate
+        };
+
+        public FilterStateFullViewModel FilterStateFull => new()
+        {
+            SelectedDepartmentID = SelectedDepartmentID,
+            SelectedStatusTab = SelectedStatusTab,
+            SelectedBAMainStatusTab = SelectedBAMainStatusTab,
+            SelectedBudgetAmendmentMainID = SelectedBudgetAmendmentMainID,
+            SelectedFinancialYear = SelectedFinancialYear,
+            CustomStartDate = CustomStartDate,
+            CustomEndDate = CustomEndDate,
+            BudgetAmendmentSearchTerm = BudgetAmendmentSearchTerm,
+            SelectedCreatedBy = SelectedCreatedBy,
+            CreatedFromDate = CreatedFromDate,
+            CreatedToDate = CreatedToDate,
+            SelectedEditedBy = SelectedEditedBy,
+            EditedFromDate = EditedFromDate,
+            EditedToDate = EditedToDate,
+            SelectedUpdatedBy = SelectedUpdatedBy,
+            UpdatedFromDate = UpdatedFromDate,
+            UpdatedToDate = UpdatedToDate
+        };
+
+        #endregion
+
+        // ==============================================
+        //                 DATA LOADING
+        // ==============================================
+        #region DATA LOADING
+
         private void SetDefaultFinancialYearRange()
         {
             var today = DateTime.Today;
@@ -178,11 +218,6 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             SetDefaultFinancialYearRange();
 
-
-            if (SelectedStatus == null || !SelectedStatus.Any())
-            {
-                SelectedStatus = Enum.GetNames(typeof(AmendmentStatus)).ToList();
-            }
 
             SpeedTypes = await _speedTypeService.GetSpeedTypesAsync();
 
@@ -267,15 +302,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                 || s.PositionNumber.ToString().Contains(BudgetAmendmentSearchTerm)
                 || s.AmountIncrease.ToString().Contains(BudgetAmendmentSearchTerm)
                 || s.AmountDecrease.ToString().Contains(BudgetAmendmentSearchTerm));
-            }
-
-            if (SelectedStatus != null && SelectedStatus.Any())
-            {
-                var parsedStatuses = SelectedStatus
-                    .Where(s => Enum.TryParse<AmendmentStatus>(s, out _))
-                    .Select(s => (AmendmentStatus)Enum.Parse(typeof(AmendmentStatus), s));
-
-                amendmentQuery = amendmentQuery.Where(b => parsedStatuses.Contains(b.Status));
             }
 
             if (!string.IsNullOrEmpty(SelectedStatusTab) && Enum.TryParse<AmendmentStatus>(SelectedStatusTab, out var parsedStatus))
@@ -489,6 +515,13 @@ namespace budget_management_system_aspdotnetcore.Pages
                 SizeChangeUrlTemplate = $"?baMainPageNumber=1&baMainResultsPerPage=__SIZE__{filters}"
             };
         }
+
+        #endregion
+
+        // ==============================================
+        //           BUDGET AMENDMENT METHODS
+        // ==============================================
+        #region BUDGET AMENDMENT METHODS
 
         public async Task<IActionResult> OnPostAddAmendmentAsync()
         {
@@ -1141,5 +1174,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             });
             await _context.SaveChangesAsync();
         }
+
+        #endregion
     }
 }

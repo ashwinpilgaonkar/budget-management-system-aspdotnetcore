@@ -1,0 +1,18 @@
+@model budget_management_system_aspdotnetcore.ViewModels.FilterStateFullViewModel
+<input type="hidden" name="SelectedDepartmentID" value="@Model.SelectedDepartmentID" />
+<input type="hidden" name="SelectedStatusTab" value="@Model.SelectedStatusTab" />
+<input type="hidden" name="SelectedBAMainStatusTab" value="@Model.SelectedBAMainStatusTab" />
+<input type="hidden" name="SelectedBudgetAmendmentMainID" value="@Model.SelectedBudgetAmendmentMainID" />
+<input type="hidden" name="SelectedFinancialYear" value="@Model.SelectedFinancialYear" />
+<input type="hidden" name="CustomStartDate" value="@Model.CustomStartDate?.ToString("yyyy-MM-dd")" />
+<input type="hidden" name="CustomEndDate" value="@Model.CustomEndDate?.ToString("yyyy-MM-dd")" />
+<input type="hidden" name="BudgetAmendmentSearchTerm" value="@Model.BudgetAmendmentSearchTerm" />
+<input type="hidden" name="SelectedCreatedBy" value="@Model.SelectedCreatedBy" />
+<input type="hidden" name="CreatedFromDate" value="@Model.CreatedFromDate?.ToString("yyyy-MM-dd")" />
+<input type="hidden" name="CreatedToDate" value="@Model.CreatedToDate?.ToString("yyyy-MM-dd")" />
+<input type="hidden" name="SelectedEditedBy" value="@Model.SelectedEditedBy" />
+<input type="hidden" name="EditedFromDate" value="@Model.EditedFromDate?.ToString("yyyy-MM-dd")" />
+<input type="hidden" name="EditedToDate" value="@Model.EditedToDate?.ToString("yyyy-MM-dd")" />
+<input type="hidden" name="SelectedUpdatedBy" value="@Model.SelectedUpdatedBy" />
+<input type="hidden" name="UpdatedFromDate" value="@Model.UpdatedFromDate?.ToString("yyyy-MM-dd")" />
+<input type="hidden" name="UpdatedToDate" value="@Model.UpdatedToDate?.ToString("yyyy-MM-dd")" />
