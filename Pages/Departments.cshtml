@@ -345,9 +345,8 @@
             alertEl.setAttribute('role', 'alert');
             alertEl.style.cssText = 'width: fit-content; max-width: 600px; margin-left: auto; margin-right: auto;';
             alertEl.innerHTML = '<i class="fas fa-check-circle me-2"></i> Your file is downloading. <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
-            const container = document.querySelector('.container-fluid');
-            const main = container.querySelector('main[role="main"]');
-            container.insertBefore(alertEl, main);
+            const main = document.querySelector('main[role="main"]');
+            main.parentElement.insertBefore(alertEl, main);
             setTimeout(function () { $(alertEl).alert('close'); }, 8000);
         }
 

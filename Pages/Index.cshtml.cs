@@ -626,8 +626,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             SelectedStatusTab = AmendmentStatus.Draft.ToString();
 
             await _context.SaveChangesAsync();
-
-            await LoadFormDataAsync();
+            TempData["SuccessMessage"] = $"Entry \"{NewBudgetAmendment.CategoryName}\" added successfully.";
 
             return RedirectToPage(new
             {
@@ -671,7 +670,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                 }
             }
 
-            await LoadFormDataAsync();
             return RedirectToPage(new
             {
                 SelectedDepartmentID,
@@ -692,8 +690,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return RedirectToPage("/Login");
 
             EditingBudgetAmendmentID = 0;
-
-            await LoadFormDataAsync();
 
             return RedirectToPage(new
             {
@@ -763,6 +759,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                     await _context.SaveChangesAsync();
                 }
                 await UpdateUserActivityLogAsync(NewBudgetAmendment.CategoryName, ActivityType.Edited);
+                TempData["SuccessMessage"] = $"Entry \"{NewBudgetAmendment.CategoryName}\" saved successfully.";
             }
 
             return RedirectToPage(new
@@ -803,6 +800,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 await _context.SaveChangesAsync();
 
                 await UpdateUserActivityLogAsync(categoryName, ActivityType.Deleted);
+                TempData["SuccessMessage"] = $"Entry \"{categoryName}\" deleted.";
             }
 
             return RedirectToPage(new
@@ -831,6 +829,20 @@ namespace budget_management_system_aspdotnetcore.Pages
                 .Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Pending)
                 .ToListAsync();
 
+            if (!AllCategoryNetChangesAreZero(amendments))
+            {
+                TempData["ErrorMessage"] = "Cannot approve these records. Please ensure that the amounts increase/decrease total to zero.";
+                return RedirectToPage(new
+                {
+                    SelectedDepartmentID,
+                    SelectedBudgetAmendmentMainID,
+                    SelectedStatusTab,
+                    SelectedFinancialYear,
+                    CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
+                    CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
+                });
+            }
+
             var categoryName = "";
 
             foreach (var amendment in amendments)
@@ -844,6 +856,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
 
             await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "All entries approved.";
             return RedirectToPage(new
             {
                 SelectedDepartmentID,
@@ -882,6 +895,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
 
             await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "All entries rejected.";
             return RedirectToPage(new
             {
                 SelectedDepartmentID,
@@ -905,6 +919,22 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return BadRequest("Invalid department");
 
             var amendments = await _context.BudgetAmendments.Where(a => a.DepartmentID == SelectedDepartmentID && (a.Status == AmendmentStatus.Approved || a.Status == AmendmentStatus.Rejected)).ToListAsync();
+
+            var rejectedAmendments = amendments.Where(a => a.Status == AmendmentStatus.Rejected).ToList();
+            if (rejectedAmendments.Any() && !AllCategoryNetChangesAreZero(rejectedAmendments))
+            {
+                TempData["ErrorMessage"] = "Cannot resubmit these records for review. Please ensure that the amounts increase/decrease total to zero.";
+                return RedirectToPage(new
+                {
+                    SelectedDepartmentID,
+                    SelectedBudgetAmendmentMainID,
+                    SelectedStatusTab,
+                    SelectedFinancialYear,
+                    CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
+                    CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
+                });
+            }
+
             var categoryName = "";
 
             foreach (var amendment in amendments)
@@ -918,6 +948,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
 
             await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Entries reverted to Pending.";
             return RedirectToPage(new
             {
                 SelectedDepartmentID,
@@ -935,10 +966,25 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!_authService.IsAuthenticated(HttpContext))
                 return RedirectToPage("/Login");
 
-            var amendments = _context.BudgetAmendments.Where(a =>
+            var amendments = await _context.BudgetAmendments.Where(a =>
                 a.Status == AmendmentStatus.Draft
                 && a.BudgetAmendmentMainID == SelectedBudgetAmendmentMainID
-                && a.DepartmentID == SelectedDepartmentID);
+                && a.DepartmentID == SelectedDepartmentID).ToListAsync();
+
+            if (!AllCategoryNetChangesAreZero(amendments))
+            {
+                TempData["ErrorMessage"] = "Cannot submit these records for review. Please ensure that the amounts increase/decrease total to zero.";
+                return RedirectToPage(new
+                {
+                    SelectedDepartmentID,
+                    SelectedBudgetAmendmentMainID,
+                    SelectedStatusTab,
+                    SelectedFinancialYear,
+                    CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
+                    CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
+                });
+            }
+
             var categoryName = "";
 
             foreach (var amendment in amendments)
@@ -951,6 +997,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             await _context.SaveChangesAsync();
             await UpdateUserActivityLogAsync(categoryName, ActivityType.Submitted);
+            TempData["SuccessMessage"] = "Drafts submitted for review.";
             return RedirectToPage(new
             {
                 SelectedDepartmentID,
@@ -1174,6 +1221,11 @@ namespace budget_management_system_aspdotnetcore.Pages
             });
             await _context.SaveChangesAsync();
         }
+
+        private static bool AllCategoryNetChangesAreZero(List<BudgetAmendment> amendments) =>
+            amendments
+                .GroupBy(a => a.CategoryName)
+                .All(g => g.Sum(a => (decimal)a.AmountIncrease) - g.Sum(a => (decimal)a.AmountDecrease) == 0);
 
         #endregion
     }

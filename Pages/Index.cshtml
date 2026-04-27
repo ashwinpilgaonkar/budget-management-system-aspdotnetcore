@@ -267,7 +267,7 @@
                                                                 {
                                                                     <form method="post" asp-page-handler="RevertCategory">
                                                                         <partial name="_FilterState" model="Model.FilterState" />
-                                                                        <button type="submit" onclick="return confirm('Are you sure you want to resubmit these entries for review?');" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link text-nowrap">Resubmit for review 🗒️</button>
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to resubmit these entries for review?')" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link text-nowrap">Resubmit for review 🗒️</button>
                                                                     </form>
                                                                 }
 
@@ -288,7 +288,7 @@
                                                                                 {
                                                                                     <form method="post" asp-page-handler="SubmitSelectedCategories" class="d-inline">
                                                                                         <input type="hidden" name="SelectedCategoryList" id="selectedCategoryList" />
-                                                                                            <button type="submit" class="btn btn-link text-nowrap" onclick="return confirm(`Are you sure you want to submit all Drafts for review?`);" id="submitBtn" disabled="@(!Model.BudgetAmendments.Any())">Submit Drafts for review 🗒️</button>
+                                                                                            <button type="submit" class="btn btn-link text-nowrap" onclick="return confirm('Are you sure you want to submit all Drafts for review?')" id="submitBtn" disabled="@(!Model.BudgetAmendments.Any())">Submit Drafts for review 🗒️</button>
                                                                                      </form>
                                                                                 }
                                                                             </div>
@@ -760,8 +760,8 @@
                                                                                                 <input asp-for="DestinationSpeedtype" type="hidden" value="@Model.DestinationSpeedtype" />
                                                                                                 <partial name="_FilterState" model="Model.FilterState" />
                                                                                                 <div class="d-flex justify-content-evenly gap-2">
-                                                                                                    <button type="submit" asp-page-handler="SaveAmendment" class="btn btn-success">Save</button>
-                                                                                                    <button type="submit" asp-page-handler="CancelEditAmendment" class="btn btn-secondary">Cancel</button>
+                                                                                                    <button type="submit" asp-page-handler="SaveAmendment" class="btn btn-success" onclick="return confirm('Save changes to this entry?')">Save</button>
+                                                                                                    <button type="submit" asp-page-handler="CancelEditAmendment" class="btn btn-secondary" onclick="return confirm('Are you sure you want to cancel editing? Unsaved changes will be lost.')">Cancel</button>
                                                                                                 </div>
                                                                                             </form>
                                                                                         </td>
@@ -961,9 +961,8 @@
             alertEl.setAttribute('role', 'alert');
             alertEl.style.cssText = 'width: fit-content; max-width: 600px; margin-left: auto; margin-right: auto;';
             alertEl.innerHTML = '<i class="fas fa-check-circle me-2"></i> Your file is downloading. <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
-            const container = document.querySelector('.container-fluid');
-            const main = container.querySelector('main[role="main"]');
-            container.insertBefore(alertEl, main);
+            const main = document.querySelector('main[role="main"]');
+            main.parentElement.insertBefore(alertEl, main);
             setTimeout(function () { $(alertEl).alert('close'); }, 8000);
         }
 
@@ -984,28 +983,9 @@
         }
 
         function handleApproveAll(btn) {
-            const accordionBody = btn.closest('.accordion-body') ?? btn.closest('.tab-pane') ?? document;
-            const netChangeCells = accordionBody.querySelectorAll('[data-net-change]');
-            const allZero = Array.from(netChangeCells).every(cell => parseFloat(cell.dataset.netChange) === 0);
-            if (!allZero) {
-                showNetChangeError('Cannot approve these records. Please ensure that the amounts increase/decrease total to zero.');
-                return;
-            }
             if (confirm('Are you sure you want to approve all these entries?')) {
                 btn.closest('form').submit();
             }
-        }
-
-        function showNetChangeError(message) {
-            const alertEl = document.createElement('div');
-            alertEl.className = 'alert alert-danger alert-dismissible fade show';
-            alertEl.setAttribute('role', 'alert');
-            alertEl.style.cssText = 'width: fit-content; max-width: 600px; margin-left: auto; margin-right: auto;';
-            alertEl.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i> ${message} <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
-            const container = document.querySelector('.container-fluid');
-            const main = container.querySelector('main[role="main"]');
-            container.insertBefore(alertEl, main);
-            setTimeout(function () { $(alertEl).alert('close'); }, 6000);
         }
 
         window.addEventListener('beforeunload', function () {
