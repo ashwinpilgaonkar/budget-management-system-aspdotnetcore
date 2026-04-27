@@ -43,7 +43,7 @@
                     BAMainCollapsed = Model.BAMainCollapsed,
                     TabCounts = new Dictionary<string, int>
                     {
-                        [""] = Model.BudgetAmendmentsMainAll.Count,
+                        ["All"] = Model.BudgetAmendmentsMainAll.Count,
                         ["Pending"] = Model.BudgetAmendmentsMainAll.Count(bam =>
                             Model.BudgetAmendmentsAll.Any(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID && ba.Status == AmendmentStatus.Pending)),
                         ["Approved"] = Model.BudgetAmendmentsMainAll.Count(bam => {

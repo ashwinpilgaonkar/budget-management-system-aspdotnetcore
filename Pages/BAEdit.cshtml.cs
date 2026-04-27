@@ -123,7 +123,8 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (ShowOverdueOnly &&
                 (string.IsNullOrEmpty(SelectedBAMainStatusTab) ||
                  SelectedBAMainStatusTab == "Pending" ||
-                 SelectedBAMainStatusTab == "Rejected"))
+                 SelectedBAMainStatusTab == "Rejected" ||
+                 SelectedBAMainStatusTab == "All"))
             {
                 BudgetAmendmentsMain = BudgetAmendmentsMain
                     .Where(bam => bam.ExtendedDeadline.Date < DateTime.Today)

@@ -239,7 +239,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             BAMainTabCounts = new Dictionary<string, int>
             {
-                [""] = BudgetAmendmentsMainAll.Count,
+                ["All"] = BudgetAmendmentsMainAll.Count,
                 ["Pending"]  = BudgetAmendmentsMainAll.Count(bam =>
                     BudgetAmendmentsAll.Any(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID && ba.Status == AmendmentStatus.Pending)),
                 ["Approved"] = BudgetAmendmentsMainAll.Count(bam =>
@@ -272,7 +272,8 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (ShowOverdueOnly &&
                 (string.IsNullOrEmpty(SelectedBAMainStatusTab) ||
                  SelectedBAMainStatusTab == "Pending" ||
-                 SelectedBAMainStatusTab == "Rejected"))
+                 SelectedBAMainStatusTab == "Rejected" ||
+                 SelectedBAMainStatusTab == "All"))
             {
                 BudgetAmendmentsMain = BudgetAmendmentsMain
                     .Where(bam => bam.ExtendedDeadline.Date < DateTime.Today)
@@ -675,6 +676,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 SelectedDepartmentID,
                 SelectedBudgetAmendmentMainID,
                 SelectedStatusTab,
+                SelectedBAMainStatusTab,
                 SelectedFinancialYear,
                 CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
                 CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd"),
@@ -696,6 +698,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 SelectedDepartmentID,
                 SelectedBudgetAmendmentMainID,
                 SelectedStatusTab,
+                SelectedBAMainStatusTab,
                 SelectedFinancialYear,
                 CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
                 CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd"),

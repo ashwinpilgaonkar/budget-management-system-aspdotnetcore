@@ -4,15 +4,28 @@
         (Label: "Pending",  Value: "Pending"),
         (Label: "Approved", Value: "Approved"),
         (Label: "Rejected", Value: "Rejected"),
-        (Label: "All",      Value: "")
+        (Label: "All",      Value: "All")
     };
-    var overdueEligible = new HashSet<string?> { "Pending", "Rejected", "" };
-    bool isEligible = overdueEligible.Contains(Model.SelectedBAMainStatusTab ?? "");
+    var overdueEligible = new HashSet<string?> { "Pending", "Rejected", "All" };
+    bool isEligible = overdueEligible.Contains(Model.SelectedBAMainStatusTab ?? "Pending");
     var fyParams = $"SelectedFinancialYear={Model.SelectedFinancialYear}&CustomStartDate={Model.CustomStartDate?.ToString("yyyy-MM-dd")}&CustomEndDate={Model.CustomEndDate?.ToString("yyyy-MM-dd")}";
     var collapsedParam = Model.BAMainCollapsed ? "&BAMainCollapsed=true" : "";
+    var contextParams = "";
+    if (Model.SelectedDepartmentID != 0)
+        contextParams += $"&SelectedDepartmentID={Model.SelectedDepartmentID}";
+    if (Model.SelectedBudgetAmendmentMainID.HasValue)
+        contextParams += $"&SelectedBudgetAmendmentMainID={Model.SelectedBudgetAmendmentMainID}";
+    if (!string.IsNullOrEmpty(Model.SelectedStatusTab))
+        contextParams += $"&SelectedStatusTab={Model.SelectedStatusTab}";
+    if (Model.EditingBudgetAmendmentID.HasValue && Model.EditingBudgetAmendmentID > 0)
+        contextParams += $"&EditingBudgetAmendmentID={Model.EditingBudgetAmendmentID}";
+    if (Model.SourceSpeedtype != 0)
+        contextParams += $"&SourceSpeedtype={Model.SourceSpeedtype}";
+    if (Model.DestinationSpeedtype != 0)
+        contextParams += $"&DestinationSpeedtype={Model.DestinationSpeedtype}";
     var toggleHref = Model.ShowOverdueOnly
-        ? $"?SelectedBAMainStatusTab={Model.SelectedBAMainStatusTab}&{fyParams}{collapsedParam}"
-        : $"?SelectedBAMainStatusTab={Model.SelectedBAMainStatusTab}&{fyParams}{collapsedParam}&ShowOverdueOnly=true";
+        ? $"?SelectedBAMainStatusTab={Model.SelectedBAMainStatusTab}&{fyParams}{collapsedParam}{contextParams}"
+        : $"?SelectedBAMainStatusTab={Model.SelectedBAMainStatusTab}&{fyParams}{collapsedParam}{contextParams}&ShowOverdueOnly=true";
 }
 
 <div class="tab-bar-row">
@@ -23,11 +36,11 @@
             var isActive = (string.IsNullOrEmpty(tab.Value) && string.IsNullOrEmpty(Model.SelectedBAMainStatusTab))
                         || tab.Value == Model.SelectedBAMainStatusTab;
             var tabCount = Model.TabCounts.GetValueOrDefault(tab.Value, 0);
-            var isAllTab = string.IsNullOrEmpty(tab.Value);
+            var isAllTab = tab.Value == "All";
             var liClass = isAllTab ? "nav-item tab-all-separator" : "nav-item";
             var badgeClass = isAllTab ? "badge badge-ghost" : "badge bg-secondary ms-1";
             bool carryOverdue = tab.Value != "Approved" && Model.ShowOverdueOnly;
-            var href = $"?SelectedBAMainStatusTab={tab.Value}&{fyParams}{collapsedParam}" +
+            var href = $"?SelectedBAMainStatusTab={tab.Value}&{fyParams}{collapsedParam}{contextParams}" +
                        (carryOverdue ? "&ShowOverdueOnly=true" : "");
             <li class="@liClass">
                 <a class="nav-link @(isActive ? "active" : "")" href="@href">
