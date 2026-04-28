@@ -130,8 +130,22 @@ namespace budget_management_system_aspdotnetcore.Pages
                  SelectedBAMainStatusTab == "Rejected" ||
                  SelectedBAMainStatusTab == "All"))
             {
+                var overdueEligibleIds = BudgetAmendmentsAll
+                    .GroupBy(ba => ba.BudgetAmendmentMainID)
+                    .Where(g =>
+                    {
+                        bool hasRejected = g.Any(ba => ba.Status == AmendmentStatus.Rejected);
+                        bool hasSubmitted = g.Any(ba => ba.Status == AmendmentStatus.Submitted);
+                        bool hasApproved  = g.Any(ba => ba.Status == AmendmentStatus.Approved);
+                        bool hasDraft     = g.Any(ba => ba.Status == AmendmentStatus.Draft);
+                        return hasRejected || hasSubmitted || (hasDraft && !hasApproved);
+                    })
+                    .Select(g => g.Key)
+                    .ToHashSet();
+
                 BudgetAmendmentsMain = BudgetAmendmentsMain
-                    .Where(bam => bam.ExtendedDeadline.Date < DateTime.Today)
+                    .Where(bam => bam.ExtendedDeadline.Date < DateTime.Today
+                               && overdueEligibleIds.Contains(bam.BudgetAmendmentMainID))
                     .ToList();
             }
 
