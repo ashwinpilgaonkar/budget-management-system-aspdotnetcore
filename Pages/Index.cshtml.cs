@@ -323,6 +323,8 @@ namespace budget_management_system_aspdotnetcore.Pages
                 .Take(BAMainResultsPerPage)
                 .ToList();
 
+            DepartmentsUserIsResponsibleFor = _userService.GetDepartmentsResponsibleForLoggedInUser(userID).ToList();
+
             var amendmentQuery = _context.BudgetAmendments.AsQueryable();
 
             if (!string.IsNullOrEmpty(BudgetAmendmentSearchTerm))
@@ -349,6 +351,17 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (SelectedDepartmentID != 0)
             {
                 amendmentQuery = amendmentQuery.Where(b => b.DepartmentID == SelectedDepartmentID);
+            }
+            else if (!SelectedBudgetAmendmentMainID.HasValue && !BAMainCollapsed)
+            {
+                var firstDept = DepartmentsUserIsResponsibleFor.FirstOrDefault();
+                var firstBA   = BudgetAmendmentsMain.FirstOrDefault();
+                if (firstDept != null && firstBA != null)
+                {
+                    amendmentQuery = amendmentQuery
+                        .Where(b => b.DepartmentID == firstDept.DepartmentID
+                                 && b.BudgetAmendmentMainID == firstBA.BudgetAmendmentMainID);
+                }
             }
 
             if (SelectedBudgetAmendmentMainID.HasValue)
@@ -467,8 +480,6 @@ namespace budget_management_system_aspdotnetcore.Pages
                 BudgetAmendmentMainEndDate = currentMainAmendment.ExtendedDeadline;
             }
 
-            var userId = _authService.GetAuthenticatedUserID(HttpContext);
-            DepartmentsUserIsResponsibleFor = _userService.GetDepartmentsResponsibleForLoggedInUser(userId).ToList();
         }
 
 

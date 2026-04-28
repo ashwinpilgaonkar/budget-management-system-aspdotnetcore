@@ -247,6 +247,12 @@
                                                          data-dept-id="@dept.DepartmentID">
 
                                                         <div class="accordion-body">
+                                                            @{
+                                                                var displayAmendments = Model.BudgetAmendments
+                                                                    .Where(a => a.DepartmentID == dept.DepartmentID
+                                                                             && a.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID)
+                                                                    .ToList();
+                                                            }
 
                                                             <!-- Search Bar -->
                                                             <div class="d-flex gap-2 mb-3 ba-controls-bar">
@@ -284,12 +290,12 @@
                                                                 {
                                                                     <form id="approveCategoryForm" method="post" asp-page-handler="ApproveCategory">
                                                                         <partial name="_FilterState" model="Model.FilterState" />
-                                                                        <button type="button" onclick="handleApproveAll(this)" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link">Approve All ✔️</button>
+                                                                        <button type="button" onclick="handleApproveAll(this)" disabled="@(!displayAmendments.Any())" class="btn btn-link">Approve All ✔️</button>
                                                                     </form>
 
                                                                     <form method="post" asp-page-handler="RejectCategory">
                                                                         <partial name="_FilterState" model="Model.FilterState" />
-                                                                        <button type="submit" onclick="return confirm('Are you sure you want to reject all these entries?');" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link">Reject All ❌</button>
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to reject all these entries?');" disabled="@(!displayAmendments.Any())" class="btn btn-link">Reject All ❌</button>
                                                                     </form>
 
                                                                 }
@@ -298,7 +304,7 @@
                                                                 {
                                                                     <form method="post" asp-page-handler="RevertCategory">
                                                                         <partial name="_FilterState" model="Model.FilterState" />
-                                                                        <button type="submit" onclick="return confirm('Are you sure you want to undo this decision?');" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link text-nowrap">Revert Decision ↩️</button>
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to undo this decision?');" disabled="@(!displayAmendments.Any())" class="btn btn-link text-nowrap">Revert Decision ↩️</button>
                                                                     </form>
                                                                 }
 
@@ -306,7 +312,7 @@
                                                                 {
                                                                     <form method="post" asp-page-handler="RevertCategory">
                                                                         <partial name="_FilterState" model="Model.FilterState" />
-                                                                        <button type="submit" onclick="return confirm('Are you sure you want to resubmit these entries for review?')" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link text-nowrap">Resubmit for approval 🗒️</button>
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to resubmit these entries for review?')" disabled="@(!displayAmendments.Any())" class="btn btn-link text-nowrap">Resubmit for approval 🗒️</button>
                                                                     </form>
                                                                 }
 
@@ -320,14 +326,14 @@
 
                                                                                 @if (Model.BudgetAmendmentMainEndDate < DateTime.Now)
                                                                                 {
-                                                                                    <button class="btn btn-link text-nowrap" onclick="return alert(`Error: The submission deadline for this budget amendment has passed.`);" disabled="@(!Model.BudgetAmendments.Any())">Submit Drafts for review 🗒️</button>
+                                                                                    <button class="btn btn-link text-nowrap" onclick="return alert(`Error: The submission deadline for this budget amendment has passed.`);" disabled="@(!displayAmendments.Any())">Submit Drafts for review 🗒️</button>
                                                                                 }
 
                                                                                 else 
                                                                                 {
                                                                                     <form method="post" asp-page-handler="SubmitSelectedCategories" class="d-inline">
                                                                                         <input type="hidden" name="SelectedCategoryList" id="selectedCategoryList" />
-                                                                                            <button type="submit" class="btn btn-link text-nowrap" onclick="return confirm('Are you sure you want to submit all Drafts for review?')" id="submitBtn" disabled="@(!Model.BudgetAmendments.Any())">Submit Drafts for review 🗒️</button>
+                                                                                            <button type="submit" class="btn btn-link text-nowrap" onclick="return confirm('Are you sure you want to submit all Drafts for review?')" id="submitBtn" disabled="@(!displayAmendments.Any())">Submit Drafts for review 🗒️</button>
                                                                                      </form>
                                                                                 }
                                                                             </div>
@@ -732,7 +738,7 @@
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        @if (!Model.BudgetAmendments.Any())
+                                                                        @if (!displayAmendments.Any())
                                                                         {
                                                                             <tr>
                                                                                 <td colspan="23" class="text-center py-5">
@@ -747,7 +753,7 @@
                                                                         @{
                                                                             int index = (Model.BudgetAmendmentCurrentPage - 1) * Model.BudgetAmendmentResultsPerPage + 1;
                                                                         }
-                                                                        @foreach (var categoryGroup in Model.BudgetAmendments.GroupBy(a => a.CategoryName))
+                                                                        @foreach (var categoryGroup in displayAmendments.GroupBy(a => a.CategoryName))
                                                                         {
                                                                             var totalIncrease = categoryGroup.Sum(a => a.AmountIncrease);
                                                                             var totalDecrease = categoryGroup.Sum(a => a.AmountDecrease);
