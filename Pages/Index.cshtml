@@ -799,7 +799,7 @@
                                                                                                 <input asp-for="DestinationSpeedtype" type="hidden" value="@Model.DestinationSpeedtype" />
                                                                                                 <partial name="_FilterState" model="Model.FilterState" />
                                                                                                 <div class="d-flex justify-content-evenly gap-2">
-                                                                                                    <button type="submit" asp-page-handler="SaveAmendment" class="btn btn-success" onclick="return confirm('Save changes to this entry?')">Save</button>
+                                                                                                    <button type="submit" asp-page-handler="SaveAmendment" class="btn btn-success" onclick="return validateAmendmentSave('@editFormId')">Save</button>
                                                                                                     <button type="submit" asp-page-handler="CancelEditAmendment" class="btn btn-secondary" onclick="return confirm('Are you sure you want to cancel editing? Unsaved changes will be lost.')">Cancel</button>
                                                                                                 </div>
                                                                                             </form>
@@ -994,6 +994,42 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+        function showErrorToast(msg) {
+            const alertEl = document.createElement('div');
+            alertEl.className = 'alert alert-danger alert-dismissible fade show';
+            alertEl.setAttribute('role', 'alert');
+            alertEl.style.cssText = 'width: fit-content; max-width: 600px; margin-left: auto; margin-right: auto;';
+            alertEl.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> ' + msg + ' <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+            const main = document.querySelector('main[role="main"]');
+            main.parentElement.insertBefore(alertEl, main);
+            setTimeout(function () { $(alertEl).alert('close'); }, 8000);
+        }
+
+        function validateAmendmentSave(formId) {
+            const form = document.getElementById(formId);
+            if (!form) return true;
+            const fields = [
+                { id: 'NewBudgetAmendment_CategoryName', label: 'Category Name' },
+                { id: 'NewBudgetAmendment_AdjustmentDetail', label: 'Adjustment Detail' },
+                { id: 'NewBudgetAmendment_AcctDescription', label: 'Account Description' },
+                { id: 'NewBudgetAmendment_BudgetCode', label: 'Budget Code' },
+                { id: 'NewBudgetAmendment_PositionNumber', label: 'Position Number' }
+            ];
+            for (const f of fields) {
+                const el = document.getElementById(f.id);
+                if (!el || !el.value.trim()) {
+                    showErrorToast('All fields are required to save a Budget Amendment entry.');
+                    return false;
+                }
+            }
+            const amountEl = document.getElementById('NewBudgetAmendment_AmountIncrease');
+            if (!amountEl || parseFloat(amountEl.value) <= 0) {
+                showErrorToast('All fields are required to save a Budget Amendment entry.');
+                return false;
+            }
+            return confirm('Save changes to this entry?');
+        }
+
         function showExportToast() {
             const alertEl = document.createElement('div');
             alertEl.className = 'alert alert-success alert-dismissible fade show';

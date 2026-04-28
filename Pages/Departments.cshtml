@@ -166,7 +166,7 @@
                                         </td>
                                         <td>
                                             <div class="d-flex justify-content-evenly">
-                                                <button type="submit" asp-page-handler="SaveDepartment" asp-route-id="@dept.DepartmentID" class="btn btn-success" onclick="return confirm('//Are you sure you want to save these changes?')">Save</button>
+                                                <button type="submit" asp-page-handler="SaveDepartment" asp-route-id="@dept.DepartmentID" class="btn btn-success" onclick="return validateDepartmentSave()">Save</button>
                                                 <button type="submit" asp-page-handler="CancelEditDepartment" asp-route-id="@dept.DepartmentID" class="btn btn-secondary" onclick="return confirm('Are you sure you want to cancel editing? Unsaved changes will be lost.')">Cancel</button>
                                             </div>
                                         </td>
@@ -339,6 +339,28 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+        function showErrorToast(msg) {
+            const alertEl = document.createElement('div');
+            alertEl.className = 'alert alert-danger alert-dismissible fade show';
+            alertEl.setAttribute('role', 'alert');
+            alertEl.style.cssText = 'width: fit-content; max-width: 600px; margin-left: auto; margin-right: auto;';
+            alertEl.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> ' + msg + ' <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+            const main = document.querySelector('main[role="main"]');
+            main.parentElement.insertBefore(alertEl, main);
+            setTimeout(function () { $(alertEl).alert('close'); }, 8000);
+        }
+
+        function validateDepartmentSave() {
+            const name = document.getElementById('NewDepartment_DepartmentName');
+            const speedTypes = document.getElementById('SelectedSpeedTypeIds');
+            const anySelected = speedTypes && Array.from(speedTypes.options).some(o => o.selected);
+            if (!name || !name.value.trim() || !anySelected) {
+                showErrorToast('Department Name and at least one SpeedType are required.');
+                return false;
+            }
+            return confirm('Save changes to this department?');
+        }
+
         function showExportToast() {
             const alertEl = document.createElement('div');
             alertEl.className = 'alert alert-success alert-dismissible fade show';

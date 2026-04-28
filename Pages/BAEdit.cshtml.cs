@@ -261,6 +261,41 @@ namespace budget_management_system_aspdotnetcore.Pages
             return RedirectToPage();
         }
 
+        public async Task<IActionResult> OnPostDeleteAmendmentMainAsync(int id)
+        {
+            if (!_authService.IsAdminRole(HttpContext))
+                return Forbid();
+
+            var amendmentMain = await _context.BudgetAmendmentMain.FindAsync(id);
+            if (amendmentMain == null)
+                return NotFound();
+
+            var relatedAmendments = _context.BudgetAmendments
+                .Where(ba => ba.BudgetAmendmentMainID == id);
+
+            if (relatedAmendments.Any(ba =>
+                    ba.Status == AmendmentStatus.Submitted ||
+                    ba.Status == AmendmentStatus.Approved ||
+                    ba.Status == AmendmentStatus.Rejected))
+            {
+                TempData["ErrorMessage"] = $"Cannot delete \"{amendmentMain.Name}\" — it has submitted, approved, or rejected entries.";
+                return RedirectToPage(new { SelectedBAMainStatusTab = "Unsubmitted" });
+            }
+
+            var deptExtensions = _context.BADepartmentExtensions
+                .Where(e => e.BudgetAmendmentMainID == id);
+
+            _context.BADepartmentExtensions.RemoveRange(deptExtensions);
+            _context.BudgetAmendments.RemoveRange(relatedAmendments);
+            _context.BudgetAmendmentMain.Remove(amendmentMain);
+
+            await _context.SaveChangesAsync();
+            await UpdateUserActivityLogAsync(amendmentMain.Name, ActivityType.Deleted);
+            TempData["SuccessMessage"] = $"Budget amendment \"{amendmentMain.Name}\" deleted successfully.";
+
+            return RedirectToPage(new { SelectedBAMainStatusTab = "Unsubmitted" });
+        }
+
         public PaginationViewModel GetBAMainPagination()
         {
             var filters =

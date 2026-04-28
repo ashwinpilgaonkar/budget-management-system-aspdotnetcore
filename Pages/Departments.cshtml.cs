@@ -237,6 +237,12 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!_authService.IsAuthenticated(HttpContext))
                 return RedirectToPage("/Login");
 
+            if (string.IsNullOrWhiteSpace(NewDepartment.DepartmentName) || !SelectedSpeedTypeIds.Any())
+            {
+                TempData["ErrorMessage"] = "Department Name and at least one SpeedType are required.";
+                return RedirectToPage();
+            }
+
             var department = await _context.Departments
                 .Include(d => d.DepartmentSpeedTypes)
                 .FirstOrDefaultAsync(d => d.DepartmentID == NewDepartment.DepartmentID);

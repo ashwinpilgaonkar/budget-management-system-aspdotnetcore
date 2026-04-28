@@ -253,7 +253,7 @@
                                             </td>
                                                 <td>
                                                 <div class="d-flex justify-content-evenly">
-                                                    <button type="submit" asp-page-handler="SaveUser" asp-route-id="@user.UserId" class="btn btn-success" onclick="return confirm('Save changes to this user?')">Save</button>
+                                                    <button type="submit" asp-page-handler="SaveUser" asp-route-id="@user.UserId" class="btn btn-success" onclick="return validateUserSave()">Save</button>
                                                     <button type="submit" asp-page-handler="CancelEditUser" asp-route-id="@user.UserId" class="btn btn-secondary" onclick="return confirm('Cancel editing? Unsaved changes will be lost.')">Cancel</button>
                                                 </div>
                                             </td>
@@ -464,6 +464,30 @@
                 error.style.display = 'none';
             }
         });
+
+        function showErrorToast(msg) {
+            const alertEl = document.createElement('div');
+            alertEl.className = 'alert alert-danger alert-dismissible fade show';
+            alertEl.setAttribute('role', 'alert');
+            alertEl.style.cssText = 'width: fit-content; max-width: 600px; margin-left: auto; margin-right: auto;';
+            alertEl.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> ' + msg + ' <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+            const main = document.querySelector('main[role="main"]');
+            main.parentElement.insertBefore(alertEl, main);
+            setTimeout(function () { $(alertEl).alert('close'); }, 8000);
+        }
+
+        function validateUserSave() {
+            const email = document.getElementById('NewUser_Email');
+            const firstName = document.getElementById('NewUser_FirstName');
+            const lastName = document.getElementById('NewUser_LastName');
+            const depts = document.getElementById('SelectedDepartmentIds');
+            const anyDeptSelected = depts && Array.from(depts.options).some(o => o.selected);
+            if (!email || !email.value.trim() || !firstName || !firstName.value.trim() || !lastName || !lastName.value.trim() || !anyDeptSelected) {
+                showErrorToast('All user fields are required.');
+                return false;
+            }
+            return confirm('Save changes to this user?');
+        }
 
         function showExportToast() {
             const alertEl = document.createElement('div');

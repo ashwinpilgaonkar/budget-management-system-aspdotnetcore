@@ -735,6 +735,26 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (!_authService.IsAuthenticated(HttpContext))
                 return RedirectToPage("/Login");
 
+            if (string.IsNullOrWhiteSpace(NewBudgetAmendment.CategoryName)
+                || string.IsNullOrWhiteSpace(NewBudgetAmendment.AdjustmentDetail)
+                || string.IsNullOrWhiteSpace(NewBudgetAmendment.AcctDescription)
+                || string.IsNullOrWhiteSpace(NewBudgetAmendment.BudgetCode)
+                || string.IsNullOrWhiteSpace(NewBudgetAmendment.PositionNumber)
+                || NewBudgetAmendment.AmountIncrease <= 0)
+            {
+                TempData["ErrorMessage"] = "All fields are required to save a Budget Amendment entry.";
+                return RedirectToPage(new
+                {
+                    SelectedDepartmentID,
+                    SelectedBudgetAmendmentMainID,
+                    SelectedStatusTab,
+                    SelectedBAMainStatusTab,
+                    SelectedFinancialYear,
+                    CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
+                    CustomEndDate = CustomEndDate?.ToString("yyyy-MM-dd")
+                });
+            }
+
             var amendment = await _context.BudgetAmendments.FindAsync(NewBudgetAmendment.BudgetAmendmentID);
 
             if (amendment != null)
