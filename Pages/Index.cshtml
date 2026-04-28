@@ -90,7 +90,9 @@
                         DestinationSpeedtype = Model.DestinationSpeedtype
                     };
                 }
-                <partial name="_BAMainTabBar" model="tabBarModel" />
+                <div class="mt-3">
+                    <partial name="_BAMainTabBar" model="tabBarModel" />
+                </div>
 
             @if (!Model.BudgetAmendmentsMain.Any())
             {
