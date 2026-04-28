@@ -52,12 +52,12 @@ namespace budget_management_system_aspdotnetcore.Entities
 
     public enum AmendmentStatus
     {
-        [Display(Name = "Pending for Review")]
-        Pending,
+        [Display(Name = "Submitted")]
+        Submitted,
         Approved,
-        [Display(Name = "Rejected: Needs attention")]
+        [Display(Name = "Needs Review")]
         Rejected,
-        [Display(Name = "Drafts")]
+        [Display(Name = "Unsubmitted Drafts")]
         Draft
     }
 }

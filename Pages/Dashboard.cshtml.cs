@@ -16,7 +16,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
         public int OverviewTotalCount { get; set; }
         public int OverviewApprovedCount { get; set; }
-        public int OverviewPendingCount { get; set; }
+        public int OverviewSubmittedCount { get; set; }
         public int OverviewRejectedCount { get; set; }
         public int OverviewTotalActionsThisMonth { get; set; }
         public string OverviewMostActiveUser { get; set; } = "";
@@ -79,7 +79,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             OverviewTotalCount = amendments.Count;
             OverviewApprovedCount = amendments.Count(a => a.Status == AmendmentStatus.Approved);
-            OverviewPendingCount = amendments.Count(a => a.Status == AmendmentStatus.Pending);
+            OverviewSubmittedCount = amendments.Count(a => a.Status == AmendmentStatus.Submitted);
             OverviewRejectedCount = amendments.Count(a => a.Status == AmendmentStatus.Rejected);
 
             var startOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);

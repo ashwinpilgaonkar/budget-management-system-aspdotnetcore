@@ -54,7 +54,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         public int TotalBAMains { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string? SelectedBAMainStatusTab { get; set; } = "Pending";
+        public string? SelectedBAMainStatusTab { get; set; } = "Submitted";
 
         [BindProperty(SupportsGet = true)]
         public bool ShowOverdueOnly { get; set; } = false;
@@ -112,9 +112,13 @@ namespace budget_management_system_aspdotnetcore.Pages
                     var related = BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
                     return SelectedBAMainStatusTab switch
                     {
-                        "Pending"  => related.Any(ba => ba.Status == AmendmentStatus.Pending),
-                        "Approved" => related.Any() && related.All(ba => ba.Status == AmendmentStatus.Approved),
-                        "Rejected" => related.Any() && related.All(ba => ba.Status == AmendmentStatus.Rejected),
+                        "Submitted" => related.Any(ba => ba.Status == AmendmentStatus.Submitted),
+                        "Approved"  => related.Any(ba => ba.Status == AmendmentStatus.Approved)
+                            && !related.Any(ba => ba.Status == AmendmentStatus.Submitted)
+                            && !related.Any(ba => ba.Status == AmendmentStatus.Rejected),
+                        "Rejected"  => related.Any()
+                            && !related.Any(ba => ba.Status == AmendmentStatus.Submitted)
+                            && related.GroupBy(ba => ba.DepartmentID).Any(g => g.All(ba => ba.Status == AmendmentStatus.Rejected)),
                         _          => true
                     };
                 }).ToList();
@@ -122,7 +126,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             if (ShowOverdueOnly &&
                 (string.IsNullOrEmpty(SelectedBAMainStatusTab) ||
-                 SelectedBAMainStatusTab == "Pending" ||
+                 SelectedBAMainStatusTab == "Submitted" ||
                  SelectedBAMainStatusTab == "Rejected" ||
                  SelectedBAMainStatusTab == "All"))
             {

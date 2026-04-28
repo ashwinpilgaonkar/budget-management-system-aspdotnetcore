@@ -1,13 +1,14 @@
 @model budget_management_system_aspdotnetcore.ViewModels.BAMainTabBarViewModel
 @{
     var tabs = new[] {
-        (Label: "Pending",  Value: "Pending"),
-        (Label: "Approved", Value: "Approved"),
-        (Label: "Rejected", Value: "Rejected"),
-        (Label: "All",      Value: "All")
+        (Label: "Unsubmitted",  Value: "Unsubmitted"),
+        (Label: "Submitted",    Value: "Submitted"),
+        (Label: "Approved",     Value: "Approved"),
+        (Label: "Needs Review", Value: "Rejected"),
+        (Label: "All",          Value: "All")
     };
-    var overdueEligible = new HashSet<string?> { "Pending", "Rejected", "All" };
-    bool isEligible = overdueEligible.Contains(Model.SelectedBAMainStatusTab ?? "Pending");
+    var overdueEligible = new HashSet<string?> { "Unsubmitted", "Submitted", "Rejected", "All" };
+    bool isEligible = overdueEligible.Contains(Model.SelectedBAMainStatusTab ?? "Submitted");
     var fyParams = $"SelectedFinancialYear={Model.SelectedFinancialYear}&CustomStartDate={Model.CustomStartDate?.ToString("yyyy-MM-dd")}&CustomEndDate={Model.CustomEndDate?.ToString("yyyy-MM-dd")}";
     var collapsedParam = Model.BAMainCollapsed ? "&BAMainCollapsed=true" : "";
     var contextParams = "";

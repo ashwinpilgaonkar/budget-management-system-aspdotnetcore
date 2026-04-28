@@ -120,13 +120,25 @@
                             baIndex++;
                             var isFirstLoadDefault = amendmentIndex == 0 && Model.SelectedDepartmentID == 0 && !Model.SelectedBudgetAmendmentMainID.HasValue && !Model.BAMainCollapsed;
 
-                            
+
                                 var baRelated = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID).ToList();
-                                var baMainStatus = baRelated.Any(ba => ba.Status == AmendmentStatus.Pending) ? "Pending"
-                                    : (baRelated.Any() && baRelated.All(ba => ba.Status == AmendmentStatus.Approved)) ? "Approved"
-                                    : (baRelated.Any() && baRelated.All(ba => ba.Status == AmendmentStatus.Rejected)) ? "Rejected"
+
+                                var deptStatuses = userDepartmentsBA.Select(d => {
+                                    var da = baRelated.Where(ba => ba.DepartmentID == d.DepartmentID).ToList();
+                                    if (!da.Any()) return "None";
+                                    if (da.Any(ba => ba.Status == AmendmentStatus.Submitted)) return "Submitted";
+                                    if (da.Any(ba => ba.Status == AmendmentStatus.Approved))  return "Approved";
+                                    if (da.Any(ba => ba.Status == AmendmentStatus.Rejected))  return "Rejected";
+                                    return "Draft";
+                                }).ToList();
+
+                                var baMainStatus =
+                                    deptStatuses.Any(s => s == "Rejected")    ? "Rejected"
+                                    : deptStatuses.Any(s => s == "Submitted") ? "Submitted"
+                                    : deptStatuses.Any(s => s == "Approved")  ? "Approved"
+                                    : deptStatuses.Any(s => s == "Draft")     ? "Drafts"
                                     : "None";
-                            
+
 
                             <div class="accordion-item mb-3" data-ba-main-status="@baMainStatus">
                                 <h2 class="accordion-header" id="headingBA@(amendmentIndex)">
@@ -138,9 +150,9 @@
                                         <div class="d-flex justify-content-between w-100 align-items-center">
                                             <partial name="_BAMainHeader" model="new BAMainHeaderViewModel { Record = amendmentmain, Status = baMainStatus }" />
 
-                                            @if (baMainStatus == "Pending")
+                                            @if (baMainStatus == "Submitted")
                                             {
-                                                <span class="badge text-primary">PENDING</span>
+                                                <span class="badge text-primary">SUBMITTED</span>
                                             }
                                             else if (baMainStatus == "Approved")
                                             {
@@ -148,7 +160,15 @@
                                             }
                                             else if (baMainStatus == "Rejected")
                                             {
-                                                <span class="badge text-danger">REJECTED</span>
+                                                <span class="badge text-danger">NEEDS REVIEW</span>
+                                            }
+                                            else if (baMainStatus == "Drafts")
+                                            {
+                                                <span class="badge text-muted">UNSUBMITTED DRAFTS</span>
+                                            }
+                                            else if (baMainStatus == "None")
+                                            {
+                                                <span class="badge text-muted">NO ENTRIES</span>
                                             }
                                         </div>
                                     </button>
@@ -181,22 +201,33 @@
                                                                 <span class="inner-dept-name">@dept.DepartmentName</span>
                                                                 @{
                                                                     var relatedDeptAmendments = Model.BudgetAmendmentsAll
-                                                                        .Where(ba => ba.DepartmentID == dept.DepartmentID).ToList();
+                                                                        .Where(ba => ba.DepartmentID == dept.DepartmentID
+                                                                                  && ba.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID).ToList();
 
-                                                                    if (relatedDeptAmendments.Any(ba => ba.Status == AmendmentStatus.Pending))
+                                                                    if (!relatedDeptAmendments.Any())
                                                                     {
                                                                         <span class="inner-pipe">|</span>
-                                                                        <span class="inner-status inner-status--pending">Pending</span>
+                                                                        <span class="inner-status inner-status--none">No entries</span>
                                                                     }
-                                                                    else if (relatedDeptAmendments.Any() && relatedDeptAmendments.All(ba => ba.Status == AmendmentStatus.Approved))
+                                                                    else if (relatedDeptAmendments.Any(ba => ba.Status == AmendmentStatus.Submitted))
+                                                                    {
+                                                                        <span class="inner-pipe">|</span>
+                                                                        <span class="inner-status inner-status--submitted">Submitted</span>
+                                                                    }
+                                                                    else if (relatedDeptAmendments.Any(ba => ba.Status == AmendmentStatus.Approved))
                                                                     {
                                                                         <span class="inner-pipe">|</span>
                                                                         <span class="inner-status inner-status--approved">Approved</span>
                                                                     }
-                                                                    else if (relatedDeptAmendments.Any() && relatedDeptAmendments.All(ba => ba.Status == AmendmentStatus.Rejected))
+                                                                    else if (relatedDeptAmendments.Any(ba => ba.Status == AmendmentStatus.Rejected))
                                                                     {
                                                                         <span class="inner-pipe">|</span>
-                                                                        <span class="inner-status inner-status--rejected">Rejected</span>
+                                                                        <span class="inner-status inner-status--rejected">Needs Review</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="inner-pipe">|</span>
+                                                                        <span class="inner-status inner-status--draft">Unsubmitted Drafts</span>
                                                                     }
                                                                 }
                                                             </div>
@@ -247,7 +278,7 @@
                                                                     </a>
                                                                 }
 
-                                                                @if (Model.SelectedStatusTab == AmendmentStatus.Pending.ToString() && !String.Equals(userRole, RoleConstants.AFOIdString))
+                                                                @if (Model.SelectedStatusTab == AmendmentStatus.Submitted.ToString() && !String.Equals(userRole, RoleConstants.AFOIdString))
                                                                 {
                                                                     <form id="approveCategoryForm" method="post" asp-page-handler="ApproveCategory">
                                                                         <partial name="_FilterState" model="Model.FilterState" />
@@ -273,7 +304,7 @@
                                                                 {
                                                                     <form method="post" asp-page-handler="RevertCategory">
                                                                         <partial name="_FilterState" model="Model.FilterState" />
-                                                                        <button type="submit" onclick="return confirm('Are you sure you want to resubmit these entries for review?')" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link text-nowrap">Resubmit for review 🗒️</button>
+                                                                        <button type="submit" onclick="return confirm('Are you sure you want to resubmit these entries for review?')" disabled="@(!Model.BudgetAmendments.Any())" class="btn btn-link text-nowrap">Resubmit for approval 🗒️</button>
                                                                     </form>
                                                                 }
 
@@ -309,7 +340,7 @@
                                                                     var canCreateDraft = !Model.BudgetAmendmentsAll.Any(ba =>
                                                                         ba.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID
                                                                         && ba.DepartmentID == dept.DepartmentID
-                                                                        && (ba.Status == AmendmentStatus.Pending
+                                                                        && (ba.Status == AmendmentStatus.Submitted
                                                                             || ba.Status == AmendmentStatus.Approved
                                                                             || ba.Status == AmendmentStatus.Rejected));
                                                                 }
@@ -328,7 +359,7 @@
                                                                 }
                                                                 else if (!canCreateDraft)
                                                                 {
-                                                                    <button type="button" class="btn btn-primary flex-shrink-0" onclick="return alert(`Cannot create new drafts: this department already has entries in Pending, Approved, or Rejected status.`);">
+                                                                    <button type="button" class="btn btn-primary flex-shrink-0" onclick="return alert(`Cannot create new drafts: this department already has entries that are either Submitted, Approved, or Need review.`);">
                                                                         Create New +
                                                                     </button>
                                                                 }
@@ -354,7 +385,7 @@
                                                                                   && ba.Status == status);
                                                                     <li class="nav-item">
                                                                         <a class="nav-link @isActive"
-                                                                           href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=@status&SelectedBAMainStatusTab=@Model.SelectedBAMainStatusTab&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")">@status.GetDisplayName()@if (statusCount > 0) { <span class="badge bg-danger">@statusCount</span> }</a>
+                                                                           href="?SelectedDepartmentID=@dept.DepartmentID&SelectedStatusTab=@status&SelectedBAMainStatusTab=@Model.SelectedBAMainStatusTab&SelectedBudgetAmendmentMainID=@amendmentmain.BudgetAmendmentMainID&SelectedFinancialYear=@Model.SelectedFinancialYear&CustomStartDate=@Model.CustomStartDate?.ToString("yyyy-MM-dd")&CustomEndDate=@Model.CustomEndDate?.ToString("yyyy-MM-dd")">@(status == AmendmentStatus.Draft ? "Drafts" : status.GetDisplayName())@if (statusCount > 0) { <span class="badge bg-danger">@statusCount</span> }</a>
                                                                     </li>
                                                                 }
                                                                 @{
@@ -758,7 +789,7 @@
                                                                                             <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                                                                             <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                                                                         }
-                                                                                        <td class="@Model.GetStatusClass(amendment.Status)">@amendment.Status</td>
+                                                                                        <td class="@Model.GetStatusClass(amendment.Status)">@(amendment.Status == AmendmentStatus.Submitted ? "Submitted: Pending review" : amendment.Status.GetDisplayName())</td>
                                                                                         <td colspan="4">
                                                                                             <form id="@editFormId" method="post" asp-route-id="@amendment.BudgetAmendmentID">
                                                                                                 <input asp-for="NewBudgetAmendment.BudgetAmendmentID" type="hidden" value="@amendment.BudgetAmendmentID" />
@@ -795,12 +826,12 @@
                                                                                             <td>@(amendment.EditedByUser?.Email ?? "N/A") <br> at <br> @(amendment.EditedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                                                                             <td>@(amendment.UpdatedByUser?.Email ?? "N/A") <br> at <br> @(amendment.UpdatedAt?.ToString("MM/dd/yy HH:mm") ?? "N/A")</td>
                                                                                         }
-                                                                                        <td class="@Model.GetStatusClass(amendment.Status)">@amendment.Status</td>
+                                                                                        <td class="@Model.GetStatusClass(amendment.Status)">@(amendment.Status == AmendmentStatus.Submitted ? "Submitted: Pending review" : amendment.Status.GetDisplayName())</td>
                                                                                         <td colspan="4">
                                                                                             @{
                                                                                                 var isEnabled = amendment.Status == AmendmentStatus.Draft
                                                                                                     || amendment.Status == AmendmentStatus.Rejected
-                                                                                                    || (amendment.Status == AmendmentStatus.Pending && !String.Equals(userRole, RoleConstants.AFOIdString));
+                                                                                                    || (amendment.Status == AmendmentStatus.Submitted && !String.Equals(userRole, RoleConstants.AFOIdString));
                                                                                             }
                                                                                             @if (!String.Equals(userRole, RoleConstants.AFOIdString) || amendment.Status == AmendmentStatus.Draft || amendment.Status == AmendmentStatus.Rejected)
                                                                                             {

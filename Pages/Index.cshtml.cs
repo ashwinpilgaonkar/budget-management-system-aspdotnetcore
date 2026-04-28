@@ -98,10 +98,10 @@ namespace budget_management_system_aspdotnetcore.Pages
         public int SelectedDepartmentID { get; set; } = 0;
 
         [BindProperty(SupportsGet = true)]
-        public string SelectedStatusTab { get; set; } = AmendmentStatus.Pending.ToString();
+        public string SelectedStatusTab { get; set; } = AmendmentStatus.Submitted.ToString();
 
         [BindProperty(SupportsGet = true)]
-        public string? SelectedBAMainStatusTab { get; set; } = "Pending";
+        public string? SelectedBAMainStatusTab { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public bool ShowOverdueOnly { get; set; } = false;
@@ -216,6 +216,9 @@ namespace budget_management_system_aspdotnetcore.Pages
             userRole = _authService.GetUserRole(HttpContext);
             userID = _authService.GetAuthenticatedUserID(HttpContext);
 
+            if (string.IsNullOrEmpty(SelectedBAMainStatusTab))
+                SelectedBAMainStatusTab = userRole == RoleConstants.AFOIdString ? "Unsubmitted" : "Submitted";
+
             SetDefaultFinancialYearRange();
 
 
@@ -240,17 +243,28 @@ namespace budget_management_system_aspdotnetcore.Pages
             BAMainTabCounts = new Dictionary<string, int>
             {
                 ["All"] = BudgetAmendmentsMainAll.Count,
-                ["Pending"]  = BudgetAmendmentsMainAll.Count(bam =>
-                    BudgetAmendmentsAll.Any(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID && ba.Status == AmendmentStatus.Pending)),
+                ["Unsubmitted"] = BudgetAmendmentsMainAll.Count(bam =>
+                {
+                    var rel = BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
+                    return !rel.Any(ba => ba.Status == AmendmentStatus.Submitted
+                                      || ba.Status == AmendmentStatus.Approved
+                                      || ba.Status == AmendmentStatus.Rejected);
+                }),
+                ["Submitted"] = BudgetAmendmentsMainAll.Count(bam =>
+                    BudgetAmendmentsAll.Any(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID && ba.Status == AmendmentStatus.Submitted)),
                 ["Approved"] = BudgetAmendmentsMainAll.Count(bam =>
                 {
                     var rel = BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
-                    return rel.Any() && rel.All(ba => ba.Status == AmendmentStatus.Approved);
+                    return rel.Any(ba => ba.Status == AmendmentStatus.Approved)
+                        && !rel.Any(ba => ba.Status == AmendmentStatus.Submitted)
+                        && !rel.Any(ba => ba.Status == AmendmentStatus.Rejected);
                 }),
                 ["Rejected"] = BudgetAmendmentsMainAll.Count(bam =>
                 {
                     var rel = BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
-                    return rel.Any() && rel.All(ba => ba.Status == AmendmentStatus.Rejected);
+                    return rel.Any()
+                        && !rel.Any(ba => ba.Status == AmendmentStatus.Submitted)
+                        && rel.GroupBy(ba => ba.DepartmentID).Any(g => g.All(ba => ba.Status == AmendmentStatus.Rejected));
                 })
             };
 
@@ -261,17 +275,25 @@ namespace budget_management_system_aspdotnetcore.Pages
                     var related = BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
                     return SelectedBAMainStatusTab switch
                     {
-                        "Pending"  => related.Any(ba => ba.Status == AmendmentStatus.Pending),
-                        "Approved" => related.Any() && related.All(ba => ba.Status == AmendmentStatus.Approved),
-                        "Rejected" => related.Any() && related.All(ba => ba.Status == AmendmentStatus.Rejected),
-                        _          => true
+                        "Unsubmitted" => !related.Any(ba => ba.Status == AmendmentStatus.Submitted
+                                                         || ba.Status == AmendmentStatus.Approved
+                                                         || ba.Status == AmendmentStatus.Rejected),
+                        "Submitted" => related.Any(ba => ba.Status == AmendmentStatus.Submitted),
+                        "Approved"  => related.Any(ba => ba.Status == AmendmentStatus.Approved)
+                            && !related.Any(ba => ba.Status == AmendmentStatus.Submitted)
+                            && !related.Any(ba => ba.Status == AmendmentStatus.Rejected),
+                        "Rejected"  => related.Any()
+                            && !related.Any(ba => ba.Status == AmendmentStatus.Submitted)
+                            && related.GroupBy(ba => ba.DepartmentID).Any(g => g.All(ba => ba.Status == AmendmentStatus.Rejected)),
+                        _           => true
                     };
                 }).ToList();
             }
 
             if (ShowOverdueOnly &&
                 (string.IsNullOrEmpty(SelectedBAMainStatusTab) ||
-                 SelectedBAMainStatusTab == "Pending" ||
+                 SelectedBAMainStatusTab == "Unsubmitted" ||
+                 SelectedBAMainStatusTab == "Submitted" ||
                  SelectedBAMainStatusTab == "Rejected" ||
                  SelectedBAMainStatusTab == "All"))
             {
@@ -474,7 +496,7 @@ namespace budget_management_system_aspdotnetcore.Pages
         {
             AmendmentStatus.Approved => "text-success",
             AmendmentStatus.Rejected => "text-danger",
-            AmendmentStatus.Draft    => "text-primary",
+            AmendmentStatus.Draft    => "text-muted",
             _                        => ""
         };
 
@@ -541,6 +563,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 {
                     SelectedDepartmentID,
                     SelectedBudgetAmendmentMainID,
+                    SelectedBAMainStatusTab,
                     SelectedStatusTab,
                     SelectedFinancialYear,
                     CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
@@ -551,13 +574,13 @@ namespace budget_management_system_aspdotnetcore.Pages
             var hasBlockingEntries = await _context.BudgetAmendments.AnyAsync(ba =>
                 ba.BudgetAmendmentMainID == NewBudgetAmendment.BudgetAmendmentMainID
                 && ba.DepartmentID == NewBudgetAmendment.DepartmentID
-                && (ba.Status == AmendmentStatus.Pending
+                && (ba.Status == AmendmentStatus.Submitted
                     || ba.Status == AmendmentStatus.Approved
                     || ba.Status == AmendmentStatus.Rejected));
 
             if (hasBlockingEntries)
             {
-                TempData["ErrorMessage"] = "Cannot create new drafts: this department already has entries in Pending, Approved, or Rejected status.";
+                TempData["ErrorMessage"] = "Cannot create new drafts: this department already has entries that are either Submitted, Approved, or Need review.";
                 return RedirectToPage(new
                 {
                     SelectedDepartmentID,
@@ -633,6 +656,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             {
                 SelectedDepartmentID,
                 SelectedBudgetAmendmentMainID,
+                SelectedBAMainStatusTab,
                 SelectedStatusTab,
                 SelectedFinancialYear,
                 CustomStartDate = CustomStartDate?.ToString("yyyy-MM-dd"),
@@ -649,7 +673,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             if (amendment != null && (amendment.Status == AmendmentStatus.Draft
                 || amendment.Status == AmendmentStatus.Rejected
-                || (amendment.Status == AmendmentStatus.Pending && _authService.IsAdminRole(HttpContext))))
+                || (amendment.Status == AmendmentStatus.Submitted && _authService.IsAdminRole(HttpContext))))
             {
                 EditingBudgetAmendmentID = id;
 
@@ -717,7 +741,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             {
                 var canEdit = amendment.Status == AmendmentStatus.Draft
                     || amendment.Status == AmendmentStatus.Rejected
-                    || (amendment.Status == AmendmentStatus.Pending && _authService.IsAdminRole(HttpContext));
+                    || (amendment.Status == AmendmentStatus.Submitted && _authService.IsAdminRole(HttpContext));
 
                 if (!canEdit)
                     return Forbid();
@@ -790,7 +814,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             if (amendment.Status == AmendmentStatus.Draft
                 || amendment.Status == AmendmentStatus.Rejected
-                || (amendment.Status == AmendmentStatus.Pending && _authService.IsAdminRole(HttpContext)))
+                || (amendment.Status == AmendmentStatus.Submitted && _authService.IsAdminRole(HttpContext)))
             {
                 var categoryName = amendment.CategoryName;
 
@@ -829,7 +853,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return BadRequest("Invalid department");
 
             var amendments = await _context.BudgetAmendments
-                .Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Pending)
+                .Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Submitted)
                 .ToListAsync();
 
             if (!AllCategoryNetChangesAreZero(amendments))
@@ -883,7 +907,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return BadRequest("Invalid department");
 
             var amendments = await _context.BudgetAmendments
-                .Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Pending)
+                .Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Submitted)
                 .ToListAsync();
             var categoryName = "";
 
@@ -942,7 +966,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             foreach (var amendment in amendments)
             {
-                amendment.Status = AmendmentStatus.Pending;
+                amendment.Status = AmendmentStatus.Submitted;
                 amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
                 amendment.UpdatedAt = DateTime.Now;
 
@@ -951,7 +975,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             }
 
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Entries reverted to Pending.";
+            TempData["SuccessMessage"] = "Entries reverted to Submitted: Pending review.";
             return RedirectToPage(new
             {
                 SelectedDepartmentID,
@@ -992,7 +1016,7 @@ namespace budget_management_system_aspdotnetcore.Pages
 
             foreach (var amendment in amendments)
             {
-                amendment.Status = AmendmentStatus.Pending;
+                amendment.Status = AmendmentStatus.Submitted;
                 amendment.UpdatedBy = _authService.GetAuthenticatedUserID(HttpContext);
                 amendment.UpdatedAt = DateTime.Now;
                 categoryName = amendment.CategoryName;
@@ -1127,10 +1151,10 @@ namespace budget_management_system_aspdotnetcore.Pages
                     var period = $"{first.BudgetAmendmentMain.StartDate:MMM d, yyyy} – {first.BudgetAmendmentMain.ExtendedDeadline:MMM d, yyyy}";
                     var totalIncrease = group.Sum(ba => ba.AmountIncrease);
                     var totalDecrease = group.Sum(ba => ba.AmountDecrease);
-                    var overallStatus = group.Any(ba => ba.Status == AmendmentStatus.Pending) ? "Pending"
+                    var overallStatus = group.Any(ba => ba.Status == AmendmentStatus.Submitted) ? "Submitted"
                         : group.All(ba => ba.Status == AmendmentStatus.Approved) ? "Approved"
-                        : group.Any(ba => ba.Status == AmendmentStatus.Rejected) ? "Rejected"
-                        : "Draft";
+                        : group.Any(ba => ba.Status == AmendmentStatus.Rejected) ? "Needs Review"
+                        : "Unsubmitted Drafts";
 
                     worksheet.Cell(row, 1).Value = serialNo++;
                     worksheet.Cell(row, 2).Value = first.BudgetAmendmentMain.Name;

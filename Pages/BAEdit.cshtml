@@ -44,8 +44,8 @@
                     TabCounts = new Dictionary<string, int>
                     {
                         ["All"] = Model.BudgetAmendmentsMainAll.Count,
-                        ["Pending"] = Model.BudgetAmendmentsMainAll.Count(bam =>
-                            Model.BudgetAmendmentsAll.Any(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID && ba.Status == AmendmentStatus.Pending)),
+                        ["Submitted"] = Model.BudgetAmendmentsMainAll.Count(bam =>
+                            Model.BudgetAmendmentsAll.Any(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID && ba.Status == AmendmentStatus.Submitted)),
                         ["Approved"] = Model.BudgetAmendmentsMainAll.Count(bam => {
                             var rel = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
                             return rel.Any() && rel.All(ba => ba.Status == AmendmentStatus.Approved);
@@ -80,9 +80,10 @@
                 {
                     var extCount = Model.DeptExtensionCounts.GetValueOrDefault(amendmentmain.BudgetAmendmentMainID, 0);
                     var baRelated = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == amendmentmain.BudgetAmendmentMainID).ToList();
-                    var baMainStatus = baRelated.Any(ba => ba.Status == AmendmentStatus.Pending) ? "Pending"
-                        : (baRelated.Any() && baRelated.All(ba => ba.Status == AmendmentStatus.Approved)) ? "Approved"
-                        : (baRelated.Any() && baRelated.All(ba => ba.Status == AmendmentStatus.Rejected)) ? "Rejected"
+                    var baMainStatus = baRelated.Any(ba => ba.Status == AmendmentStatus.Rejected) ? "Rejected"
+                        : baRelated.Any(ba => ba.Status == AmendmentStatus.Submitted) ? "Submitted"
+                        : baRelated.Any(ba => ba.Status == AmendmentStatus.Approved) ? "Approved"
+                        : baRelated.Any(ba => ba.Status == AmendmentStatus.Draft) ? "Drafts"
                         : "None";
                     <div class="d-flex justify-content-between align-items-center px-4 py-4 mb-2" style="border: 1px solid #dee2e6; border-radius: 8px; background-color: #f1f3f5;">
                         <partial name="_BAMainHeader" model="new BAMainHeaderViewModel { Record = amendmentmain, Status = baMainStatus }" />

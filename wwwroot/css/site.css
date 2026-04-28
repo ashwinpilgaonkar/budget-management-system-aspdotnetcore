@@ -255,7 +255,7 @@ th form button {
     letter-spacing: 0.03em;
 }
 
-.inner-status--pending {
+.inner-status--submitted {
     color: #185FA5;
 }
 
@@ -265,6 +265,14 @@ th form button {
 
 .inner-status--rejected {
     color: #a32d2d;
+}
+
+.inner-status--draft {
+    color: #888;
+}
+
+.inner-status--none {
+    color: #888;
 }
 
 .inner-acc-left ~ .accordion-button::after {

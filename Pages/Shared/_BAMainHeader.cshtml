@@ -6,17 +6,17 @@
 
     var daysRemaining = (int)(record.ExtendedDeadline.Date - DateTime.Today).TotalDays;
     var isOverdue = daysRemaining < 0;
-    var isPendingOrRejected = status == "Pending" || status == "Rejected";
+    var isSubmittedOrRejected = status == "Submitted" || status == "Rejected";
 
     var dayPillClass = daysRemaining > 14                 ? "ba-days-ok"
                      : daysRemaining > 7                  ? "ba-days-warn"
                      : daysRemaining > 0                  ? "ba-days-urgent"
                      : daysRemaining == 0                 ? "ba-days-today"
-                     : (isOverdue && isPendingOrRejected) ? "ba-days-overdue"
+                     : (isOverdue && isSubmittedOrRejected) ? "ba-days-overdue"
                      : "ba-days-passed";
     var dayPillText = daysRemaining > 0                   ? $"{daysRemaining}d left"
                     : daysRemaining == 0                  ? "Due today"
-                    : (isOverdue && isPendingOrRejected)  ? $"{Math.Abs(daysRemaining)}d overdue"
+                    : (isOverdue && isSubmittedOrRejected) ? $"{Math.Abs(daysRemaining)}d overdue"
                     : "Deadline passed";
 }
 <div class="ba-acc-left">
