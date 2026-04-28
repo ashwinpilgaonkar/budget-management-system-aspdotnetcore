@@ -6,7 +6,7 @@
 
     var daysRemaining = (int)(record.ExtendedDeadline.Date - DateTime.Today).TotalDays;
     var isOverdue = daysRemaining < 0;
-    var isSubmittedOrRejected = status == "Submitted" || status == "Rejected";
+    var isSubmittedOrRejected = status == "Submitted" || status == "Rejected" || status == "Drafts";
 
     var dayPillClass = daysRemaining > 14                 ? "ba-days-ok"
                      : daysRemaining > 7                  ? "ba-days-warn"

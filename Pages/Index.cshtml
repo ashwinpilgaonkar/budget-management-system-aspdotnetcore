@@ -1035,6 +1035,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const selectedBA = urlParams.get('SelectedBudgetAmendmentMainID');
             const selectedDept = urlParams.get('SelectedDepartmentID');
+            const accordion = document.getElementById('budgetAmendmentsAccordion');
 
             if (selectedBA && selectedDept) {
                 const baAccordions = document.querySelectorAll('[id^="collapseBA"]');
@@ -1063,6 +1064,33 @@
                 if (scrollPosition) {
                     window.scrollTo(0, parseInt(scrollPosition));
                     sessionStorage.removeItem('scrollPosition');
+                }
+
+                if (accordion) {
+                    const currentTab = urlParams.get('SelectedBAMainStatusTab') || 'Submitted';
+                    const savedState = sessionStorage.getItem('tabAccordionState_' + currentTab);
+                    if (savedState) {
+                        try {
+                            const state = JSON.parse(savedState);
+                            if (state.openBAIds && state.openBAIds.length > 0) {
+                                state.openBAIds.forEach(function (baId) {
+                                    const baCollapse = accordion.querySelector('[data-ba-id="' + baId + '"]');
+                                    if (baCollapse) {
+                                        new bootstrap.Collapse(baCollapse, { show: true });
+                                        const deptIds = state.openDeptIds && state.openDeptIds[baId];
+                                        if (deptIds && deptIds.length > 0) {
+                                            setTimeout(function () {
+                                                deptIds.forEach(function (deptId) {
+                                                    const deptCollapse = baCollapse.querySelector('[data-dept-id="' + deptId + '"]');
+                                                    if (deptCollapse) new bootstrap.Collapse(deptCollapse, { show: true });
+                                                });
+                                            }, 350);
+                                        }
+                                    }
+                                });
+                            }
+                        } catch (e) {}
+                    }
                 }
             }
 
@@ -1125,8 +1153,6 @@
             });
 
             // ----- Collapse state management for tab bar, overdue toggle, FY filter, BA pagination -----
-            const accordion = document.getElementById('budgetAmendmentsAccordion');
-
             function isBaMainCollapsed() {
                 return !accordion || !accordion.querySelector(':scope > .accordion-item > .accordion-collapse.show');
             }
@@ -1144,12 +1170,44 @@
                 isBaDeptCollapsed() ? url.searchParams.set('BADeptCollapsed', 'true')  : url.searchParams.delete('BADeptCollapsed');
             }
 
+            function getOpenAccordionState() {
+                const openBAIds = [];
+                const openDeptIds = {};
+                if (!accordion) return { openBAIds, openDeptIds };
+                accordion.querySelectorAll(':scope > .accordion-item > .accordion-collapse.show').forEach(function (baCollapse) {
+                    const baId = baCollapse.getAttribute('data-ba-id');
+                    if (baId) {
+                        openBAIds.push(baId);
+                        openDeptIds[baId] = [];
+                        baCollapse.querySelectorAll('.accordion-collapse.show[data-dept-id]').forEach(function (deptCollapse) {
+                            const deptId = deptCollapse.getAttribute('data-dept-id');
+                            if (deptId) openDeptIds[baId].push(deptId);
+                        });
+                    }
+                });
+                return { openBAIds, openDeptIds };
+            }
+
             document.querySelectorAll('.tab-bar-row .nav-link').forEach(function (link) {
                 link.addEventListener('click', function (e) {
-                    if (!accordion) return;
                     e.preventDefault();
+
+                    const editingId = urlParams.get('EditingBudgetAmendmentID');
+                    if (editingId && editingId !== '0') {
+                        if (!confirm('Are you sure you want to cancel editing? Unsaved changes will be lost.')) {
+                            return;
+                        }
+                    }
+
+                    const currentTab = urlParams.get('SelectedBAMainStatusTab') || 'Submitted';
+                    sessionStorage.setItem('tabAccordionState_' + currentTab, JSON.stringify(getOpenAccordionState()));
+
                     const url = new URL(this.href);
-                    applyCollapseState(url);
+                    url.searchParams.set('BAMainCollapsed', 'true');
+                    url.searchParams.set('BADeptCollapsed', 'true');
+                    url.searchParams.delete('EditingBudgetAmendmentID');
+                    url.searchParams.delete('SelectedDepartmentID');
+                    url.searchParams.delete('SelectedBudgetAmendmentMainID');
                     window.location.href = url.toString();
                 });
             });

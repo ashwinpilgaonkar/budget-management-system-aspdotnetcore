@@ -853,7 +853,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return BadRequest("Invalid department");
 
             var amendments = await _context.BudgetAmendments
-                .Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Submitted)
+                .Where(a => a.DepartmentID == SelectedDepartmentID && a.BudgetAmendmentMainID == SelectedBudgetAmendmentMainID && a.Status == AmendmentStatus.Submitted)
                 .ToListAsync();
 
             if (!AllCategoryNetChangesAreZero(amendments))
@@ -907,7 +907,7 @@ namespace budget_management_system_aspdotnetcore.Pages
                 return BadRequest("Invalid department");
 
             var amendments = await _context.BudgetAmendments
-                .Where(a => a.DepartmentID == SelectedDepartmentID && a.Status == AmendmentStatus.Submitted)
+                .Where(a => a.DepartmentID == SelectedDepartmentID && a.BudgetAmendmentMainID == SelectedBudgetAmendmentMainID && a.Status == AmendmentStatus.Submitted)
                 .ToListAsync();
             var categoryName = "";
 
@@ -945,7 +945,7 @@ namespace budget_management_system_aspdotnetcore.Pages
             if (SelectedDepartmentID == 0)
                 return BadRequest("Invalid department");
 
-            var amendments = await _context.BudgetAmendments.Where(a => a.DepartmentID == SelectedDepartmentID && (a.Status == AmendmentStatus.Approved || a.Status == AmendmentStatus.Rejected)).ToListAsync();
+            var amendments = await _context.BudgetAmendments.Where(a => a.DepartmentID == SelectedDepartmentID && a.BudgetAmendmentMainID == SelectedBudgetAmendmentMainID && (a.Status == AmendmentStatus.Approved || a.Status == AmendmentStatus.Rejected)).ToListAsync();
 
             var rejectedAmendments = amendments.Where(a => a.Status == AmendmentStatus.Rejected).ToList();
             if (rejectedAmendments.Any() && !AllCategoryNetChangesAreZero(rejectedAmendments))

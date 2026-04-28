@@ -44,6 +44,12 @@
                     TabCounts = new Dictionary<string, int>
                     {
                         ["All"] = Model.BudgetAmendmentsMainAll.Count,
+                        ["Unsubmitted"] = Model.BudgetAmendmentsMainAll.Count(bam => {
+                            var rel = Model.BudgetAmendmentsAll.Where(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID).ToList();
+                            return !rel.Any(ba => ba.Status == AmendmentStatus.Submitted
+                                              || ba.Status == AmendmentStatus.Approved
+                                              || ba.Status == AmendmentStatus.Rejected);
+                        }),
                         ["Submitted"] = Model.BudgetAmendmentsMainAll.Count(bam =>
                             Model.BudgetAmendmentsAll.Any(ba => ba.BudgetAmendmentMainID == bam.BudgetAmendmentMainID && ba.Status == AmendmentStatus.Submitted)),
                         ["Approved"] = Model.BudgetAmendmentsMainAll.Count(bam => {
